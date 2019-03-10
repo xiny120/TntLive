@@ -125,6 +125,9 @@ D3dRenderer* D3dRenderer::Create(const void*hwnd,
 void D3dRenderer::Resize(size_t width, size_t height) {
   width_ = width;
   height_ = height;
+
+  ::SetWindowPos(hwnd_, NULL, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
+
   IDirect3DTexture9* texture;
 
   d3d_device_->CreateTexture(static_cast<UINT>(width_),
@@ -155,9 +158,9 @@ void D3dRenderer::Resize(size_t width, size_t height) {
 }
 
 void D3dRenderer::OnFrame(const cricket::VideoFrame& frame) {
-	if (fps_++ % 2 == 0) {
-		return;
-	}
+	//if (fps_++ % 2 == 0) {
+	//	return;
+	//}
 	const cricket::VideoFrame*videoFrame = &frame;
   if (static_cast<size_t>(videoFrame->width()) != width_ ||
       static_cast<size_t>(videoFrame->height()) != height_) {

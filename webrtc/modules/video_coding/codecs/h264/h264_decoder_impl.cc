@@ -18,6 +18,7 @@ extern "C" {
 #include "third_party/ffmpeg/libavcodec/avcodec.h"
 #include "third_party/ffmpeg/libavformat/avformat.h"
 #include "third_party/ffmpeg/libavutil/imgutils.h"
+#include "third_party/ffmpeg/libswscale/swscale.h"
 }  // extern "C"
 
 #include "webrtc/base/checks.h"
@@ -230,6 +231,7 @@ int32_t H264DecoderImpl::InitDecode(const VideoCodec* codec_settings,
   av_context_->pix_fmt = kPixelFormat;
   av_context_->extradata = nullptr;
   av_context_->extradata_size = 0;
+  av_context_->bit_rate = 1920 * 1200 * 3;
 
   // If this is ever increased, look at |av_context_->thread_safe_callbacks| and
   // make it possible to disable the thread checker in the frame buffer pool.
@@ -275,6 +277,47 @@ int32_t H264DecoderImpl::RegisterDecodeCompleteCallback(
     DecodedImageCallback* callback) {
   decoded_image_callback_ = callback;
   return WEBRTC_VIDEO_CODEC_OK;
+}
+
+void SaveAsBMP(AVFrame *pFrameRGB, int width, int height, int index, int bpp)
+{
+	char buf[5] = { 0 };
+	BITMAPFILEHEADER bmpheader;
+	BITMAPINFOHEADER bmpinfo;
+	FILE *fp;
+
+	char *filename = new char[255];
+
+	//文件存放路径，根据自己的修改  
+	sprintf_s(filename, 255, "%s%d.bmp", "c:/temp/", index);
+	if ((fp = fopen(filename, "wb+")) == NULL) {
+		printf("open file failed!\n");
+		return;
+	}
+
+	bmpheader.bfType = 0x4d42;
+	bmpheader.bfReserved1 = 0;
+	bmpheader.bfReserved2 = 0;
+	bmpheader.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+	bmpheader.bfSize = bmpheader.bfOffBits + width * height*bpp / 8;
+
+	bmpinfo.biSize = sizeof(BITMAPINFOHEADER);
+	bmpinfo.biWidth = width;
+	bmpinfo.biHeight = height;
+	bmpinfo.biPlanes = 1;
+	bmpinfo.biBitCount = bpp;
+	bmpinfo.biCompression = BI_RGB;
+	bmpinfo.biSizeImage = (width*bpp + 31) / 32 * 4 * height;
+	bmpinfo.biXPelsPerMeter = 100;
+	bmpinfo.biYPelsPerMeter = 100;
+	bmpinfo.biClrUsed = 0;
+	bmpinfo.biClrImportant = 0;
+
+	fwrite(&bmpheader, sizeof(bmpheader), 1, fp);
+	fwrite(&bmpinfo, sizeof(bmpinfo), 1, fp);
+	fwrite(pFrameRGB->data[0], width*height*bpp / 8, 1, fp);
+
+	fclose(fp);
 }
 
 int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
@@ -324,6 +367,10 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
   packet.size = static_cast<int>(input_image._length);
   av_context_->reordered_opaque = input_image.ntp_time_ms_ * 1000;  // ms -> μs
 
+
+
+
+
   int frame_decoded = 0;
   int result = avcodec_decode_video2(av_context_.get(),
                                      av_frame_.get(),
@@ -347,6 +394,36 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
         "decoded.";
     return WEBRTC_VIDEO_CODEC_OK;
   }
+
+  /*
+  AVFrame* pFrameRGB = av_frame_alloc();
+
+  struct SwsContext *pSwsCtx;
+  //AVPacket packet;
+  int frameFinished;
+  int PictureSize;
+  uint8_t *outBuff;
+
+  PictureSize = avpicture_get_size(AV_PIX_FMT_BGR24, av_context_.get()->width, av_context_.get()->height);
+  outBuff = (uint8_t*)av_malloc(PictureSize);
+  if (outBuff == NULL) {
+	  printf("av malloc failed!\n");
+	  exit(1);
+  }
+  avpicture_fill((AVPicture *)pFrameRGB, outBuff, AV_PIX_FMT_BGR24, av_context_.get()->width, av_context_.get()->height);
+
+  //设置图像转换上下文  
+  pSwsCtx = sws_getContext(av_context_.get()->width, av_context_.get()->height, av_context_.get()->pix_fmt,
+	  av_context_.get()->width, av_context_.get()->height, AV_PIX_FMT_BGR24,
+	  SWS_BICUBIC, NULL, NULL, NULL);
+
+
+  sws_scale(pSwsCtx, av_frame_.get()->data,
+	  av_frame_.get()->linesize, 0, av_context_.get()->height,
+	  pFrameRGB->data, pFrameRGB->linesize);
+  int i = 0;
+  SaveAsBMP(pFrameRGB, av_context_.get()->width, av_context_.get()->height, i++, 24);
+  */
 
   // Obtain the |video_frame| containing the decoded image.
   VideoFrame* video_frame = static_cast<VideoFrame*>(

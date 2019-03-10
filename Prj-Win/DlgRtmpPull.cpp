@@ -24,7 +24,7 @@ IMPLEMENT_DYNAMIC(DlgRtmpPull, CDialog)
 
 DlgRtmpPull::DlgRtmpPull()
 	: CDialog(DlgRtmpPull::IDD)
-	, m_strUrl(_T("rtmp://live.hkstv.hk.lxdns.com/live/hks"))
+	, m_strUrl(_T("rtmp://www.pic98.com:19350/live/livestream"))
 	, m_pAVRtmplayer(NULL)
 	, m_pDlgVideoMain(NULL)
 {
