@@ -61,7 +61,7 @@ void RtmpGuesterImpl::StartRtmpPlay(const char* url, void* render)
 	if (!av_rtmp_started_) {
 		rtmp_url_ = url;
 		av_rtmp_started_ = true;
-		video_render_ = webrtc::VideoRenderer::Create(render, 768, 576);
+		video_render_ = webrtc::VideoRenderer::Create(render, 512, 512);
 		av_rtmp_player_->SetVideoRender(video_render_);
 		av_rtmp_player_->StartPlay(url);
 		webrtc::AnyRtmpCore::Inst().StartAudioTrack(this);

@@ -21,12 +21,18 @@
     <ClCompile Include="video_renderer.cc">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="gdi_renderer.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="d3d_renderer.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="video_renderer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="gdi_renderer.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

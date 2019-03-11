@@ -127,6 +127,8 @@ void D3dRenderer::Resize(size_t width, size_t height) {
   height_ = height;
 
   ::SetWindowPos(hwnd_, NULL, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
+  RECT rc;
+  ::GetClientRect(hwnd_, &rc);
 
   IDirect3DTexture9* texture;
 
@@ -157,6 +159,49 @@ void D3dRenderer::Resize(size_t width, size_t height) {
   vertex_buffer_->Unlock();
 }
 
+
+//test function for save local bmp
+int bmp_write(unsigned char *image, int imageWidth, int imageHeight, char *filename)
+{
+	unsigned char header[54] = {
+	  0x42, 0x4d, 0, 0, 0, 0, 0, 0, 0, 0,
+		54, 0, 0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 32, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0
+	};
+
+	long file_size = (long)imageWidth * (long)imageHeight * 4 + 54;
+	header[2] = (unsigned char)(file_size & 0x000000ff);
+	header[3] = (file_size >> 8) & 0x000000ff;
+	header[4] = (file_size >> 16) & 0x000000ff;
+	header[5] = (file_size >> 24) & 0x000000ff;
+
+	long width = imageWidth;
+	header[18] = width & 0x000000ff;
+	header[19] = (width >> 8) & 0x000000ff;
+	header[20] = (width >> 16) & 0x000000ff;
+	header[21] = (width >> 24) & 0x000000ff;
+
+	long height = imageHeight;
+	header[22] = height & 0x000000ff;
+	header[23] = (height >> 8) & 0x000000ff;
+	header[24] = (height >> 16) & 0x000000ff;
+	header[25] = (height >> 24) & 0x000000ff;
+
+	char fname_bmp[128];
+	sprintf(fname_bmp, "%s.bmp", filename);
+
+	FILE *fp;
+	if (!(fp = fopen(fname_bmp, "wb")))
+		return -1;
+
+	fwrite(header, sizeof(unsigned char), 54, fp);
+	fwrite(image, sizeof(unsigned char), (size_t)(long)imageWidth * imageHeight * 4, fp);
+
+	fclose(fp);
+	return 0;
+}
+
 void D3dRenderer::OnFrame(const cricket::VideoFrame& frame) {
 	//if (fps_++ % 2 == 0) {
 	//	return;
@@ -174,6 +219,8 @@ void D3dRenderer::OnFrame(const cricket::VideoFrame& frame) {
 
   webrtc::VideoFrame video_frame(videoFrame->video_frame_buffer(), 0, 0, videoFrame->rotation());
   ConvertFromI420(video_frame, kARGB, 0, static_cast<uint8_t*>(lock_rect.pBits));
+
+  bmp_write((unsigned char*)lock_rect.pBits, 512, 512, "test");
   texture_->UnlockRect(0);
 
   d3d_device_->BeginScene();

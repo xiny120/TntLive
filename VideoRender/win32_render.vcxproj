@@ -20,10 +20,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3d_renderer.cc" />
+    <ClCompile Include="gdi_renderer.cc" />
     <ClCompile Include="video_renderer.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="d3d_renderer.h" />
+    <ClInclude Include="gdi_renderer.h" />
     <ClInclude Include="video_renderer.h" />
   </ItemGroup>
   <ItemGroup>

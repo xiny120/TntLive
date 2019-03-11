@@ -144,51 +144,54 @@ void AnyRtmpPull::DoReadData()
 	u_int32_t timestamp;
 
 	if (srs_rtmp_read_packet(rtmp_, &type, &timestamp, &data, &size) != 0) {
-
+		// 读取rtmp失败！网络可能有问题。
+		CallDisconnect();
 	}
-	if (type == SRS_RTMP_TYPE_VIDEO) {
-		SrsCodecSample sample;
-		if (srs_codec_->video_avc_demux(data, size, &sample) == ERROR_SUCCESS) {
-			if (srs_codec_->video_codec_id == SrsCodecVideoAVC) {	// Jus support H264
-				GotVideoSample(timestamp, &sample);
-			}
-			else {
-				LOG(LS_ERROR) << "Don't support video format!";
+	else {
+
+		if (type == SRS_RTMP_TYPE_VIDEO) {
+			SrsCodecSample sample;
+			if (srs_codec_->video_avc_demux(data, size, &sample) == ERROR_SUCCESS) {
+				if (srs_codec_->video_codec_id == SrsCodecVideoAVC) {	// Jus support H264
+					GotVideoSample(timestamp, &sample);
+				}
+				else {
+					LOG(LS_ERROR) << "Don't support video format!";
+				}
 			}
 		}
-	}
-	else if (type == SRS_RTMP_TYPE_AUDIO) {
-		SrsCodecSample sample;
-		if (srs_codec_->audio_aac_demux(data, size, &sample) != ERROR_SUCCESS) {
-			if (sample.acodec == SrsCodecAudioMP3 && srs_codec_->audio_mp3_demux(data, size, &sample) != ERROR_SUCCESS) {
+		else if (type == SRS_RTMP_TYPE_AUDIO) {
+			SrsCodecSample sample;
+			if (srs_codec_->audio_aac_demux(data, size, &sample) != ERROR_SUCCESS) {
+				if (sample.acodec == SrsCodecAudioMP3 && srs_codec_->audio_mp3_demux(data, size, &sample) != ERROR_SUCCESS) {
+					free(data);
+					return;
+				}
+				free(data);
+				return;	// Just support AAC.
+			}
+			SrsCodecAudio acodec = (SrsCodecAudio)srs_codec_->audio_codec_id;
+
+			// ts support audio codec: aac/mp3
+			if (acodec != SrsCodecAudioAAC && acodec != SrsCodecAudioMP3) {
 				free(data);
 				return;
 			}
-			free(data);
-			return;	// Just support AAC.
+			// for aac: ignore sequence header
+			if (acodec == SrsCodecAudioAAC && sample.aac_packet_type == SrsCodecAudioTypeSequenceHeader
+				|| srs_codec_->aac_object == SrsAacObjectTypeReserved) {
+				free(data);
+				return;
+			}
+			GotAudioSample(timestamp, &sample);
 		}
-		SrsCodecAudio acodec = (SrsCodecAudio)srs_codec_->audio_codec_id;
-
-		// ts support audio codec: aac/mp3
-		if (acodec != SrsCodecAudioAAC && acodec != SrsCodecAudioMP3) {
-			free(data);
-			return;
-		}
-		// for aac: ignore sequence header
-		if (acodec == SrsCodecAudioAAC && sample.aac_packet_type == SrsCodecAudioTypeSequenceHeader 
-			|| srs_codec_->aac_object == SrsAacObjectTypeReserved) {
-			free(data);
-			return;
-		}
-		GotAudioSample(timestamp, &sample);
-	}
-	else if (type == SRS_RTMP_TYPE_SCRIPT) {
-		if (!srs_rtmp_is_onMetaData(type, data, size)) {
-			LOG(LS_ERROR) << "No flv";
-			srs_human_trace("drop message type=%#x, size=%dB", type, size);
+		else if (type == SRS_RTMP_TYPE_SCRIPT) {
+			if (!srs_rtmp_is_onMetaData(type, data, size)) {
+				LOG(LS_ERROR) << "No flv";
+				srs_human_trace("drop message type=%#x, size=%dB", type, size);
+			}
 		}
 	}
-
 	//if (srs_human_print_rtmp_packet(type, timestamp, data, size) != 0) {	
 	//}
 	free(data);

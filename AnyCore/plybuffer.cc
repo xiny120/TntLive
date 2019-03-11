@@ -23,7 +23,7 @@
 #define PLY_MAX_TIME	600000		// 10minute
 #define PLY_RED_TIME	250		// redundancy time
 #define PLY_MAX_DELAY	1000		// 1 second
-#define PLY_MAX_CACHE   16      	// 16s
+#define PLY_MAX_CACHE   160      	// 16s
 
 #define PB_TICK	1011
 
@@ -31,8 +31,8 @@ PlyBuffer::PlyBuffer(PlyBufferCallback&callback, rtc::Thread*worker)
 	: callback_(callback)
 	, worker_thread_(NULL)
 	, got_audio_(false)
-	, cache_time_(1000)	// default 1000ms(1s)
-	, cache_delta_(1)
+	, cache_time_(500)	// default 1000ms(1s)
+	, cache_delta_(0)
     , buf_cache_time_(0)
 	, ply_status_(PS_Fast)
 	, sys_fast_video_time_(0)
@@ -76,6 +76,7 @@ int PlyBuffer::GetPlayAudio(void* audioSamples)
 		PlyPacket* pkt_front = lst_audio_buffer_.front();
 		ret = pkt_front->_data_len;
 		play_cur_time_ = pkt_front->_dts;
+		
 		memcpy(audioSamples, pkt_front->_data, pkt_front->_data_len);
 		lst_audio_buffer_.pop_front();
 		delete pkt_front;
@@ -186,6 +187,7 @@ void PlyBuffer::DoDecode()
 				pkt_video = lst_video_buffer_.front();
 				if (pkt_video->_dts <= play_video_time) {
 					lst_video_buffer_.pop_front();
+					LOG(LS_WARNING) << "play_cur_time_ " << play_cur_time_ << "\tpkt_video->_dts " << pkt_video->_dts;
 				}
 				else {
 					pkt_video = NULL;
@@ -203,7 +205,7 @@ void PlyBuffer::DoDecode()
 			// Play buffer is so small, then we need buffer it?
 			callback_.OnPause();
 			ply_status_ = PS_Cache;
-            cache_time_ = cache_delta_ * 1000;
+            cache_time_ = cache_delta_ * 100;
             if(cache_delta_ < PLY_MAX_CACHE)
                 cache_delta_ *= 2;
 			rtmp_cache_time_ = rtc::Time() + cache_time_;
@@ -217,6 +219,7 @@ void PlyBuffer::DoDecode()
 				rtc::CritScope cs(&cs_list_audio_);
 				if (lst_audio_buffer_.size() > 0) {
 					media_buf_time = lst_audio_buffer_.back()->_dts - lst_audio_buffer_.front()->_dts;
+					LOG(LS_WARNING) << "media_buf_time " << media_buf_time;
 				}
 			}
 			if (media_buf_time == 0 && !got_audio_) {
@@ -226,7 +229,10 @@ void PlyBuffer::DoDecode()
 				}
 			}
 
-			if (media_buf_time >= cache_time_ - PLY_RED_TIME) {
+			int cache_time_ts = cache_time_ - PLY_RED_TIME;
+			if (cache_time_ts < 0) cache_time_ts = 0;
+
+			if (media_buf_time >= cache_time_ts) {
 				ply_status_ = PS_Normal;
 				if (cache_delta_ == PLY_MAX_CACHE)
 					cache_delta_ /= 2;
