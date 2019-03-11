@@ -170,7 +170,8 @@ void CLiveWin32Dlg::OnPaint()
 	}
 	else
 	{
-		//*CDialogEx::OnPaint();
+		CDialogEx::OnPaint();
+		/*
 		CPaintDC dc(this);
 		CRect rect;
 		GetClientRect(&rect);
@@ -185,6 +186,7 @@ void CLiveWin32Dlg::OnPaint()
 		CBitmap *pbmpOld = dcMem.SelectObject(&bmpBackground);
 		dc.StretchBlt(0, 0, rect.Width(), rect.Height(), &dcMem, 0, 0
 			, bitmap.bmWidth, bitmap.bmHeight, SRCCOPY);
+		*/
 	}
 }
 
@@ -215,4 +217,14 @@ void CLiveWin32Dlg::OnBnClickedBtnPull()
 void CLiveWin32Dlg::OnBnClickedBtnRtcp()
 {
 	// TODO: 在此添加控件通知处理程序代码
+}
+
+
+void CLiveWin32Dlg::OnCancel()
+{
+	// TODO: 在此添加专用代码和/或调用基类
+	if (AfxMessageBox(_T("退出码？"), MB_YESNO) == IDYES) {
+
+		CDialogEx::OnCancel();
+	}
 }

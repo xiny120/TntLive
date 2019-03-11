@@ -75,6 +75,8 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>..\out\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(OutDir)obj\$(ProjectName)\</IntDir>
+    <IncludePath>..\..\..\common\cef_binary_3.3626.1895.g7001d56_windows32;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\..\common\cef_binary_3.3626.1895.g7001d56_windows32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -100,9 +102,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;winmm.lib;Strmiids.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <IgnoreSpecificDefaultLibraries>
-      </IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;Strmiids.lib;debug/libcef.lib;debug/cef_sandbox.lib;uafxcwd.lib;LIBCMTD.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>uafxcwd.lib;LIBCMTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Midl>
@@ -221,6 +222,8 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cefsimple\simple_app.h" />
+    <ClInclude Include="cefsimple\simple_handler.h" />
     <ClInclude Include="DlgRtmpPull.h" />
     <ClInclude Include="DlgRtmpPush.h" />
     <ClInclude Include="DlgVideo.h" />
@@ -229,6 +232,9 @@
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cefsimple\simple_app.cc" />
+    <ClCompile Include="cefsimple\simple_handler.cc" />
+    <ClCompile Include="cefsimple\simple_handler_win.cc" />
     <ClCompile Include="DlgRtmpPull.cpp" />
     <ClCompile Include="DlgRtmpPush.cpp" />
     <ClCompile Include="DlgVideo.cpp" />

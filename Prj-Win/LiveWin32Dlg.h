@@ -50,4 +50,5 @@ public:
 	afx_msg void OnBnClickedBtnPush();
 	afx_msg void OnBnClickedBtnPull();
 	afx_msg void OnBnClickedBtnRtcp();
+	virtual void OnCancel();
 };

@@ -36,6 +36,12 @@
     <ClInclude Include="DlgRtmpPull.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="cefsimple\simple_app.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cefsimple\simple_handler.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LiveWin32.cpp">
@@ -51,6 +57,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="DlgRtmpPull.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="cefsimple\simple_app.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="cefsimple\simple_handler.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="cefsimple\simple_handler_win.cc">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

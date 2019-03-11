@@ -32,6 +32,7 @@
             android:id="@+id/edit_rtmp_url"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="rtmp://www.pic98.com/live/livestream"
             android:hint="@string/hint_rtmp_url"/>
         <LinearLayout
             android:layout_width="match_parent"

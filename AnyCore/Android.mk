@@ -39,7 +39,7 @@ LOCAL_SRC_FILES := $(ANYCORE)/srs_librtmp/srs_librtmp.cpp \
 ## Widows (call host-path,/cygdrive/path/to/your/file/libstlport_shared.so) 	
 #		   
 #LOCAL_LDLIBS := -llog
-LOCAL_CFLAGS := -std=gnu++11 -frtti -Wno-literal-suffix -DWEBRTC_POSIX -DWEBRTC_ANDROID -DWEBRTC_INCLUDE_INTERNAL_AUDIO_DEVICE -D__STDC_CONSTANT_MACROS 
+LOCAL_CFLAGS := -std=c++11 -frtti -Wno-literal-suffix -DWEBRTC_POSIX -DWEBRTC_ANDROID -DWEBRTC_INCLUDE_INTERNAL_AUDIO_DEVICE -D__STDC_CONSTANT_MACROS 
 #
 
 LOCAL_C_INCLUDES += $(NDK_STL_INC) \

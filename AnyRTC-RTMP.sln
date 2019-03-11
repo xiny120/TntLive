@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.421
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rtc_base", "webrtc\base\rtc_base.vcxproj", "{93F855F4-EE6F-F00D-F4A3-35577B1D5F76}"
 EndProject
@@ -254,5 +254,8 @@ Global
 		{BD794CBA-B6AC-1A8F-784E-89F56FDA8B8D} = {47C1F596-3D0B-4265-B4D1-5F287CEA6D6A}
 		{58C4E66E-F613-82E0-C039-7A453BCAC1E4} = {47C1F596-3D0B-4265-B4D1-5F287CEA6D6A}
 		{B49DE8DD-F78D-F7CF-052D-8F9AED62D088} = {47C1F596-3D0B-4265-B4D1-5F287CEA6D6A}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D7CDA85E-6892-44DE-A2E9-E5AE2024215D}
 	EndGlobalSection
 EndGlobal

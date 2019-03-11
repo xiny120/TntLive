@@ -278,6 +278,7 @@ int32_t H264DecoderImpl::RegisterDecodeCompleteCallback(
   decoded_image_callback_ = callback;
   return WEBRTC_VIDEO_CODEC_OK;
 }
+/*
 
 void SaveAsBMP(AVFrame *pFrameRGB, int width, int height, int index, int bpp)
 {
@@ -319,6 +320,7 @@ void SaveAsBMP(AVFrame *pFrameRGB, int width, int height, int index, int bpp)
 
 	fclose(fp);
 }
+*/
 
 int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
                                 bool /*missing_frames*/,
