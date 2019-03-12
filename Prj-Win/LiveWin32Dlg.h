@@ -51,4 +51,6 @@ public:
 	afx_msg void OnBnClickedBtnPull();
 	afx_msg void OnBnClickedBtnRtcp();
 	virtual void OnCancel();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 };

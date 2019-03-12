@@ -24,7 +24,8 @@
 #endif
 
 #include "resource.h"		// 主符号
-
+#include "simple_app.h"
+#include "simple_handler.h"
 
 // CLiveWin32App: 
 // 有关此类的实现，请参阅 LiveWin32.cpp
@@ -38,10 +39,14 @@ public:
 // 重写
 public:
 	virtual BOOL InitInstance();
+	CefRefPtr<SimpleApp> app;
+	CefRefPtr<SimpleHandler> handler;
+	CefMainArgs main_args;
 
 // 实现
 
 	DECLARE_MESSAGE_MAP()
+	virtual int ExitInstance();
 };
 
 extern CLiveWin32App theApp;

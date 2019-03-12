@@ -121,6 +121,51 @@ BOOL CLiveWin32Dlg::OnInitDialog()
 
 	// TODO:  在此添加额外的初始化代码
 	
+	// Specify CEF global settings here.
+	CefSettings settings;
+	settings.log_severity = cef_log_severity_t::LOGSEVERITY_VERBOSE;
+	settings.multi_threaded_message_loop = true;
+#if !defined(CEF_USE_SANDBOX)
+	settings.no_sandbox = true;
+#endif
+
+	// SimpleApp implements application-level callbacks for the browser process.
+	// It will create the first browser instance in OnContextInitialized() after
+	// CEF has initialized.
+	//CefMainArgs main_args(theApp.m_hInstance);
+	theApp.app.get()->hWnd = GetSafeHwnd();
+	// Initialize CEF.
+	CefInitialize(theApp.main_args, settings, theApp.app.get(), NULL);
+
+
+	// Specify CEF browser settings here.
+	CefBrowserSettings browser_settings;
+
+	std::string url;
+
+	// Check if a "--url=" value was provided via the command-line. If so, use
+	// that instead of the default URL.
+	//url = command_line->GetSwitchValue("url");
+	if (url.empty())
+		url = "http://www.qq.com";
+
+	CefWindowInfo window_info;
+
+#if defined(OS_WIN)
+	// On Windows we need to specify certain flags that will be passed to
+	// CreateWindowEx().
+	RECT rc;
+	rc.left = 0;
+	rc.top = 0;
+	rc.bottom = 500;
+	rc.right = 500;
+	window_info.SetAsChild(m_hWnd, rc);
+	//window_info.SetAsPopup(NULL, "cefsimple");
+#endif
+
+	// Create the first browser window.
+	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, browser_settings,
+		NULL);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -227,4 +272,20 @@ void CLiveWin32Dlg::OnCancel()
 
 		CDialogEx::OnCancel();
 	}
+}
+
+
+BOOL CLiveWin32Dlg::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: 在此添加专用代码和/或调用基类
+
+	return CDialogEx::PreTranslateMessage(pMsg);
+}
+
+
+LRESULT CLiveWin32Dlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+	// TODO: 在此添加专用代码和/或调用基类
+
+	return CDialogEx::WindowProc(message, wParam, lParam);
 }

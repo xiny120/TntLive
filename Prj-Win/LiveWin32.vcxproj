@@ -73,10 +73,10 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\out\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>out\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(OutDir)obj\$(ProjectName)\</IntDir>
-    <IncludePath>..\..\..\common\cef_binary_3.3626.1895.g7001d56_windows32;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\..\common\cef_binary_3.3626.1895.g7001d56_windows32;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\common\cef_binary_3.3626.1895.g7001d56_windows32;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\common\cef_binary_3.3626.1895.g7001d56_windows32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -102,7 +102,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;winmm.lib;Strmiids.lib;debug/libcef.lib;debug/cef_sandbox.lib;uafxcwd.lib;LIBCMTD.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;Strmiids.lib;uafxcwd.lib;LIBCMTD.lib;Debug\libcef.lib;Debug\libcef_dll_wrapper.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>uafxcwd.lib;LIBCMTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
@@ -122,6 +122,23 @@
     <PreLinkEvent>
       <Message>copy openh264 dll</Message>
     </PreLinkEvent>
+    <PostBuildEvent>
+      <Command>setlocal
+mt.exe -nologo -manifest "H:/DEVTOOLS/project/git/common/cef_binary_3.3626.1895.g7001d56_windows32/tests/cefsimple/cefsimple.exe.manifest" "H:/DEVTOOLS/project/git/common/cef_binary_3.3626.1895.g7001d56_windows32/tests/cefsimple/compatibility.manifest" -outputresource:"H:\DEVTOOLS\project\git\anyRTC-RTMP-OpenSource\Prj-Win\out\Win32\Debug\LiveWin32.exe";#1
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>add</Message>
+    </PostBuildEvent>
+    <Manifest>
+      <AdditionalManifestFiles>H:\DEVTOOLS\project\git\common\cef_binary_3.3626.1895.g7001d56_windows32\tests\cefsimple\cefsimple.exe.manifest; %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -222,24 +239,24 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="cefsimple\simple_app.h" />
-    <ClInclude Include="cefsimple\simple_handler.h" />
     <ClInclude Include="DlgRtmpPull.h" />
     <ClInclude Include="DlgRtmpPush.h" />
     <ClInclude Include="DlgVideo.h" />
     <ClInclude Include="LiveWin32.h" />
     <ClInclude Include="LiveWin32Dlg.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="simple_app.h" />
+    <ClInclude Include="simple_handler.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cefsimple\simple_app.cc" />
-    <ClCompile Include="cefsimple\simple_handler.cc" />
-    <ClCompile Include="cefsimple\simple_handler_win.cc" />
     <ClCompile Include="DlgRtmpPull.cpp" />
     <ClCompile Include="DlgRtmpPush.cpp" />
     <ClCompile Include="DlgVideo.cpp" />
     <ClCompile Include="LiveWin32.cpp" />
     <ClCompile Include="LiveWin32Dlg.cpp" />
+    <ClCompile Include="simple_app.cc" />
+    <ClCompile Include="simple_handler.cc" />
+    <ClCompile Include="simple_handler_win.cc" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="LiveWin32.rc" />

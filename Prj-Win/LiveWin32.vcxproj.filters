@@ -36,10 +36,10 @@
     <ClInclude Include="DlgRtmpPull.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="cefsimple\simple_app.h">
+    <ClInclude Include="simple_app.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="cefsimple\simple_handler.h">
+    <ClInclude Include="simple_handler.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -59,13 +59,13 @@
     <ClCompile Include="DlgRtmpPull.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="cefsimple\simple_app.cc">
+    <ClCompile Include="simple_app.cc">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="cefsimple\simple_handler.cc">
+    <ClCompile Include="simple_handler.cc">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="cefsimple\simple_handler_win.cc">
+    <ClCompile Include="simple_handler_win.cc">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -4,3 +4,4 @@ out/Win32/Debug
 Prj-Android/app/.externalNativeBuild/ndkBuild/debug/
 Prj-Android/app/.externalNativeBuild/ndkBuild/release/
 
+Prj-Win/out/Win32/Debug/
