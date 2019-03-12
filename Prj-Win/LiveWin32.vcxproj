@@ -75,8 +75,8 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>out\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(OutDir)obj\$(ProjectName)\</IntDir>
-    <IncludePath>..\..\common\cef_binary_3.3626.1895.g7001d56_windows32;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\common\cef_binary_3.3626.1895.g7001d56_windows32;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\..\common\cef_binary_3.3626.1895.g7001d56_windows32;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\..\common\cef_binary_3.3626.1895.g7001d56_windows32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -102,7 +102,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;winmm.lib;Strmiids.lib;uafxcwd.lib;LIBCMTD.lib;Debug\libcef.lib;Debug\libcef_dll_wrapper.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;Strmiids.lib;uafxcwd.lib;LIBCMTD.lib;Debug\libcef.lib;out\libcef_dll_wrapper\Debug\libcef_dll_wrapper.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>uafxcwd.lib;LIBCMTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
@@ -124,7 +124,7 @@
     </PreLinkEvent>
     <PostBuildEvent>
       <Command>setlocal
-mt.exe -nologo -manifest "H:/DEVTOOLS/project/git/common/cef_binary_3.3626.1895.g7001d56_windows32/tests/cefsimple/cefsimple.exe.manifest" "H:/DEVTOOLS/project/git/common/cef_binary_3.3626.1895.g7001d56_windows32/tests/cefsimple/compatibility.manifest" -outputresource:"H:\DEVTOOLS\project\git\anyRTC-RTMP-OpenSource\Prj-Win\out\Win32\Debug\LiveWin32.exe";#1
+mt.exe -nologo -manifest "$(ProjectDir)cefsimple.exe.manifest" "$(ProjectDir)compatibility.manifest" -outputresource:"$(ProjectDir)out\Win32\Debug\LiveWin32.exe";#1
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -137,7 +137,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <Message>add</Message>
     </PostBuildEvent>
     <Manifest>
-      <AdditionalManifestFiles>H:\DEVTOOLS\project\git\common\cef_binary_3.3626.1895.g7001d56_windows32\tests\cefsimple\cefsimple.exe.manifest; %(AdditionalManifestFiles)</AdditionalManifestFiles>
+      <AdditionalManifestFiles>$(ProjectDir)cefsimple.exe.manifest; %(AdditionalManifestFiles)</AdditionalManifestFiles>
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
