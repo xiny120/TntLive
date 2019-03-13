@@ -255,7 +255,9 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="LiveWin32.cpp" />
     <ClCompile Include="LiveWin32Dlg.cpp" />
     <ClCompile Include="simple_app.cc" />
-    <ClCompile Include="simple_handler.cc" />
+    <ClCompile Include="simple_handler.cc">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="simple_handler_win.cc" />
   </ItemGroup>
   <ItemGroup>

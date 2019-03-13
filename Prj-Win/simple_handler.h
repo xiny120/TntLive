@@ -50,6 +50,14 @@ class SimpleHandler : public CefClient,
 
   bool IsClosing() const { return is_closing_; }
 
+public:
+	CefRefPtr<CefBrowser> GetBrowser() {
+		if (!browser_list_.empty())
+			return *browser_list_.begin();
+		else
+			return nullptr;
+	}
+
  private:
   // Platform-specific implementation.
   void PlatformTitleChange(CefRefPtr<CefBrowser> browser,

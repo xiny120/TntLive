@@ -83,6 +83,7 @@ BEGIN_MESSAGE_MAP(CLiveWin32Dlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_PUSH, &CLiveWin32Dlg::OnBnClickedBtnPush)
 	ON_BN_CLICKED(IDC_BTN_PULL, &CLiveWin32Dlg::OnBnClickedBtnPull)
 	ON_BN_CLICKED(IDC_BTN_RTCP, &CLiveWin32Dlg::OnBnClickedBtnRtcp)
+	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 
@@ -147,7 +148,7 @@ BOOL CLiveWin32Dlg::OnInitDialog()
 	// that instead of the default URL.
 	//url = command_line->GetSwitchValue("url");
 	if (url.empty())
-		url = "http://www.pic98.com";
+		url = "http://localhost:8080/live/h5client/mainpage/#/";
 
 	CefWindowInfo window_info;
 
@@ -167,6 +168,7 @@ BOOL CLiveWin32Dlg::OnInitDialog()
 	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, browser_settings,
 		NULL);
 
+	
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -288,4 +290,21 @@ LRESULT CLiveWin32Dlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 	// TODO: 在此添加专用代码和/或调用基类
 
 	return CDialogEx::WindowProc(message, wParam, lParam);
+}
+
+
+void CLiveWin32Dlg::OnSize(UINT nType, int cx, int cy)
+{
+	CDialogEx::OnSize(nType, cx, cy);
+	CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser();
+	if (pb != nullptr) {
+		auto hwnd = pb->GetHost()->GetWindowHandle();
+		auto rect = RECT{ 0 };
+		GetClientRect(&rect);
+
+		::SetWindowPos(hwnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOZORDER|SWP_NOMOVE);
+
+	}
+
+	// TODO: 在此处添加消息处理程序代码
 }

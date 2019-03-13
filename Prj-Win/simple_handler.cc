@@ -4,6 +4,7 @@
 
 #include "simple_handler.h"
 
+
 #include <sstream>
 #include <string>
 
@@ -59,6 +60,11 @@ void SimpleHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser) {
 
   // Add to the list of existing browsers.
   browser_list_.push_back(browser);
+  HWND hWnd = browser->GetHost()->GetWindowHandle();
+  ::PostMessage(hWnd,WM_SIZE, 0, 0);
+  hWnd = GetParent(hWnd);
+  ::PostMessage(hWnd, WM_SIZE, 0, 0);
+  
 }
 
 bool SimpleHandler::DoClose(CefRefPtr<CefBrowser> browser) {
@@ -68,7 +74,7 @@ bool SimpleHandler::DoClose(CefRefPtr<CefBrowser> browser) {
   // documentation in the CEF header for a detailed destription of this
   // process.
   if (browser_list_.size() == 1) {
-    // Set a flag to indicate that the window close should be allowed.
+    // Set a flag to indicate that the window close should be allowed.https://img-cdn-qiniu.dcloud.net.cn/tuku/img/yundong10.jpg
     is_closing_ = true;
   }
 

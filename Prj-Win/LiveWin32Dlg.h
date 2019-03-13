@@ -53,4 +53,5 @@ public:
 	virtual void OnCancel();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+	afx_msg void OnSize(UINT nType, int cx, int cy);
 };
