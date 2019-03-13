@@ -140,30 +140,7 @@ BOOL CLiveWin32App::InitInstance()
 		// The sub-process has completed so return here.
 		return exit_code;
 	}
-	/*
-
-	// Specify CEF global settings here.
-	CefSettings settings;
-
-#if !defined(CEF_USE_SANDBOX)
-	settings.no_sandbox = true;
-#endif
-
-	// SimpleApp implements application-level callbacks for the browser process.
-	// It will create the first browser instance in OnContextInitialized() after
-	// CEF has initialized.
-	//CefMainArgs main_args(theApp.m_hInstance);
-	//theApp.app.get()->hWnd = GetSafeHwnd();
-	// Initialize CEF.
-	CefInitialize(theApp.main_args, settings, theApp.app.get(), NULL);
-
-	// Run the CEF message loop. This will block until CefQuitMessageLoop() is
-	// called.
-	CefRunMessageLoop();
-
-	// Shut down CEF.
-	CefShutdown();
-	*/
+	
 
 	CWinApp::InitInstance();
 
@@ -225,6 +202,6 @@ BOOL CLiveWin32App::InitInstance()
 int CLiveWin32App::ExitInstance()
 {
 	// TODO: 在此添加专用代码和/或调用基类
-	CefShutdown();
+	
 	return CWinApp::ExitInstance();
 }

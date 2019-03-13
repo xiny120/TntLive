@@ -147,7 +147,7 @@ BOOL CLiveWin32Dlg::OnInitDialog()
 	// that instead of the default URL.
 	//url = command_line->GetSwitchValue("url");
 	if (url.empty())
-		url = "http://www.qq.com";
+		url = "http://www.pic98.com";
 
 	CefWindowInfo window_info;
 
@@ -157,7 +157,7 @@ BOOL CLiveWin32Dlg::OnInitDialog()
 	RECT rc;
 	rc.left = 0;
 	rc.top = 0;
-	rc.bottom = 500;
+	rc.bottom = 1000;
 	rc.right = 500;
 	window_info.SetAsChild(m_hWnd, rc);
 	//window_info.SetAsPopup(NULL, "cefsimple");
@@ -172,7 +172,7 @@ BOOL CLiveWin32Dlg::OnInitDialog()
 
 BOOL CLiveWin32Dlg::DestroyWindow()
 {
-	
+	CefShutdown();
 	//_CrtDumpMemoryLeaks();
 	return CDialog::DestroyWindow();
 }
