@@ -54,4 +54,6 @@ public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnMenuSysMoreRefresh();
+	afx_msg void OnMenuSysMoreShowdevtools();
 };

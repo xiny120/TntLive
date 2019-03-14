@@ -84,6 +84,8 @@ BEGIN_MESSAGE_MAP(CLiveWin32Dlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_PULL, &CLiveWin32Dlg::OnBnClickedBtnPull)
 	ON_BN_CLICKED(IDC_BTN_RTCP, &CLiveWin32Dlg::OnBnClickedBtnRtcp)
 	ON_WM_SIZE()
+	//ON_COMMAND(IDR_MENU_SYS_MORE_REFRESH, &CLiveWin32Dlg::OnMenuSysMoreRefresh)
+	//ON_COMMAND(IDR_MENU_SYS_MORE_SHOWDEVTOOLS, &CLiveWin32Dlg::OnMenuSysMoreShowdevtools)
 END_MESSAGE_MAP()
 
 
@@ -102,6 +104,12 @@ BOOL CLiveWin32Dlg::OnInitDialog()
 	CMenu* pSysMenu = GetSystemMenu(FALSE);
 	if (pSysMenu != NULL)
 	{
+		//CMenu sysMoreMenu;
+		//sysMoreMenu.LoadMenu(IDR_MENU_SYS_MORE);
+		//pSysMenu->AppendMenu(MF_STRING | MF_POPUP | MF_BYCOMMAND, (UINT)sysMoreMenu.GetSubMenu(0)->m_hMenu, L"操作");
+		pSysMenu->AppendMenu(MF_STRING, IDR_MENU_SYS_MORE_SHOWDEVTOOLS, L"开发者工具");
+		pSysMenu->AppendMenu(MF_STRING, IDR_MENU_SYS_MORE_REFRESH, L"刷新界面");
+
 		BOOL bNameValid;
 		CString strAboutMenu;
 		bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
@@ -111,6 +119,9 @@ BOOL CLiveWin32Dlg::OnInitDialog()
 			pSysMenu->AppendMenu(MF_SEPARATOR);
 			pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
 		}
+		
+
+		//pSysMenu->AppendMenu(MF_STRING, IDR_MENU_SYS_MORE_REFRESH, L"刷新界面");
 	}
 
 	// 设置此对话框的图标。  当应用程序主窗口不是对话框时，框架将自动
@@ -126,6 +137,7 @@ BOOL CLiveWin32Dlg::OnInitDialog()
 	CefSettings settings;
 	settings.log_severity = cef_log_severity_t::LOGSEVERITY_VERBOSE;
 	settings.multi_threaded_message_loop = true;
+	settings.remote_debugging_port = 8088;
 #if !defined(CEF_USE_SANDBOX)
 	settings.no_sandbox = true;
 #endif
@@ -148,7 +160,7 @@ BOOL CLiveWin32Dlg::OnInitDialog()
 	// that instead of the default URL.
 	//url = command_line->GetSwitchValue("url");
 	if (url.empty())
-		url = "http://localhost:8080/live/h5client/mainpage/#/";
+		url = "http://localhost:8081/live/h5client/mainpage/#/";
 
 	CefWindowInfo window_info;
 
@@ -168,6 +180,8 @@ BOOL CLiveWin32Dlg::OnInitDialog()
 	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, browser_settings,
 		NULL);
 
+
+
 	
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -185,6 +199,28 @@ void CLiveWin32Dlg::OnSysCommand(UINT nID, LPARAM lParam)
 	{
 		CAboutDlg dlgAbout;
 		dlgAbout.DoModal();
+	}
+	else if ((nID) == IDR_MENU_SYS_MORE_REFRESH) {
+		CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser();
+		if (pb != nullptr) {
+			CefWindowInfo win_info;
+			CefRefPtr<CefClient> client;
+			CefBrowserSettings settings;
+
+			pb->ReloadIgnoreCache();
+		}
+
+	}
+	else if ((nID) == IDR_MENU_SYS_MORE_SHOWDEVTOOLS) {
+		CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser();
+		if (pb != nullptr) {
+			CefWindowInfo win_info;
+			CefRefPtr<CefClient> client;
+			CefBrowserSettings settings;
+			win_info.SetAsPopup(GetSafeHwnd(), CefString("DevTools"));
+
+			pb->GetHost()->ShowDevTools(win_info, theApp.handler, settings, CefPoint());
+		}
 	}
 	else
 	{
@@ -256,8 +292,12 @@ void CLiveWin32Dlg::OnBnClickedBtnPush()
 void CLiveWin32Dlg::OnBnClickedBtnPull()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	DlgRtmpPull dlg;
-	dlg.DoModal();
+	//DlgRtmpPull dlg;
+	//dlg.DoModal();
+	CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser();
+	if (pb != nullptr) {
+		pb->ReloadIgnoreCache();
+	}
 }
 
 
@@ -307,4 +347,16 @@ void CLiveWin32Dlg::OnSize(UINT nType, int cx, int cy)
 	}
 
 	// TODO: 在此处添加消息处理程序代码
+}
+
+
+void CLiveWin32Dlg::OnMenuSysMoreRefresh()
+{
+	// TODO: 在此添加命令处理程序代码
+}
+
+
+void CLiveWin32Dlg::OnMenuSysMoreShowdevtools()
+{
+	// TODO: 在此添加命令处理程序代码
 }
