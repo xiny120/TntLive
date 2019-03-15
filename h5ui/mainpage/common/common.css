@@ -299,7 +299,7 @@ view.tag,.tag {
 	flex: 1;
 	flex-direction: column;
 
-    min-height: 100vh;
+    min-height: 80vh;
 	padding-top: 30upx;
 }
 
@@ -355,6 +355,7 @@ button {
 button.login {
 	background-color: #FF80AB;
 	color: #fff;
+	width: 94vw;
 }
 
 button.register {

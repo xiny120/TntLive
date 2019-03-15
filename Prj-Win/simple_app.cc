@@ -58,9 +58,7 @@ void SimpleApp::OnContextInitialized() {
 	CEF_REQUIRE_UI_THREAD();
 	return;
 
-	CefRefPtr<CefCommandLine> command_line =
-		CefCommandLine::GetGlobalCommandLine();
-
+	CefRefPtr<CefCommandLine> command_line = CefCommandLine::GetGlobalCommandLine();
 #if defined(OS_WIN) || defined(OS_LINUX)
 	// Create the browser using the Views framework if "--use-views" is specified
 	// via the command-line. Otherwise, create the browser using the native

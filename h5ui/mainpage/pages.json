@@ -80,7 +80,19 @@
 				"navigationBarTitleText": "关于"
 			}
 		}
-	],
+	    ,{
+            "path" : "pages/login/reg/reg",
+            "style" : {
+				"navigationBarTitleText": "注册新用户"
+			}
+        }
+        ,{
+            "path" : "pages/login/pwd/pwd",
+            "style" : {
+				"navigationBarTitleText": "找回密码"
+			}
+        }
+    ],
 	"globalStyle": {
 		"navigationBarTextStyle": "white",
 		"navigationBarTitleText": "看图",
@@ -102,7 +114,7 @@
 				"pagePath": "pages/hot/hot",
 				"iconPath": "static/hot-0.png",
 				"selectedIconPath": "static/hot-1.png",
-				"text": "关注"
+				"text": "直播室"
 			},
 			{
 				"pagePath": "pages/tag/tag",

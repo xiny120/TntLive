@@ -5,3 +5,5 @@ Prj-Android/app/.externalNativeBuild/ndkBuild/debug/
 Prj-Android/app/.externalNativeBuild/ndkBuild/release/
 
 Prj-Win/out/Win32/Debug/
+WebSocketServerGo/MonsterShowWS/MonsterShowWS.debug
+WebSocketServerGo/MonsterShowWS/MonsterShowWS.debug.exe

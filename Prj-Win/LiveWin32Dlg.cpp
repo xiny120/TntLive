@@ -160,7 +160,7 @@ BOOL CLiveWin32Dlg::OnInitDialog()
 	// that instead of the default URL.
 	//url = command_line->GetSwitchValue("url");
 	if (url.empty())
-		url = "http://localhost:8081/live/h5client/mainpage/#/";
+		url = "http://localhost:8080/live/h5client/mainpage/#/";
 
 	CefWindowInfo window_info;
 

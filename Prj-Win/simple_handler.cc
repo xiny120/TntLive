@@ -114,11 +114,13 @@ void SimpleHandler::OnLoadError(CefRefPtr<CefBrowser> browser,
 
   // Display a load error message.
   std::stringstream ss;
-  ss << "<html><body bgcolor=\"white\">"
+  ss << "<!DOCTYPE html><html><body bgcolor=\"white\">"
         "<h2>Failed to load URL "
      << std::string(failedUrl) << " with error " << std::string(errorText)
      << " (" << errorCode << ").</h2></body></html>";
-  frame->LoadString(ss.str(), failedUrl);
+  CefRefPtr<CefFrame> framem = browser->GetMainFrame();
+  frame->LoadURL("about:blank");
+  //framem->LoadString(CefString(ss.str()), "http://www.gwgz.com");
 }
 
 void SimpleHandler::CloseAllBrowsers(bool force_close) {
