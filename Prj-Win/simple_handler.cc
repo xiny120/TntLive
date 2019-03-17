@@ -119,8 +119,10 @@ void SimpleHandler::OnLoadError(CefRefPtr<CefBrowser> browser,
      << std::string(failedUrl) << " with error " << std::string(errorText)
      << " (" << errorCode << ").</h2></body></html>";
   CefRefPtr<CefFrame> framem = browser->GetMainFrame();
-  frame->LoadURL("about:blank");
-  //framem->LoadString(CefString(ss.str()), "http://www.gwgz.com");
+  if (failedUrl == "http://localhost:8081/live/h5client/mainpage/#/")
+	  frame->LoadURL("about:blank");
+  else
+	  framem->LoadURL("http://localhost:8081/live/h5client/mainpage/#/");
 }
 
 void SimpleHandler::CloseAllBrowsers(bool force_close) {

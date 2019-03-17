@@ -7,3 +7,6 @@ Prj-Android/app/.externalNativeBuild/ndkBuild/release/
 Prj-Win/out/Win32/Debug/
 WebSocketServerGo/MonsterShowWS/MonsterShowWS.debug
 WebSocketServerGo/MonsterShowWS/MonsterShowWS.debug.exe
+WebSocketServerGo/MonsterShowWS/bin/
+WebSocketServerGo/MonsterShowWS/src/MonsterShowWS/MonsterShowWS.debug.exe
+WebSocketServerGo/MonsterShowWS/pkg/windows_amd64/Pic98/Handler.a
