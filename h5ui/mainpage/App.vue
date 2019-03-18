@@ -8,7 +8,7 @@
 		
 		
         onLaunch: function() {
-			this.initWebSocket();
+			//this.initWebSocket();
             console.log('App Launch')
         },
         onShow: function() {

@@ -37,7 +37,8 @@
                 account: '',
                 password: '',
 				password1:'',
-                email: ''
+                email: '',
+				cellphone:'',
             }
         },
         methods: {
@@ -77,36 +78,58 @@
 				}
 				
 				var msg = "手机号码正确";
-				if((/^1[34578]\d{9}$/.test(this.email))){
-					msg = "手机号码有误，请重填";  
-					if((/\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/.test(this.email))){	
+				var ok = false;
+				var email0="";
+				var cellphone0 = "";
+				
+				if(this.email.length < 5){
+                    uni.showToast({
+                        icon: 'none',
+                        title: '电子邮件或者手机号码填写错误！'
+                    });
+                    return;					
+				}
+				
+				if(/^[0-9]*$/.test(this.email)){
+					if(!(/^1[34578]\d{9}$/.test(this.email))){
+						msg = "手机号码有误，请重填";  					
+					}
+					else{
+						msg = "手机号码正确";
+						cellphone0 = this.email;
+						ok = true;
+					}
+				}
+				else{
+
+					if(!(/^[A-Za-z0-9._%-]+@([A-Za-z0-9-]+\.)+[A-Za-z]{2,4}$/.test(this.email))){	
 						msg = "邮箱地址不合法";
 					}else{
-						
+						msg = "邮箱地址正确";
+						email0 = this.email;
+						ok = true;
 					}
 			
-				} 				
+				} 
+							
+				if(!ok){
                     uni.showToast({
                         icon: 'none',
                         title: msg,
-                    });						
-				
-                if (this.email.length < 3 || !~this.email.indexOf('@')) {
-                    uni.showToast({
-                        icon: 'none',
-                        title: '邮箱地址不合法'
                     });
-					
-                    return;
-                }
+					return;
+				}
+
 
                 const data = {
                     account: this.account,
                     password: this.password,
-                    email: this.email
+                    email: email0,
+					cellphone:cellphone0,
                 }
 				
                 service.addUser(data);
+				console.log(data);
                 uni.showToast({
                     title: '注册成功',
 					complete: function(res){
