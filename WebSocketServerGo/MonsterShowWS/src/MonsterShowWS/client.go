@@ -6,6 +6,8 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
+
 	"log"
 	"net/http"
 	"time"
@@ -35,11 +37,17 @@ var (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	// 新增如下代码,解决跨域问题,即403错误
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
 }
 
 // Client is a middleman between the websocket connection and the hub.
 type Client struct {
-	hub *Hub
+	Talkto *Client
+	Roomid uint64
+	hub    *Hub
 
 	// The websocket connection.
 	conn *websocket.Conn
@@ -69,8 +77,26 @@ func (c *Client) readPump() {
 			}
 			break
 		}
-		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		c.hub.broadcast <- message
+		msg := make(map[string]interface{})
+		json.Unmarshal(message, &msg)
+		if msg["t"] != nil {
+			log.Println(msg["t"].(string))
+			if msg["t"] == "knock" {
+				c.Roomid = uint64(msg["roomid"].(float64))
+				c.hub.register <- c
+				continue
+			}
+
+			if c.Roomid < 1 {
+
+			} else {
+				if msg["t"] == "bd" {
+					message = bytes.TrimSpace(bytes.Replace([]byte(msg["msg"].(string)), newline, space, -1))
+					c.hub.broadcast <- message
+				}
+
+			}
+		}
 	}
 }
 
@@ -127,8 +153,7 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
-	client.hub.register <- client
+	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), Roomid: 0}
 
 	// Allow collection of memory referenced by the caller by doing all work in
 	// new goroutines.

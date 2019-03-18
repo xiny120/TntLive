@@ -4,11 +4,13 @@
 
 package main
 
+type ClientList map[*Client]bool
+
 // Hub maintains the set of active clients and broadcasts messages to the
 // clients.
 type Hub struct {
 	// Registered clients.
-	clients map[*Client]bool
+	clients map[int]ClientList
 
 	// Inbound messages from the clients.
 	broadcast chan []byte
@@ -25,27 +27,35 @@ func newHub() *Hub {
 		broadcast:  make(chan []byte),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
-		clients:    make(map[*Client]bool),
+		clients:    make(map[int]ClientList),
 	}
 }
 
 func (h *Hub) run() {
+	roomid := 0
 	for {
 		select {
 		case client := <-h.register:
-			h.clients[client] = true
+			if _, ok := h.clients[roomid]; ok {
+
+			} else {
+				clist := make(ClientList)
+				h.clients[roomid] = clist
+			}
+			(h.clients[roomid])[client] = true
 		case client := <-h.unregister:
-			if _, ok := h.clients[client]; ok {
-				delete(h.clients, client)
+			if _, ok := (h.clients[roomid])[client]; ok {
+				delete(h.clients[roomid], client)
 				close(client.send)
 			}
 		case message := <-h.broadcast:
-			for client := range h.clients {
+
+			for client := range h.clients[roomid] {
 				select {
 				case client.send <- message:
 				default:
 					close(client.send)
-					delete(h.clients, client)
+					delete(h.clients[roomid], client)
 				}
 			}
 		}

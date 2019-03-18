@@ -1,16 +1,21 @@
 <template>
     <form class='loginView' @submit="formSubmit" @reset="formReset">
             <view class="input-view">
-                <text class="title">账号：</text>
-                <m-input type="text" focus clearable v-model="account" placeholder="请输入账号"></m-input>
+                <text class="title">用户账号：</text>
+                <m-input type="text" focus clearable v-model="account" placeholder="请填写新账号"></m-input>
             </view>
             <view class="input-view">
-                <text class="title">密码：</text>
-                <m-input type="password" displayable v-model="password" placeholder="请输入密码"></m-input>
+                <text class="title">用户密码：</text>
+                <m-input type="password" displayable v-model="password" placeholder="请填写密码"></m-input>
             </view>
             <view class="input-view">
-                <text class="title">邮箱：</text>
-                <m-input type="text" clearable v-model="email" placeholder="请输入邮箱"></m-input>
+                <text class="title">确认密码：</text>
+                <m-input type="password" displayable v-model="password1" placeholder="请再填写一遍密码"></m-input>
+            </view>
+
+            <view class="input-view">
+                <text class="title">邮箱或手机：</text>
+                <m-input type="text" clearable v-model="email" placeholder="请填写邮箱或手机号码"></m-input>
             </view>
         <view class="input-view">
             <button type="primary" class="primary" @tap="register" :disabled="isSubmitBnDisable" >注册</button>
@@ -31,6 +36,7 @@
 				isSubmitBnDisable: false,
                 account: '',
                 password: '',
+				password1:'',
                 email: ''
             }
         },
@@ -45,18 +51,13 @@
 
 				setTimeout(() => {
 				  this.isSubmitBnDisable = false
-				}, 2000)
-				
-				
-				
-				console.log("reg");
+				}, 1600)
 				
                 if (this.account.length < 5) {
                     uni.showToast({
                         icon: 'none',
                         title: '账号最短为 5 个字符'
                     });
-					
                     return;
                 }
                 if (this.password.length < 6) {
@@ -64,9 +65,32 @@
                         icon: 'none',
                         title: '密码最短为 6 个字符'
                     });
-					
                     return;
                 }
+				
+				if(this.password != this.password1){
+                    uni.showToast({
+                        icon: 'none',
+                        title: '两次填写的密码不一致，请重新输入！'
+                    });
+                    return;
+				}
+				
+				var msg = "手机号码正确";
+				if((/^1[34578]\d{9}$/.test(this.email))){
+					msg = "手机号码有误，请重填";  
+					if((/\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/.test(this.email))){	
+						msg = "邮箱地址不合法";
+					}else{
+						
+					}
+			
+				} 				
+                    uni.showToast({
+                        icon: 'none',
+                        title: msg,
+                    });						
+				
                 if (this.email.length < 3 || !~this.email.indexOf('@')) {
                     uni.showToast({
                         icon: 'none',

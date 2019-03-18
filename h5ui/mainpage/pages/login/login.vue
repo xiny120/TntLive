@@ -87,6 +87,7 @@
                 this.positionTop = uni.getSystemInfoSync().windowHeight - 100;
             },			
 			formSubmit: function (e) {
+				//getApp().websocketsend("{\"t\":\"login hello\"}");
 				//将下列代码加入到对应的检查位置
 				//定义表单规则
 				var rule = [
