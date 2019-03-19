@@ -82,7 +82,7 @@
 				var email0="";
 				var cellphone0 = "";
 				
-				if(this.email.length < 5){
+				if(this.email.length < 1){
                     uni.showToast({
                         icon: 'none',
                         title: '电子邮件或者手机号码填写错误！'

@@ -3,12 +3,16 @@
 		data() {
 			return {
 				websock: null,
+				wsuriidx:0,
+				websockopened:false,
 			};
 		},		
 		
 		
         onLaunch: function() {
-			//this.initWebSocket();
+			this.websockopened = false;
+			this.wsuriidx = 0;
+			this.initWebSocket();
             console.log('App Launch')
         },
         onShow: function() {
@@ -19,19 +23,27 @@
         },
 　　　　methods: { 
 　　　　　　initWebSocket(){ //初始化weosocket 
-　　　　　　　　const wsuri = "ws://localhost:8080/ws";//ws地址
-　　　　　　　　this.websock = new WebSocket(wsuri); 
-　　　　　　　　this.websock.onopen = this.websocketonopen;
-　　　　　　　　this.websock.onerror = this.websocketonerror;
-　　　　　　　　this.websock.onmessage = this.websocketonmessage; 
-　　　　　　　　this.websock.onclose = this.websocketclose;
+				const wsuris = ["ws://localhost:8080/ws","ws://localhost:8081/ws","ws://localhost:8082/ws"]
+				this.wsuriidx = this.wsuriidx + 1;
+				if(this.wsuriidx >= wsuris.length){
+					this.wsuriidx = 0;
+				}
+	　　　　　　　const wsuri = wsuris[this.wsuriidx];//ws地址		
+				console.log("initWebSocket " + wsuri);
+	　　　　　　　this.websock = new WebSocket(wsuri); 
+	　　　　　　　this.websock.onopen = this.websocketonopen;
+	　　　　　　　this.websock.onerror = this.websocketonerror;
+	　　　　　　　this.websock.onmessage = this.websocketonmessage; 
+	　　　　　　　this.websock.onclose = this.websocketclose;
 　　　　   }, 
 
 　　　　　　websocketonopen() {
+				this.websockopened = true;
 　　　　　　　　console.log("WebSocket连接成功");
 　　　　　　},
 　　　　　　websocketonerror(e) { //错误
  　　　　　　 console.log("WebSocket连接发生错误");
+			this.websockopened = false;
 　　　　　　},
 　　　　　　websocketonmessage(e){ //数据接收 
 　　　　　　　　const redata = JSON.parse(e.data);
@@ -42,11 +54,19 @@
 　　　　　　}, 
 
 　　　　　　websocketsend(agentData){//数据发送 
-　　　　　　　　this.websock.send(agentData); 
+				if(this.websockopened == true){
+					this.websock.send(agentData);
+					return true;
+				}
+				return false;
 　　　　　　}, 
 
 　　　　　 websocketclose(e){ //关闭 
-　　　　　　　　console.log("connection closed (" + e.code + ")"); 
+				this.websockopened = false; 
+　　　　　　　　console.log("connection closed (" + e.code + ")");
+				setTimeout(function(){
+					getApp().initWebSocket();
+				},2000);
 　　　　　},
 　　　}, 		
 		
