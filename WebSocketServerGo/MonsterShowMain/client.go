@@ -5,9 +5,8 @@
 package main
 
 import (
-	"bytes"
+	_ "bytes"
 	"encoding/json"
-
 	"log"
 	"net/http"
 	"time"
@@ -45,9 +44,7 @@ var upgrader = websocket.Upgrader{
 
 // Client is a middleman between the websocket connection and the hub.
 type Client struct {
-	Talkto *Client
-	Roomid uint64
-	hub    *Hub
+	hub *Hub
 
 	// The websocket connection.
 	conn *websocket.Conn
@@ -70,33 +67,26 @@ func (c *Client) readPump() {
 	c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
-		_, message, err := c.conn.ReadMessage()
+		mt, message, err := c.conn.ReadMessage()
+		log.Println("messageType:", mt, message)
+		if mt != 1 {
+			log.Println("messageType:", mt, " error!")
+			break
+		}
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
 			}
 			break
 		}
-		msg := make(map[string]interface{})
-		json.Unmarshal(message, &msg)
-		if msg["t"] != nil {
-			log.Println(msg["t"].(string))
-			if msg["t"] == "knock" {
-				c.Roomid = uint64(msg["roomid"].(float64))
-				c.hub.register <- c
-				continue
-			}
+		//m := make(map[string]interface{})
+		var m interface{}
+		json.Unmarshal(message, &m)
+		log.Println(m)
+		//log.Println(m["data"].(map)["name"])
 
-			if c.Roomid < 1 {
-
-			} else {
-				if msg["t"] == "bd" {
-					message = bytes.TrimSpace(bytes.Replace([]byte(msg["msg"].(string)), newline, space, -1))
-					c.hub.broadcast <- message
-				}
-
-			}
-		}
+		//message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
+		//c.hub.broadcast <- message
 	}
 }
 
@@ -129,7 +119,9 @@ func (c *Client) writePump() {
 
 			// Add queued chat messages to the current websocket message.
 			n := len(c.send)
+			log.Println("len(c.send):", n)
 			for i := 0; i < n; i++ {
+
 				w.Write(newline)
 				w.Write(<-c.send)
 			}
@@ -153,7 +145,8 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), Roomid: 0}
+	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
+	client.hub.register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in
 	// new goroutines.

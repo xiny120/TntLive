@@ -23,7 +23,7 @@
         },
 　　　　methods: { 
 　　　　　　initWebSocket(){ //初始化weosocket 
-				const wsuris = ["ws://localhost:8080/ws","ws://localhost:8081/ws","ws://localhost:8082/ws"]
+				const wsuris = ["ws://localhost:8090/ws","ws://localhost:8091/ws","ws://localhost:8092/ws"]
 				this.wsuriidx = this.wsuriidx + 1;
 				if(this.wsuriidx >= wsuris.length){
 					this.wsuriidx = 0;
@@ -66,7 +66,7 @@
 　　　　　　　　console.log("connection closed (" + e.code + ")");
 				setTimeout(function(){
 					getApp().initWebSocket();
-				},2000);
+				},3000);
 　　　　　},
 　　　}, 		
 		

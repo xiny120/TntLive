@@ -23,21 +23,10 @@ window.onload = function () {
         if (!msg.value) {
             return false;
         }
-        conn.send('{"t":"bd","msg":"' +msg.value + '"}');
-        //conn.send(msg.value);
+        conn.send(msg.value);
         msg.value = "";
         return false;
     };
-    
-    document.getElementById("login").onclick = function () {
-        if (!conn) {
-            return false;
-        }
-
-        conn.send('{"t":"knock","roomid":1}');
-        //msg.value = "";
-        return false;
-    };    
 
     if (window["WebSocket"]) {
         conn = new WebSocket("ws://" + document.location.host + "/ws");
@@ -103,7 +92,6 @@ body {
 <div id="log"></div>
 <form id="form">
     <input type="submit" value="Send" />
-    <input type="button" id="login" value="login" />
     <input type="text" id="msg" size="64"/>
 </form>
 </body>
