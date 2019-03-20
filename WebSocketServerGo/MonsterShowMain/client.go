@@ -9,8 +9,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"sign"
 	"time"
+	"ucenter"
 
 	"github.com/gorilla/websocket"
 )
@@ -103,6 +103,8 @@ func (c *Client) readPump() {
 		case "sign in": // 登录
 			account := m["account"].(string)
 			password := m["password"].(string)
+			tt := sign.SignIn(account, password)
+			log.Println(tt)
 
 		case "sign out": // 登出
 

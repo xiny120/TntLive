@@ -7,6 +7,7 @@ package main
 import (
 	"cfg"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -27,7 +28,21 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	var isdebug = true
+	var server = "hds12204021.my3w.com"
+	var port = 14330
+	var user = "hds12204021"
+	var password = ""
+	var database = "hds12204021_db"
+
+	//连接字符串
+	connString := fmt.Sprintf("server=%s;port%d;database=%s;user id=%s;password=%s", server, port, database, user, password)
+	if isdebug {
+		fmt.Println(connString)
+	}
+
 	cfg.Cfg["tidb"] = "pic98:vck123456@tcp(106.14.145.51:4000)/Pic98"
+	cfg.Cfg["mssql"] = "sqlserver://hds12204021:@hds12204021.my3w.com?database=hds12204021_db&connection+timeout=30" //connString
 	flag.Parse()
 	hub := newHub()
 	go hub.run()

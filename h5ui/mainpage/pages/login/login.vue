@@ -30,6 +30,8 @@
 </template>
 
 <script>
+	import cj from '../../node_modules/crypto-js/crypto-js.js'
+	
 	var  graceChecker = require("../../common/graceChecker.js");
 	// /帐号/手机号码
     import service from '../../service.js';
