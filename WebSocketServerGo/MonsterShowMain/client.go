@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"sign"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -68,7 +69,7 @@ func (c *Client) readPump() {
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
 		mt, message, err := c.conn.ReadMessage()
-		log.Println("messageType:", mt, message)
+		log.Println("messageType:", mt, string(message))
 		if mt != 1 {
 			log.Println("messageType:", mt, " error!")
 			break
@@ -79,11 +80,33 @@ func (c *Client) readPump() {
 			}
 			break
 		}
-		//m := make(map[string]interface{})
-		var m interface{}
+		m := make(map[string]interface{})
+		r := make(map[string]interface{})
+		//var m interface{}
 		json.Unmarshal(message, &m)
 		log.Println(m)
-		//log.Println(m["data"].(map)["name"])
+		switch m["t"] {
+		case "sign up": // 注册
+			account := m["account"].(string)
+			password := m["password"].(string)
+			email := m["email"].(string)
+			cellphone := m["cellphone"].(string)
+			r["t"] = "sign up"
+			r["status"] = 1
+			r["info"] = (account + password + email + cellphone)
+
+			rmsg, err := json.Marshal(r)
+			if err == nil {
+				c.send <- rmsg
+			}
+
+		case "sign in": // 登录
+			account := m["account"].(string)
+			password := m["password"].(string)
+
+		case "sign out": // 登出
+
+		}
 
 		//message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
 		//c.hub.broadcast <- message

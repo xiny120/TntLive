@@ -1,5 +1,7 @@
 <template>
-	<form class='loginView' @submit="formSubmit" @reset="formReset">    
+	<view>
+		<text>如忘记帐号密码，请联系QQ：59838713</text>
+	<form class='loginView' @submit="formSubmit" @reset="formReset"  v-show="0">    
             <view class="input-view">
                 <text class="title">邮箱：</text>
                 <m-input type="text" focus clearable v-model="email" placeholder="请输入邮箱"></m-input>
@@ -8,7 +10,9 @@
         <view class="input-view">
             <button type="primary" class="primary" @tap="findPassword">提交</button>
         </view>
-    </form>
+    </form>		
+	</view>
+
 </template>
 
 <script>

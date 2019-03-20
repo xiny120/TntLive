@@ -5,6 +5,7 @@
 package main
 
 import (
+	"cfg"
 	"flag"
 	"log"
 	"net/http"
@@ -26,6 +27,7 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	cfg.Cfg["tidb"] = "pic98:vck123456@tcp(106.14.145.51:4000)/Pic98"
 	flag.Parse()
 	hub := newHub()
 	go hub.run()

@@ -2,20 +2,20 @@
     <form class='loginView' @submit="formSubmit" @reset="formReset">
             <view class="input-view">
                 <text class="title">用户账号：</text>
-                <m-input type="text" focus clearable v-model="account" placeholder="请填写新账号"></m-input>
+                <m-input value="dddddd" type="text" focus clearable v-model="account" placeholder="请填写新账号"></m-input>
             </view>
             <view class="input-view">
                 <text class="title">用户密码：</text>
-                <m-input type="password" displayable v-model="password" placeholder="请填写密码"></m-input>
+                <m-input value="dddddd" type="password" displayable v-model="password" placeholder="请填写密码"></m-input>
             </view>
             <view class="input-view">
                 <text class="title">确认密码：</text>
-                <m-input type="password" displayable v-model="password1" placeholder="请再填写一遍密码"></m-input>
+                <m-input value="dddddd" type="password" displayable v-model="password1" placeholder="请再填写一遍密码"></m-input>
             </view>
 
             <view class="input-view">
                 <text class="title">邮箱或手机：</text>
-                <m-input type="text" clearable v-model="email" placeholder="请填写邮箱或手机号码"></m-input>
+                <m-input value="dddddd@ddd.com" type="text" clearable v-model="email" placeholder="请填写邮箱或手机号码"></m-input>
             </view>
         <view class="input-view">
             <button type="primary" class="primary" @tap="register" :disabled="isSubmitBnDisable" >注册</button>
@@ -24,8 +24,14 @@
 </template>
 
 <script>
+	import cj from '../../../node_modules/crypto-js/crypto-js.js'
     import service from '../../../service.js';
     import mInput from '../../../components/m-input.vue';
+	
+    import {
+        mapState,
+        mapMutations
+    } from 'vuex'	
 
     export default {
         components: {
@@ -39,9 +45,59 @@
 				password1:'',
                 email: '',
 				cellphone:'',
+				
             }
         },
+		computed: mapState(['signupStatus','userName']),
+		watch: {
+			"signupStatus":{
+				handler(){
+					switch(this.signupStatus){
+						case 0:
+							uni.showToast({
+								title: '注册成功',
+								complete: function(res){
+							
+								}
+							});
+							
+							setTimeout(() => {
+								uni.navigateBack({
+										delta: 1
+								});						  
+							}, 2000)
+							this.register00(-1);
+						break;
+						case 1:
+							this.register00(-1);
+							uni.showToast({
+								title: '用户名已经被人注册，请更换再试',
+								complete: function(res){
+									
+							
+								}
+							});						
+						break;
+						case -1:
+						break;
+						default:
+							this.register00(-1);
+							break;
+						
+					}
+				}
+			},
+			"userName":{
+				handler(){
+					uni.showToast({
+						title:"userName"
+					})
+				}
+				
+			}
+		},
         methods: {
+			...mapMutations(['register00']),
             register() {
                 /**
                  * 客户端对账号信息进行一些必要的校验。
@@ -49,7 +105,7 @@
                  */
 				
 				this.isSubmitBnDisable = true;
-
+				
 				setTimeout(() => {
 				  this.isSubmitBnDisable = false
 				}, 1600)
@@ -122,13 +178,18 @@
 
 
                 const data = {
+					t:"sign up",
                     account: this.account,
-                    password: this.password,
+                    password: cj.MD5(this.password).toString(),
                     email: email0,
 					cellphone:cellphone0,
                 }
 				
-                service.addUser(data);
+                //service.addUser(data);
+				
+				getApp().websocketsend(JSON.stringify(data))
+				//this.sign_up_status = 1;
+				/*
 				console.log(data);
                 uni.showToast({
                     title: '注册成功',
@@ -141,7 +202,8 @@
 					uni.navigateBack({
 							delta: 1
 					});						  
-				}, 2000)				
+				}, 2000)
+				*/
 				
 
             }

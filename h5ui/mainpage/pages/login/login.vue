@@ -4,7 +4,7 @@
 			<view class="label-view">
 				<text class="label">账号 </text>
 			</view>
-			<input class="input" type="text" placeholder="请输入用户名/帐号/手机号码" name="nameValue" />
+			<input class="input" type="text" placeholder="请输入用户名" name="nameValue" />
 		</view>
 		<view class="input-view">
 			<view class="label-view">
@@ -16,8 +16,8 @@
 			<button type="default" class="login" hover-class="hover" formType="submit">登录</button>
 		</view>
         <view class="action-row">
-            <navigator url="../login/reg/reg">注册账号</navigator>
-            <text>|</text>
+            <navigator url="../login/reg/reg" v-show="0">注册账号</navigator>
+            <text  v-show="0">|</text>
             <navigator url="../login/pwd/pwd">忘记密码</navigator>
         </view>
         <view class="oauth-row" v-if="hasProvider" v-bind:style="{top: positionTop + 'px'}">
@@ -31,13 +31,14 @@
 
 <script>
 	var  graceChecker = require("../../common/graceChecker.js");
-	
+	// /帐号/手机号码
     import service from '../../service.js';
     import {
         mapState,
         mapMutations
     } from 'vuex'
     import mInput from '../../components/m-input.vue'	
+	
 	
 	export default {
         components: {
@@ -99,7 +100,16 @@
 				var checkRes = graceChecker.check(formData, rule);
 				if(checkRes){
 					uni.showToast({title:"验证通过!", icon:"none"});
-					console.log("得到账号:"+ e.detail.value.nameValue + ';得到密码:' + e.detail.value.passwordValue)					
+					console.log("得到账号:"+ e.detail.value.nameValue + ';得到密码:' + e.detail.value.passwordValue)
+					
+                const data = {
+					t:"sign in",
+                    account: e.detail.value.nameValue,
+                    password: cj.MD5(e.detail.value.passwordValue).toString(),
+                }					
+				
+				getApp().websocketsend(JSON.stringify(data))
+					
 				}else{
 					uni.showToast({ title: graceChecker.error, icon: "none" });
 				}

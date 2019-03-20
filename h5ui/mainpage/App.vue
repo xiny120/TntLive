@@ -1,17 +1,25 @@
 <script>
+    import {
+        mapState,
+        mapMutations
+    } from 'vuex'
+	
     export default {
 		data() {
 			return {
 				websock: null,
 				wsuriidx:0,
 				websockopened:false,
+				
 			};
 		},		
+		
 		
 		
         onLaunch: function() {
 			this.websockopened = false;
 			this.wsuriidx = 0;
+			//this.sign_up_status = -1;
 			this.initWebSocket();
             console.log('App Launch')
         },
@@ -21,7 +29,9 @@
         onHide: function() {
             console.log('App Hide')
         },
+		computed: mapState(['signupStatus']),
 　　　　methods: { 
+			...mapMutations(['register00','login']),
 　　　　　　initWebSocket(){ //初始化weosocket 
 				const wsuris = ["ws://localhost:8090/ws","ws://localhost:8091/ws","ws://localhost:8092/ws"]
 				this.wsuriidx = this.wsuriidx + 1;
@@ -47,10 +57,15 @@
 　　　　　　},
 　　　　　　websocketonmessage(e){ //数据接收 
 　　　　　　　　const redata = JSON.parse(e.data);
-　　　　　　　　　//注意：长连接我们是后台直接1秒推送一条数据， 
-          //但是点击某个列表时，会发送给后台一个标识，后台根据此标识返回相对应的数据，
-      //这个时候数据就只能从一个出口出，所以让后台加了一个键，例如键为1时，是每隔1秒推送的数据，为2时是发送标识后再推送的数据，以作区分
-　　　　　　　　console.log(redata.value); 
+　　　　　　　　console.log(redata); 
+				switch(redata.t){
+					case "sign up":
+						//getApp().signupStatus = redata.status;
+						//this.login("hello");
+						this.register00(redata.status);
+						
+						break;
+				}
 　　　　　　}, 
 
 　　　　　　websocketsend(agentData){//数据发送 
@@ -64,9 +79,13 @@
 　　　　　 websocketclose(e){ //关闭 
 				this.websockopened = false; 
 　　　　　　　　console.log("connection closed (" + e.code + ")");
+				uni.showToast({
+					icon: 'none',
+					title: '网络连接断开，准备重连...'
+				});
 				setTimeout(function(){
 					getApp().initWebSocket();
-				},3000);
+				},8000);
 　　　　　},
 　　　}, 		
 		

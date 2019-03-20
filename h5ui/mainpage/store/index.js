@@ -3,8 +3,9 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex)
 
-const store = new Vuex.Store({
+const store1 = new Vuex.Store({
     state: {
+		signupStatus:-1,
         /**
          * 是否需要强制登录
          */
@@ -20,8 +21,11 @@ const store = new Vuex.Store({
         logout(state) {
             state.userName = "";
             state.hasLogin = false;
-        }
+        },
+		register00(state, signupStatus){
+			state.signupStatus = signupStatus || -1;
+		}
     }
 })
 
-export default store
+export default store1
