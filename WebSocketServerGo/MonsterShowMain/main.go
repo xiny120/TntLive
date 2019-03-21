@@ -5,11 +5,14 @@
 package main
 
 import (
+	"bufio"
 	"cfg"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"os"
 )
 
 var addr = flag.String("addr", ":8091", "http service address")
@@ -28,21 +31,37 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	fi, err0 := os.Open("conf/mssql.dat")
+	if err0 != nil {
+		fmt.Printf("Error: %s\n", err0)
+		return
+	}
+	defer fi.Close()
+
+	br := bufio.NewReader(fi)
+	var conf []string
+
+	for {
+		a, _, c := br.ReadLine()
+		if c == io.EOF {
+			break
+		}
+		fmt.Println(string(a))
+		conf = append(conf, string(a))
+	}
+	fmt.Println(conf)
 	var isdebug = true
-	var server = "hds12204021.my3w.com"
-	var port = 14330
-	var user = "hds12204021"
-	var password = ""
-	var database = "hds12204021_db"
 
 	//连接字符串
-	connString := fmt.Sprintf("server=%s;port%d;database=%s;user id=%s;password=%s", server, port, database, user, password)
+	//connString := fmt.Sprintf("server=%s;port%d;database=%s;user id=%s;password=%s", server, port, database, user, password)
+	connString := fmt.Sprintf("Provider=SQLOLEDB;Data Source=%s;Initial Catalog=%s;user id=%s;password=%s", conf[0], conf[2], conf[3], conf[4])
+
 	if isdebug {
 		fmt.Println(connString)
 	}
 
 	cfg.Cfg["tidb"] = "pic98:vck123456@tcp(106.14.145.51:4000)/Pic98"
-	cfg.Cfg["mssql"] = "sqlserver://hds12204021:@hds12204021.my3w.com?database=hds12204021_db&connection+timeout=30" //connString
+	cfg.Cfg["mssql"] = connString //"sqlserver://hds12204021:@hds12204021.my3w.com?database=hds12204021_db&connection+timeout=30" //connString
 	flag.Parse()
 	hub := newHub()
 	go hub.run()

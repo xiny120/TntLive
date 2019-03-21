@@ -2,11 +2,12 @@ package sign
 
 import (
 	"cfg"
-	//"database/sql"
+	"database/sql"
 
 	//"encoding/json"
-	//"log"
 	"fmt"
+	"log"
+
 	//"strings"
 
 	//"github.com/satori/go.uuid"
@@ -29,26 +30,23 @@ const (
 )
 
 func SignIn(un string, pwd string) int {
-	db := cfg.Mssql{
-		dataSource: "hds12204021.my3w.com",
-		database:   "hds12204021_db",
-		// windwos: true 为windows身份验证，false 必须设置sa账号和密码
-		windows: false,
-		sa: cfg.SA{
-			user:   "hds12204021",
-			passwd: "",
-		},
-	}
+
 	// 连接数据库
-	err := db.Open()
-	if err != nil {
-		fmt.Println("sql open:", err)
+	db, err0 := sql.Open("adodb", cfg.Cfg["mssql"])
+	if err0 != nil {
+		fmt.Println("sql open:", err0)
 		return 0
 	}
 	defer db.Close()
 
 	// 执行SQL语句
-	rows, err := db.Query("select username,userid from dv_user where username='" + un + "'")
+	//rows, err := db.Query("select username,userid from dv_user where username='" + un + "'")
+	stmt, err0 := db.Prepare(`SELECT [UserID],[UserName] FROM [Dv_User] where [UserName] = ? and [UserPassword] = ?`)
+	if err0 != nil {
+		log.Println(err0)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(un, pwd)
 	if err != nil {
 		fmt.Println("query: ", err)
 		return 0
@@ -56,7 +54,7 @@ func SignIn(un string, pwd string) int {
 	for rows.Next() {
 		var name string
 		var number int
-		rows.Scan(&name, &number)
+		rows.Scan(&number, &name)
 		fmt.Printf("Name: %s \t Number: %d\n", name, number)
 	}
 

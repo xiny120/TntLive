@@ -107,7 +107,7 @@
                 const data = {
 					t:"sign in",
                     account: e.detail.value.nameValue,
-                    password: cj.MD5(e.detail.value.passwordValue).toString(),
+                    password: cj.MD5(e.detail.value.passwordValue).toString().substring(8,24),
                 }					
 				
 				getApp().websocketsend(JSON.stringify(data))

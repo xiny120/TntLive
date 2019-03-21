@@ -6,6 +6,7 @@ package main
 
 import (
 	_ "bytes"
+	//"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 	"ucenter"
 
 	"github.com/gorilla/websocket"
+	_ "github.com/mattn/go-adodb"
 )
 
 const (
