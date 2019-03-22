@@ -13,6 +13,8 @@ import (
 	"time"
 	"ucenter"
 
+	"github.com/satori/go.uuid"
+
 	"github.com/gorilla/websocket"
 	_ "github.com/mattn/go-adodb"
 )
@@ -53,7 +55,8 @@ type Client struct {
 	conn *websocket.Conn
 
 	// Buffered channel of outbound messages.
-	send chan []byte
+	send      chan []byte
+	SessionId uuid.UUID //未登录之前，记录socket连接时生成的uuid,如果客户端免登录进来的，客户端上报后置换为客户端保存的uuid
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -172,7 +175,10 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
+	ok, _ := uuid.NewV4()
+
+	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), SessionId: ok}
+	log.Println(client)
 	client.hub.register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in

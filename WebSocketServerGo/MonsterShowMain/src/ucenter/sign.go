@@ -10,7 +10,7 @@ import (
 
 	//"strings"
 
-	//"github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 
 	//_ "github.com/denisenkom/go-mssqldb"
 	_ "github.com/mattn/go-adodb"
@@ -29,8 +29,13 @@ const (
 	StaSigninSqlServerError
 )
 
-func SignIn(un string, pwd string) int {
+var (
+	Sessions = make(map[uuid.UUID]string)
+)
 
+func SignIn(un string, pwd string) int {
+	//ok, _ := uuid.NewV4()
+	//log.Println(ok)
 	// 连接数据库
 	db, err0 := sql.Open("adodb", cfg.Cfg["mssql"])
 	if err0 != nil {
@@ -41,7 +46,7 @@ func SignIn(un string, pwd string) int {
 
 	// 执行SQL语句
 	//rows, err := db.Query("select username,userid from dv_user where username='" + un + "'")
-	stmt, err0 := db.Prepare(`SELECT [UserID],[UserName] FROM [Dv_User] where [UserName] = ? and [UserPassword] = ?`)
+	stmt, err0 := db.Prepare(`SELECT [UserID],[UserName],[userguid] FROM [Dv_User] where [UserName] = ? and [UserPassword] = ?`)
 	if err0 != nil {
 		log.Println(err0)
 	}
