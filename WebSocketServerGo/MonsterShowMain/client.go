@@ -6,6 +6,8 @@ package main
 
 import (
 	_ "bytes"
+	"xlog"
+
 	//"database/sql"
 	"encoding/json"
 	"log"
@@ -56,7 +58,7 @@ type Client struct {
 
 	// Buffered channel of outbound messages.
 	send      chan []byte
-	SessionId uuid.UUID //未登录之前，记录socket连接时生成的uuid,如果客户端免登录进来的，客户端上报后置换为客户端保存的uuid
+	SessionId string //未登录之前，记录socket连接时生成的uuid,如果客户端免登录进来的，客户端上报后置换为客户端保存的uuid
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -77,7 +79,7 @@ func (c *Client) readPump() {
 		log.Println("messageType:", mt, string(message))
 		if mt != 1 {
 			log.Println("messageType:", mt, " error!")
-			break
+			//break
 		}
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
@@ -109,9 +111,20 @@ func (c *Client) readPump() {
 			account := m["account"].(string)
 			password := m["password"].(string)
 			tt := sign.SignIn(account, password)
+			tt.SessionId = c.SessionId
 			log.Println(tt)
+			sign.Sessions[c.SessionId] = tt
+			r["t"] = "sign in"
+			r["userinfo"] = tt
+			rmsg, err := json.Marshal(r)
+			if err == nil {
+				c.send <- rmsg
+				xlog.Println("sign in status", rmsg)
+			}
 
 		case "sign out": // 登出
+		case "checkin": //免密登录
+			xlog.Println("checkin 免密登录")
 
 		}
 
@@ -149,7 +162,7 @@ func (c *Client) writePump() {
 
 			// Add queued chat messages to the current websocket message.
 			n := len(c.send)
-			log.Println("len(c.send):", n)
+			//log.Println("len(c.send):", n)
 			for i := 0; i < n; i++ {
 
 				w.Write(newline)
@@ -177,7 +190,7 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 	ok, _ := uuid.NewV4()
 
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), SessionId: ok}
+	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), SessionId: ok.String()}
 	log.Println(client)
 	client.hub.register <- client
 

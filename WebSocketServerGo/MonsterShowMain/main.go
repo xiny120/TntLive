@@ -61,7 +61,7 @@ func main() {
 	}
 
 	cfg.Cfg["tidb"] = "pic98:vck123456@tcp(106.14.145.51:4000)/Pic98"
-	cfg.Cfg["mssql"] = connString //"sqlserver://hds12204021:@hds12204021.my3w.com?database=hds12204021_db&connection+timeout=30" //connString
+	cfg.Cfg["mssql"] = connString
 	flag.Parse()
 	hub := newHub()
 	go hub.run()

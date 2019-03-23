@@ -1,10 +1,10 @@
 <template>
 	<view class="center">
-		<view class="logo" @click="goLogin" :hover-class="!login ? 'logo-hover' : ''">
-			<image class="logo-img" :src="login ? uerInfo.avatarUrl :avatarUrl"></image>
+		<view class="logo" @click="goLogin" :hover-class="!hasLogin ? 'logo-hover' : ''">
+			<image class="logo-img" :src="hasLogin ? userInfo.avatarUrl :avatarUrl"></image>
 			<view class="logo-title">
-				<text class="uer-name">Hi，{{login ? uerInfo.name : '您未登录'}}</text>
-				<text class="go-login navigat-arrow" v-if="!login">&#xe65e;</text>
+				<text class="uer-name">Hi，{{hasLogin ? userInfo.UserName : '您未登录'}}</text>
+				<text class="go-login navigat-arrow" v-if="!hasLogin">&#xe65e;</text>
 			</view>
 		</view>
 		<view class="center-list">
@@ -47,6 +47,10 @@
 </template>
 
 <script>
+    import {
+        mapState,
+        mapMutations
+    } from 'vuex'	
 	export default {
 		data() {
 			return {
@@ -55,9 +59,13 @@
 				uerInfo:{}
 			}
 		},
+		computed: mapState(['forcedLogin','hasLogin','userInfo']),
+		watch: {
+
+		},
 		methods: {
 			goLogin() {
-				if(!this.login){
+				if(!this.hasLogin){
 					uni.navigateTo({
 						url:"../login/login"
 					})

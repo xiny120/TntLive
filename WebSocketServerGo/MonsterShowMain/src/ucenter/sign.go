@@ -30,75 +30,46 @@ const (
 )
 
 var (
-	Sessions = make(map[uuid.UUID]string)
+	Sessions = make(map[string]*UserInfo)
 )
 
-func SignIn(un string, pwd string) int {
-	//ok, _ := uuid.NewV4()
+func SignIn(un string, pwd string) *UserInfo {
+	ok, _ := uuid.NewV4()
 	//log.Println(ok)
 	// 连接数据库
+	ui := &UserInfo{UserName: "anonymous", UserId: 0, Token: ok.String(), UserUuid: "00000000-0000-0000-0000-000000000000", Info: "", AvatarUrl: "../../static/logo.png"}
 	db, err0 := sql.Open("adodb", cfg.Cfg["mssql"])
 	if err0 != nil {
 		fmt.Println("sql open:", err0)
-		return 0
-	}
-	defer db.Close()
+		ui.Info = "SignIn sql open error"
 
-	// 执行SQL语句
-	//rows, err := db.Query("select username,userid from dv_user where username='" + un + "'")
-	stmt, err0 := db.Prepare(`SELECT [UserID],[UserName],[userguid] FROM [Dv_User] where [UserName] = ? and [UserPassword] = ?`)
-	if err0 != nil {
-		log.Println(err0)
-	}
-	defer stmt.Close()
-	rows, err := stmt.Query(un, pwd)
-	if err != nil {
-		fmt.Println("query: ", err)
-		return 0
-	}
-	for rows.Next() {
-		var name string
-		var number int
-		rows.Scan(&number, &name)
-		fmt.Printf("Name: %s \t Number: %d\n", name, number)
-	}
-
-	/*
-
-		db, err := sql.Open("mssql", cfg.Cfg["mssql"])
-		var userid int32
-		var username string
-		var userpassword string
-		var userguid string
-		if err != nil {
-			log.Fatal("Open connection failed:", err.Error())
-		}
-		err = db.Ping()
-		if err != nil {
-			log.Fatal("connection failed:", err.Error())
-		}
-		log.Println(err.Error())
+	} else {
 		defer db.Close()
-		stmt, err0 := db.Prepare(`SELECT [UserID],[UserName],[UserPassword],[userguid] FROM [Dv_User] where [UserName] = "xinyuan"`)
+
+		// 执行SQL语句
+		//rows, err := db.Query("select username,userid from dv_user where username='" + un + "'")
+		stmt, err0 := db.Prepare(`SELECT [UserID],[UserName],[userguid] FROM [Dv_User] where [UserName] = ? and [UserPassword] = ?`)
 		if err0 != nil {
 			log.Println(err0)
-		}
-		defer stmt.Close()
-		rows, err := stmt.Query(un)
-		if err == nil {
-			defer rows.Close()
-			if rows.Next() {
-				rows.Scan(&userid, &username, &userpassword, &userguid)
-				ok, _ := uuid.NewV4()
-				log.Println(ok)
+			ui.Info = "SignIn sql db.Prepare error"
+		} else {
+			defer stmt.Close()
+			rows, err := stmt.Query(un, pwd)
+			if err != nil {
+				fmt.Println("query: ", err)
+				ui.Info = "SignIn sql stmt.Query error"
+			} else {
+				for rows.Next() {
+					var name string
+					var number int
+					rows.Scan(&ui.UserId, &ui.UserName, &ui.UserUuid)
+					fmt.Printf("Name: %s \t Number: %d\n", name, number)
+				}
 			}
 		}
 
-		ss, _ := json.Marshal(db)
-		log.Println(ss)
-	*/
-
-	return 0
+	}
+	return ui
 }
 
 func SignUp(un string, pwd string, cellphone string, email string) {

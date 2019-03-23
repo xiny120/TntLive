@@ -55,9 +55,46 @@
                 positionTop: 0				
 			};
 		},
-		computed: mapState(['forcedLogin']),
+		computed: mapState(['forcedLogin','hasLogin']),
+		watch: {
+			"hasLogin":{
+				handler(){
+					switch(this.hasLogin){
+						case 1:
+							setTimeout(() => {
+								uni.navigateBack({
+										delta: 1
+								});						  
+							}, 500)
+							
+						break;
+						case 0:
+							uni.showToast({
+								title: '登录失败，请重试',
+								complete: function(res){
+									//this.loginFail();
+							
+								}
+							});						
+						break;
+						case -1:
+						break;
+						default:
+					}
+				}
+			},
+			"userName":{
+				handler(){
+					uni.showToast({
+						title:"userName"
+					})
+				}
+				
+			}
+		},
+		
 		methods: {
-			...mapMutations(['login']),
+			...mapMutations(['login','loginFail','register00','logout']),
             initProvider() {
                 const filters = ['weixin', 'qq', 'sinaweibo'];
 				
@@ -101,16 +138,16 @@
 				var formData = e.detail.value;
 				var checkRes = graceChecker.check(formData, rule);
 				if(checkRes){
-					uni.showToast({title:"验证通过!", icon:"none"});
-					console.log("得到账号:"+ e.detail.value.nameValue + ';得到密码:' + e.detail.value.passwordValue)
+					//uni.showToast({title:"验证通过!", icon:"none"});
+					//console.log("得到账号:"+ e.detail.value.nameValue + ';得到密码:' + e.detail.value.passwordValue)
+					this.logout();
+					const data = {
+						t:"sign in",
+						account: e.detail.value.nameValue,
+						password: cj.MD5(e.detail.value.passwordValue).toString().substring(8,24),
+					}					
 					
-                const data = {
-					t:"sign in",
-                    account: e.detail.value.nameValue,
-                    password: cj.MD5(e.detail.value.passwordValue).toString().substring(8,24),
-                }					
-				
-				getApp().websocketsend(JSON.stringify(data))
+					getApp().websocketsend(JSON.stringify(data))
 					
 				}else{
 					uni.showToast({ title: graceChecker.error, icon: "none" });

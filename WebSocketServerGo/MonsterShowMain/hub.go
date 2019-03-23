@@ -4,6 +4,14 @@
 
 package main
 
+import (
+	"encoding/json"
+	_ "fmt"
+
+	//"log"
+	"xlog"
+)
+
 // Hub maintains the set of active clients and broadcasts messages to the
 // clients.
 type Hub struct {
@@ -34,6 +42,18 @@ func (h *Hub) run() {
 		select {
 		case client := <-h.register:
 			h.clients[client] = true
+			data := struct {
+				T         string `json:"t"`
+				Sessionid string `json:"sessionid"`
+			}{
+				T:         "sessionid",
+				Sessionid: client.SessionId,
+			}
+			//msg := fmt.Sprint("{\"t\":\"sessionid\",\"sessionid\":\"%s\"}", client.SessionId)
+			msg, err := json.Marshal(data)
+			//log.Println(string(msg[:]))
+			xlog.Println("连接到来 ", data, "\t*\t", string(msg), "\t*\t", err)
+			client.send <- msg
 		case client := <-h.unregister:
 			if _, ok := h.clients[client]; ok {
 				delete(h.clients, client)
