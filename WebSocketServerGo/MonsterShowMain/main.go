@@ -13,6 +13,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"webapi100"
 
 	"github.com/gorilla/mux"
 )
@@ -20,7 +21,7 @@ import (
 var addr = flag.String("addr", ":8091", "http service address")
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.URL)
+	log.Println("serveHome - %s", r.URL)
 	if r.URL.Path != "/" {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
@@ -69,12 +70,19 @@ func main() {
 	go hub.run()
 
 	r := mux.NewRouter()
-	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir(dir))))
 
 	r.HandleFunc("/", serveHome)
 	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
+
+	// webapi 1.0.0 协议
+	s := r.PathPrefix("/api/1.00").Subrouter()
+	s.HandleFunc("/{action}", webapi100.ServeWebapi100)
+	amw := webapi100.AuthenticationMiddleware{}
+	amw.Populate()
+	s.Use(amw.Middleware)
+
 	log.Println(*addr)
 	err := http.ListenAndServe(*addr, r)
 	if err != nil {

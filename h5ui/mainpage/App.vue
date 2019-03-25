@@ -58,7 +58,7 @@
 			this.websockopened = false;
 			this.wsuriidx = 0;
 			//this.sign_up_status = -1;
-			this.initWebSocket();
+			//this.initWebSocket();
             console.log('App Launch')
         },
         onShow: function() {
@@ -76,6 +76,7 @@
 	
 			
 　　　　　　initWebSocket(){ //初始化weosocket 
+return;
 				//const wsuris = ["ws://localhost:8090/ws","ws://localhost:8091/ws","ws://localhost:8092/ws"]
 				const wsuris = ["ws://localhost:8091/ws"]
 				this.wsuriidx = this.wsuriidx + 1;

@@ -147,7 +147,27 @@
 						password: cj.MD5(e.detail.value.passwordValue).toString().substring(8,24),
 					}					
 					
-					getApp().websocketsend(JSON.stringify(data))
+					uni.request({
+						url: this.$serverUrl + '/api/1.00/auth', //仅为示例，并非真实接口地址。
+						method: 'POST',
+						data:data,
+						dataType:'json',  
+						header:{  
+							'content-type':'application/json'  
+						}, 
+						success: (res) => {
+							console.log(res.data);
+							this.text = 'request success';
+						},
+						fail:(res,a,b) =>{
+							
+							console.log(res,a,b);
+						},
+					});					
+					
+					
+					
+					//getApp().websocketsend(JSON.stringify(data))
 					
 				}else{
 					uni.showToast({ title: graceChecker.error, icon: "none" });
