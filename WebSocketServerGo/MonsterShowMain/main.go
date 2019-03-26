@@ -49,7 +49,6 @@ func main() {
 		if c == io.EOF {
 			break
 		}
-		fmt.Println(string(a))
 		conf = append(conf, string(a))
 	}
 	fmt.Println(conf)

@@ -92,6 +92,12 @@
 				"navigationBarTitleText": "找回密码"
 			}
         }
+        ,{
+            "path" : "pages/center/setup/setup",
+            "style" : {
+				"navigationBarTitleText": "修改密码"
+			}
+        }
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "white",

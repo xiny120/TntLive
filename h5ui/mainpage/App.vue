@@ -43,18 +43,6 @@
 			}  
 		});  			
 			
-			/*
-			try {
-				//sessionid = uni.getStorageSync('sessionid');
-				var userinfo = uni.getStorageSync('userinfo');
-				if(userinfo){
-					this.login(JSON.parse(userinfo));
-				}
-			} catch (e) {
-				console.log(e);
-				// error
-			}				
-			*/
 			this.websockopened = false;
 			this.wsuriidx = 0;
 			//this.sign_up_status = -1;

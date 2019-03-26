@@ -1,8 +1,11 @@
 package webapi100
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
+	"os"
+	"ucenter"
 
 	"github.com/gorilla/mux"
 )
@@ -28,22 +31,65 @@ func (amw *AuthenticationMiddleware) Populate() {
 // 中间件。进行统一的权限认证校验。
 func (amw *AuthenticationMiddleware) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		if origin := r.Header.Get("Origin"); origin != "" {
+			w.Header().Set("Access-Control-Allow-Origin", "*") //允许访问所有域
+			w.Header().Set("Access-Control-Allow-Methods", "POST")
+			w.Header().Add("Access-Control-Allow-Headers", "Content-Type,Origin,mster-token") //header的类型
+			w.Header().Set("Content-Type", "application/json")                                //返回数据格式是json
+		}
+
+		if r.Method == "OPTIONS" {
+			return
+		}
+
 		vars := mux.Vars(r)
 		if vars["action"] == "auth" {
 			next.ServeHTTP(w, r)
 		} else {
-			token := r.Header.Get("X-Session-Token")
 
-			//log.Printf("Authenticated Middleware %s - %s\n", r.URL, vars["action"])
+			token := r.Header.Get("mster-token")
+			log.Printf("Authenticated Middleware %s - %s\n", vars["action"], token)
 
-			if user, found := amw.tokenUsers[token]; found {
+			if _, found := sign.Sessions[token]; found {
 				// We found the token in our map
-				log.Printf("Authenticated user %s\n", user)
+				//log.Printf("Authenticated user %s\n", user)
 				// Pass down the request to the next middleware (or final handler)
 				next.ServeHTTP(w, r)
 			} else {
-				// Write an error and stop the handler chain
-				http.Error(w, "Forbidden", http.StatusForbidden)
+				//http.Error(w, "Forbidden", http.StatusForbidden)
+				tfile := "./tokens/" + token
+				f, err3 := os.Open(tfile) //创建文件
+				if err3 == nil {
+					defer f.Close()
+					//str, err3 := f.ReadString() //f.WriteString(string(wbuf)) //写入文件(字节数组)
+
+					fileinfo, err := f.Stat()
+					if err == nil {
+
+						fileSize := fileinfo.Size()
+						buffer := make([]byte, fileSize)
+
+						_, err := f.Read(buffer)
+						if err == nil {
+							ui := &sign.UserInfo{}
+							err3 := json.Unmarshal(buffer, &ui)
+							if err3 == nil {
+								sign.Sessions[token] = ui
+								next.ServeHTTP(w, r)
+								return
+							}
+						}
+					}
+				}
+				res := make(map[string]interface{})
+				res["t"] = "not sign in"
+				res["status"] = 1
+				res["msg"] = "请登录后操作"
+				rmsg, err := json.Marshal(res)
+				if err == nil {
+					w.Write(rmsg)
+				}
 			}
 		}
 	})

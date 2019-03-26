@@ -2,23 +2,7 @@
 	<view class="about">
 		<view class="content">
 			<view class="qrcode">
-				<image src="https://img.cdn.aliyun.dcloud.net.cn/stream/qr/__UNI__FAD3FD9.png/256" @longtap="save"></image>
-				<text style="margin-top:20px;">扫码体验看图App模板</text>
-			</view>
-			<view class="desc">
-				基于uni-app开发的看图App模版，项目已开源。
-			</view>
-			<view class="source">
-				<view class="title">本示例源码获取方式：</view>
-				<view class="source-list">
-					<view class="source-cell">
-						<text space="nbsp">1. </text>
-						<text>下载 HBuilderX，新建 uni-app 项目时选择 看图App 模板。</text>
-					</view>
-					<view class="source-cell">
-						<text space="nbsp">2. </text><text @click="openLink" class="link">{{sourceLink}}</text> 
-					</view>
-				</view>
+				<text style="margin-top:20px;">课件直播系统（ver 1.0.0）</text>
 			</view>
 			<button type="primary" @click="share">分享</button>
 		</view>
@@ -34,7 +18,7 @@
 			return {
 				providerList:[],
 				version:'',
-				sourceLink: 'https://github.com/dcloudio/uni-template-picture'
+				sourceLink: 'https://www.gwgz.com/6302'
 			}
 		},
 		onLoad() {
@@ -110,10 +94,10 @@
 							provider: this.providerList[res.tapIndex].id,
 							scene: this.providerList[res.tapIndex].type && this.providerList[res.tapIndex].type === 'WXSenceTimeline' ? 'WXSenceTimeline' : "WXSceneSession",
 							type: 0,
-							title:'欢迎体验uni-app',
-							summary: 'uni-app 是一个使用 Vue.js 开发跨平台应用的前端框架',
-							imageUrl:'https://img-cdn-qiniu.dcloud.net.cn/uploads/nav_menu/8.jpg',
-							href:"https://m3w.cn/uniapp",
+							title:'欢迎使用课件直播系统',
+							summary: '课件直播系统',
+							imageUrl:'https://www.gwgz.com/images_man/logo.png',
+							href:"https://www.gwgz.com/6302",
 							success: (res) => {
 								console.log("success:" + JSON.stringify(res));
 							},

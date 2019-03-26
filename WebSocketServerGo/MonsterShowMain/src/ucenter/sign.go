@@ -35,19 +35,14 @@ var (
 
 func SignIn(un string, pwd string) *UserInfo {
 	ok, _ := uuid.NewV4()
-	//log.Println(ok)
-	// 连接数据库
-	ui := &UserInfo{UserName: "anonymous", UserId: 0, Token: ok.String(), UserUuid: "00000000-0000-0000-0000-000000000000", Info: "", AvatarUrl: "../../static/logo.png"}
+	sid, _ := uuid.NewV4()
+	ui := &UserInfo{UserName: "anonymous", UserId: 0, Token: ok.String(), UserUuid: "00000000-0000-0000-0000-000000000000", Info: "", AvatarUrl: "../../static/logo.png", SessionId: sid.String()}
 	db, err0 := sql.Open("adodb", cfg.Cfg["mssql"])
 	if err0 != nil {
 		fmt.Println("sql open:", err0)
 		ui.Info = "SignIn sql open error"
-
 	} else {
 		defer db.Close()
-
-		// 执行SQL语句
-		//rows, err := db.Query("select username,userid from dv_user where username='" + un + "'")
 		stmt, err0 := db.Prepare(`SELECT [UserID],[UserName],[userguid] FROM [Dv_User] where [UserName] = ? and [UserPassword] = ?`)
 		if err0 != nil {
 			log.Println(err0)
@@ -59,11 +54,11 @@ func SignIn(un string, pwd string) *UserInfo {
 				fmt.Println("query: ", err)
 				ui.Info = "SignIn sql stmt.Query error"
 			} else {
+				ui.Info = "用户名或密码错误！"
 				for rows.Next() {
-					var name string
-					var number int
 					rows.Scan(&ui.UserId, &ui.UserName, &ui.UserUuid)
-					fmt.Printf("Name: %s \t Number: %d\n", name, number)
+					ui.Info = "登录成功"
+					break
 				}
 			}
 		}
@@ -73,27 +68,48 @@ func SignIn(un string, pwd string) *UserInfo {
 }
 
 func SignUp(un string, pwd string, cellphone string, email string) {
-	/*
-		db, err := sql.Open("mysql", Cfg.Cfg["tidb"])
-		if err != nil {
-			log.Println(err)
-		}
+
+}
+
+func ModiPassword(un string, pwd string, pwdnew string) (string, int) {
+	iresult := 1
+	result := ""
+
+	db, err0 := sql.Open("adodb", cfg.Cfg["mssql"])
+	if err0 != nil {
+		result = "modipassword sql open error"
+	} else {
 		defer db.Close()
-		tagguids := strings.Split(tagguid, ",")
-
-		for _, val := range tagguids {
-			if val == "" {
-				continue
-			}
-			aguid, _ := uuid.NewV4()
-			stmt, _ := db.Prepare("INSERT INTO tags2pic(aguid,tagguid,picguid) VALUES (?,?,?)")
-			//log.Println(stmt)
+		stmt, err0 := db.Prepare(`SELECT [UserID],[UserName],[userguid] FROM [Dv_User] where [UserName] = ? and [UserPassword] = ?`)
+		if err0 != nil {
+			result = "modipassword sql db.Prepare error"
+		} else {
 			defer stmt.Close()
-			_, erri := stmt.Exec(aguid, val, picguid)
-			if erri != nil {
-				fmt.Printf("insert data error: %v\n", err)
+			rows, err := stmt.Query(un, pwd)
+			if err != nil {
+				result = "modipassword sql stmt.Query error"
+			} else {
+				result = "您提供的当前密码错误"
+				for rows.Next() {
+					stmt1, err0 := db.Prepare(`Update [Dv_User] set UserPassword=? where [UserName] = ?`)
+					if err0 != nil {
+						result = "modipassword sql db.Prepare error"
+					} else {
+						defer stmt1.Close()
+						r1, err := stmt1.Exec(pwdnew, un)
+						log.Println(r1)
+						if err != nil {
+							result = "modipassword sql stmt.Query error"
+						} else {
+							result = "用户名密码修改成功"
+							iresult = 0
+						}
+					}
+					break
+				}
 			}
 		}
-	*/
 
+	}
+	return result, iresult
 }

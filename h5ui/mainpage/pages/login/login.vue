@@ -61,21 +61,17 @@
 				handler(){
 					switch(this.hasLogin){
 						case 1:
-							setTimeout(() => {
-								uni.navigateBack({
-										delta: 1
-								});						  
-							}, 500)
+
 							
 						break;
 						case 0:
-							uni.showToast({
-								title: '登录失败，请重试',
-								complete: function(res){
-									//this.loginFail();
-							
-								}
-							});						
+							//uni.showToast({
+							//	title: '登录失败，请重试',
+							//	complete: function(res){
+							//		//this.loginFail();
+							//
+							//	}
+							//});						
 						break;
 						case -1:
 						break;
@@ -145,7 +141,13 @@
 						t:"sign in",
 						account: e.detail.value.nameValue,
 						password: cj.MD5(e.detail.value.passwordValue).toString().substring(8,24),
-					}					
+					}		
+								
+					this.loginFail();
+					
+					uni.showToast({
+						title: '正在登录，请稍后...',
+					});						
 					
 					uni.request({
 						url: this.$serverUrl + '/api/1.00/auth', //仅为示例，并非真实接口地址。
@@ -156,12 +158,32 @@
 							'content-type':'application/json'  
 						}, 
 						success: (res) => {
-							console.log(res.data);
-							this.text = 'request success';
-						},
-						fail:(res,a,b) =>{
+							if(res.data.userinfo.UserId != 0){
+								this.login(res.data.userinfo)
+								uni.showToast({
+									title: '登录成功，准备跳转...',
+								});						
+								
+								setTimeout(() => {
+									uni.navigateBack({
+											delta: 1
+									});						  
+								}, 200)								
+							}else{
+								uni.showToast({
+									title: res.data.userinfo.Info,
+								});									
+							}							
 							
-							console.log(res,a,b);
+						},
+						fail:(res) =>{
+							uni.showToast({
+								title: '登录失败，请重试。',
+								complete: function(res){
+									//this.loginFail();
+							
+								}
+							});								
 						},
 					});					
 					
