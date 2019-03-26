@@ -23,11 +23,34 @@ const store = new Vuex.Store({
 			uni.setStorage({key: 'userinfo', data: ui});			
         },
         logout(state) {
+
+			const data = {
+				action:"authout",
+				//account: e.detail.value.nameValue,
+				//password: cj.MD5(e.detail.value.passwordValue).toString().substring(8,24),
+			}
+			uni.request({
+				//url: this.$serverUrl + '/api/1.00/auth', //仅为示例，并非真实接口地址。
+				url: this.$serverUrl + '/ver/1.00/api', //仅为示例，并非真实接口地址。
+				method: 'POST',
+				data:data,
+				dataType:'json',  
+				header:{  
+					'content-type':'application/json',
+					'mster-token':state.userInfo.SessionId,
+				}, 
+				success: (res) => {
+						
+					
+				},
+
+			});		
             state.userInfo = {};
             state.hasLogin = -1;
             uni.removeStorage({  
                 key: 'userinfo'  
-            })  			
+            });											
+											
         },
 		loginFail(state){
 			state.userInfo = {};

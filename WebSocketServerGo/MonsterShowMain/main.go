@@ -33,6 +33,19 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "home.html")
 }
 
+func hello_abc(w http.ResponseWriter, r *http.Request) {
+	log.Println("hello_abc - %s", r.URL)
+	if r.URL.Path != "/" {
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(w, r, "home.html")
+}
+
 func main() {
 	fi, err0 := os.Open("conf/mssql.dat")
 	if err0 != nil {
@@ -76,11 +89,14 @@ func main() {
 	})
 
 	// webapi 1.0.0 协议
-	s := r.PathPrefix("/api/1.00").Subrouter()
-	s.HandleFunc("/{action}", webapi100.ServeWebapi100)
-	amw := webapi100.AuthenticationMiddleware{}
-	amw.Populate()
-	s.Use(amw.Middleware)
+	r.HandleFunc("/ver/1.00/api", webapi100.ServeWebapi100)
+	//s := r.PathPrefix("/api/1.00").Subrouter()
+	//s0 := s.PathPrefix("/hello").Subrouter()
+	//s0.HandleFunc("/abc", hello_abc)
+	//s.HandleFunc("/{action}", webapi100.ServeWebapi100)
+	//amw := webapi100.AuthenticationMiddleware{}
+	//amw.Populate()
+	//s.Use(amw.Middleware)
 
 	log.Println(*addr)
 	err := http.ListenAndServe(*addr, r)

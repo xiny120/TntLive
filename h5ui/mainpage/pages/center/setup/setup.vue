@@ -82,14 +82,14 @@
 				//console.log("得到账号:"+ e.detail.value.nameValue + ';得到密码:' + e.detail.value.passwordValue)
 				//this.logout();
 				const data = {
-					t:"modi password",
+					action:"modipassword",
 					account: this.account,
 					password: cj.MD5(this.password).toString().substring(8,24),
 					password1: cj.MD5(this.password1).toString().substring(8,24),
 				}		
 				// 	
 				uni.request({
-					url: this.$serverUrl + '/api/1.00/modipassword', //仅为示例，并非真实接口地址。
+					url: this.$serverUrl + '/ver/1.00/api', //仅为示例，并非真实接口地址。
 					method: 'POST',
 					data:data,
 					dataType:'json',  

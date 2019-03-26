@@ -10,7 +10,7 @@
 		{
 			"path": "pages/hot/hot",
 			"style": {
-				"navigationBarTitleText": "最热",
+				"navigationBarTitleText": "直播室",
 				"enablePullDownRefresh": true
 			}
 		},

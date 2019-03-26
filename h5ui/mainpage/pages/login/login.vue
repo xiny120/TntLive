@@ -138,7 +138,7 @@
 					//console.log("得到账号:"+ e.detail.value.nameValue + ';得到密码:' + e.detail.value.passwordValue)
 					this.logout();
 					const data = {
-						t:"sign in",
+						action:"auth",
 						account: e.detail.value.nameValue,
 						password: cj.MD5(e.detail.value.passwordValue).toString().substring(8,24),
 					}		
@@ -150,7 +150,8 @@
 					});						
 					
 					uni.request({
-						url: this.$serverUrl + '/api/1.00/auth', //仅为示例，并非真实接口地址。
+						//url: this.$serverUrl + '/api/1.00/auth', //仅为示例，并非真实接口地址。
+						url: this.$serverUrl + '/ver/1.00/api', //仅为示例，并非真实接口地址。
 						method: 'POST',
 						data:data,
 						dataType:'json',  
@@ -158,22 +159,28 @@
 							'content-type':'application/json'  
 						}, 
 						success: (res) => {
-							if(res.data.userinfo.UserId != 0){
-								this.login(res.data.userinfo)
-								uni.showToast({
-									title: '登录成功，准备跳转...',
-								});						
-								
-								setTimeout(() => {
-									uni.navigateBack({
-											delta: 1
-									});						  
-								}, 200)								
+							if(res.data.status == 0){
+								if(res.data.userinfo.UserId != 0){
+									this.login(res.data.userinfo)
+									uni.showToast({
+										title: '登录成功，准备跳转...',
+									});						
+									
+									setTimeout(() => {
+										uni.navigateBack({
+												delta: 1
+										});						  
+									}, 200)								
+								}else{
+									uni.showToast({
+										title: res.data.userinfo.Info,
+									});									
+								}		
 							}else{
 								uni.showToast({
-									title: res.data.userinfo.Info,
-								});									
-							}							
+									title: res.data.msg,
+								});	
+							}
 							
 						},
 						fail:(res) =>{

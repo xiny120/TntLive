@@ -14,14 +14,21 @@
 				</view>
 			</view>
 		</block>
-		<text class="loadMore">加载中...</text>
+		<text v-if="refreshing" class="loadMore">加载中...</text>
 	</view>
 </template>
 
 <script>
+	
+    import {
+        mapState,
+        mapMutations
+    } from 'vuex'
+	
 	export default {
 		data() {
 			return {
+				loading:false,
 				refreshing: false,
 				lists: [],
 				fetchPageNum: 1
@@ -71,10 +78,29 @@
 		onReachBottom() {
 			this.getData();
 		},
+		computed: mapState(['forcedLogin','hasLogin','userInfo']),
 		methods: {
 			getData() {
+				this.loading = true;
+				const data = {
+					action:"roomlist",
+					page:(this.refreshing ? 1 : this.fetchPageNum),
+					per_page:10,
+				}			
+				
 				uni.request({
-					url: this.$serverUrl + '/api/picture/posts.php?page=' + (this.refreshing ? 1 : this.fetchPageNum) + '&per_page=10',
+					url: this.$serverUrl + '/ver/1.00/api',//?page=' + (this.refreshing ? 1 : this.fetchPageNum) + '&per_page=10',
+					method: 'POST',
+					data:data,
+					dataType:'json',  
+					header:{  
+						'content-type':'application/json',
+						'mster-token':this.userInfo.SessionId,
+					}, 
+					fail:(ret)=>{
+						console.log(ret);
+						this.loading = false;
+					},
 					success: (ret) => {
 						if (ret.statusCode !== 200) {
 							console.log("请求失败:", ret)
@@ -110,6 +136,7 @@
 								this.fetchPageNum += 1;
 							}
 						}
+						this.loading = false;
 					}
 				});
 			},
@@ -158,4 +185,7 @@
 </script>
 
 <style>
+	.index{
+		justify-content:flex-start;
+	}
 </style>

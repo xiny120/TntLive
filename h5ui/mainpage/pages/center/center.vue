@@ -56,10 +56,21 @@
 				}
 			},
 			goSwitch() {
-				this.logout();
-				uni.navigateTo({
-					url:"../login/login"
-				})
+				var that = this;
+				uni.showModal({
+					title: '确定切换账户吗？',
+					//content: '确定切换账户吗？',
+					success: function (res) {
+						if (res.confirm) {				
+							that.logout();
+							uni.navigateTo({
+								url:"../login/login"
+							})
+						} else if (res.cancel) {
+							console.log('用户点击取消');
+						}
+					}
+				});								
 				
 			},			
 			goSetup() {
