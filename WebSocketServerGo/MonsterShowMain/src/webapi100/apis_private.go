@@ -6,12 +6,11 @@ import (
 	"net/http"
 	"os"
 	"ucenter"
-
-	"github.com/gorilla/mux"
+	//"github.com/gorilla/mux"
 )
 
 var (
-	actions = map[string](func(http.ResponseWriter, *http.Request, *map[string]interface{})){
+	actions_private = map[string](func(http.ResponseWriter, *http.Request, *map[string]interface{})){
 		"auth":         f_auth,
 		"modipassword": f_modipassword,
 		"roomlist":     f_roomlist,
@@ -19,26 +18,7 @@ var (
 	}
 )
 
-func ServeWebapi100_(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	//log.Println("serveTest - ", r.URL, " - ", vars["action"])
-	var v interface{}
-	err := json.NewDecoder(r.Body).Decode(&v)
-	if err != nil {
-		w.Write([]byte("\"status\":1,\"msg\":\"提交的json参数解析失败\""))
-	} else {
-		if f, ok := actions[vars["action"]]; ok {
-			v1 := v.(map[string]interface{})
-			f(w, r, &v1)
-		} else {
-			http.Error(w, "NotFound", http.StatusNotFound)
-		}
-	}
-}
-
-func ServeWebapi100(w http.ResponseWriter, r *http.Request) {
-	//vars := mux.Vars(r)
-
+func Private(w http.ResponseWriter, r *http.Request) {
 	if origin := r.Header.Get("Origin"); origin != "" {
 		w.Header().Set("Access-Control-Allow-Origin", "*") //允许访问所有域
 		w.Header().Set("Access-Control-Allow-Methods", "POST")
@@ -58,16 +38,6 @@ func ServeWebapi100(w http.ResponseWriter, r *http.Request) {
 	} else {
 		v1 := v.(map[string]interface{})
 		action := v1["action"].(string)
-		if action == "auth" or action="authout" {
-			if f, ok := actions[action]; ok {
-
-				f(w, r, &v1)
-			} else {
-				http.Error(w, "NotFound", http.StatusNotFound)
-			}
-			return
-		}
-
 		token := r.Header.Get("mster-token")
 		log.Printf("Authenticated Middleware %s\n", token)
 
@@ -117,41 +87,12 @@ func ServeWebapi100(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		if f, ok := actions[action]; ok {
+		if f, ok := actions_private[action]; ok {
 
 			f(w, r, &v1)
 		} else {
 			http.Error(w, "NotFound", http.StatusNotFound)
 		}
-	}
-}
-
-func f_auth(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
-	log.Println("f_auth", *v)
-	res := make(map[string]interface{})
-	account := (*v)["account"].(string)
-	password := (*v)["password"].(string)
-	tt := sign.SignIn(account, password)
-	sign.Sessions[tt.SessionId] = tt
-	wbuf, werr := json.Marshal(tt)
-	if werr == nil {
-		tfile := "./tokens/" + tt.SessionId
-		f, err3 := os.Create(tfile) //创建文件
-		if err3 == nil {
-			defer f.Close()
-			//_, err3 := f.WriteString(string(wbuf)) //写入文件(字节数组)
-			_, err3 := f.Write(wbuf) //写入文件(字节数组)
-			if err3 != nil {
-				os.Remove(tfile)
-			}
-		}
-	}
-	res["t"] = "sign in"
-	res["status"] = 0
-	res["userinfo"] = tt
-	rmsg, err := json.Marshal(res)
-	if err == nil {
-		w.Write(rmsg)
 	}
 }
 
@@ -184,24 +125,4 @@ func f_modipassword(w http.ResponseWriter, r *http.Request, v *map[string]interf
 	if err == nil {
 		w.Write(rmsg)
 	}
-}
-
-type roomitem struct {
-	Img_src string `json:"img_src"`
-	Img_num string `json:"img_num"`
-	Title   string `json:"title"`
-}
-
-func f_roomlist(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
-	log.Println("f_roomlist", *v)
-	ris := []roomitem{
-		roomitem{"", "45", "roomitem01"},
-		roomitem{"", "48", "roomitem02"},
-		roomitem{"", "49", "roomitem03"},
-	}
-	rmsg, err := json.Marshal(ris)
-	if err == nil {
-		w.Write(rmsg)
-	}
-
 }

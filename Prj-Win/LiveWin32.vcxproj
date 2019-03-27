@@ -247,6 +247,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="resource.h" />
     <ClInclude Include="simple_app.h" />
     <ClInclude Include="simple_handler.h" />
+    <ClInclude Include="xdefines.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DlgRtmpPull.cpp" />

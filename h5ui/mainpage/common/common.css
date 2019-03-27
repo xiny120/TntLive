@@ -80,7 +80,7 @@
 
 .car-title-view {
 	flex: 1;
-	padding: 14upx 0upx 14upx 20upx;
+	padding: 8upx 0upx 8upx 12upx;
 }
 
 .card-title {
@@ -110,12 +110,12 @@
 
 .card-list2 {
 	width: 345upx;
-	margin: 20upx 0 20upx 20upx;
+	margin: 12upx 6upx 12upx 6upx;
 }
 
 .card-list2-img {
 	width: 345upx;
-	height: 517upx;
+	height: 380upx;
 }
 
 .card-list2-num-view {
@@ -128,7 +128,7 @@
 }
 
 .card-list2-title {
-	font-size: 26upx;
+	font-size: 23upx;
 }
 
 

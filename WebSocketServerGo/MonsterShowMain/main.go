@@ -89,7 +89,8 @@ func main() {
 	})
 
 	// webapi 1.0.0 协议
-	r.HandleFunc("/ver/1.00/api", webapi100.ServeWebapi100)
+	r.HandleFunc("/api/1.00/private", webapi100.Private)
+	r.HandleFunc("/api/1.00/public", webapi100.Public)
 	//s := r.PathPrefix("/api/1.00").Subrouter()
 	//s0 := s.PathPrefix("/hello").Subrouter()
 	//s0.HandleFunc("/abc", hello_abc)

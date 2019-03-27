@@ -14,6 +14,9 @@
 #include "include/views/cef_window.h"
 #include "include/wrapper/cef_closure_task.h"
 #include "include/wrapper/cef_helpers.h"
+#include "include/cef_parser.h"
+
+#include "xdefines.h"
 
 namespace {
 
@@ -139,4 +142,32 @@ void SimpleHandler::CloseAllBrowsers(bool force_close) {
   BrowserList::const_iterator it = browser_list_.begin();
   for (; it != browser_list_.end(); ++it)
     (*it)->GetHost()->CloseBrowser(force_close);
+}
+
+
+bool SimpleHandler::OnJSDialog(CefRefPtr<CefBrowser> browser,
+	const CefString& origin_url,
+	JSDialogType dialog_type,
+	const CefString& message_text,
+	const CefString& default_prompt_text,
+	CefRefPtr<CefJSDialogCallback> callback,
+	bool& suppress_message) {
+	std::string str0 = message_text.ToString();
+	
+
+	CefRefPtr<CefValue> jsonObject = CefParseJSON(message_text, JSON_PARSER_ALLOW_TRAILING_COMMAS);
+	if (jsonObject->IsValid())
+	{
+		CefRefPtr<CefDictionaryValue> dict = jsonObject->GetDictionary();
+		CefString token = dict->GetString("cmd");
+		if (token == "pulldlg") {
+			CefRefPtr<CefDictionaryValue> data = dict->GetDictionary("data");
+			CefString roomid = data->GetString("id");
+			CefString pulluri = data->GetString("pulluri");
+			::PostMessage(m_hWndDlg, WM_PULLDLG, 0, 0);
+		}
+	}
+
+
+	return true;
 }

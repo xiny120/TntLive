@@ -23,6 +23,7 @@
 #include "afxdialogex.h"
 #include "DlgRtmpPush.h"
 #include "DlgRtmpPull.h"
+#include "xdefines.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -147,6 +148,7 @@ BOOL CLiveWin32Dlg::OnInitDialog()
 	// CEF has initialized.
 	//CefMainArgs main_args(theApp.m_hInstance);
 	theApp.app.get()->hWnd = GetSafeHwnd();
+	theApp.handler.get()->m_hWndDlg = GetSafeHwnd();
 	// Initialize CEF.
 	CefInitialize(theApp.main_args, settings, theApp.app.get(), NULL);
 
@@ -180,6 +182,10 @@ BOOL CLiveWin32Dlg::OnInitDialog()
 	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, browser_settings,
 		NULL);
 
+	m_pDlgRtmpPull = new DlgRtmpPull();
+	m_pDlgRtmpPull->Create(IDD_DIALOG_PULL);
+	
+	
 
 
 	
@@ -320,6 +326,11 @@ void CLiveWin32Dlg::OnCancel()
 BOOL CLiveWin32Dlg::PreTranslateMessage(MSG* pMsg)
 {
 	// TODO: 在此添加专用代码和/或调用基类
+	if (pMsg->message == WM_PULLDLG) {
+		//DlgRtmpPull dlg;
+		//dlg.DoModal();
+		m_pDlgRtmpPull->ShowWindow(SW_SHOWNORMAL);
+	}
 
 	return CDialogEx::PreTranslateMessage(pMsg);
 }
@@ -359,4 +370,13 @@ void CLiveWin32Dlg::OnMenuSysMoreRefresh()
 void CLiveWin32Dlg::OnMenuSysMoreShowdevtools()
 {
 	// TODO: 在此添加命令处理程序代码
+}
+
+
+LRESULT CLiveWin32Dlg::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+	// TODO: 在此添加专用代码和/或调用基类
+	TRACE("DefWindowProc...\r\n");
+
+	return CDialogEx::DefWindowProc(message, wParam, lParam);
 }

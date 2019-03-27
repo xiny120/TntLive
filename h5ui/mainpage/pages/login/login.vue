@@ -151,7 +151,7 @@
 					
 					uni.request({
 						//url: this.$serverUrl + '/api/1.00/auth', //仅为示例，并非真实接口地址。
-						url: this.$serverUrl + '/ver/1.00/api', //仅为示例，并非真实接口地址。
+						url: this.$serverUrl + '/api/1.00/public', //仅为示例，并非真实接口地址。
 						method: 'POST',
 						data:data,
 						dataType:'json',  

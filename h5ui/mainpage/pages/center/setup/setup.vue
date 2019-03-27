@@ -88,8 +88,12 @@
 					password1: cj.MD5(this.password1).toString().substring(8,24),
 				}		
 				// 	
+				uni.showToast({
+					icon: 'none',
+					title: '提交密码修改申请...'
+				});				
 				uni.request({
-					url: this.$serverUrl + '/ver/1.00/api', //仅为示例，并非真实接口地址。
+					url: this.$serverUrl + '/api/1.00/private', //仅为示例，并非真实接口地址。
 					method: 'POST',
 					data:data,
 					dataType:'json',  
@@ -104,11 +108,11 @@
 								title: res.data.msg,
 							});	
 							this.logout();
-								setTimeout(() => {
-									uni.navigateBack({
-											delta: 1
-									});						  
-								}, 200)							
+							setTimeout(() => {
+								uni.navigateBack({
+										delta: 1
+								});						  
+							}, 200)							
 						}else{
 							uni.showToast({
 								title: res.data.msg,

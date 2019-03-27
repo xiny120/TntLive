@@ -19,6 +19,7 @@
 #pragma once
 #include "Resource.h"
 
+class DlgRtmpPull;
 // CLiveWin32Dlg 对话框
 class CLiveWin32Dlg : public CDialogEx
 {
@@ -36,6 +37,7 @@ public:
 // 实现
 protected:
 	HICON m_hIcon;
+	DlgRtmpPull* m_pDlgRtmpPull;
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
@@ -56,4 +58,5 @@ public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnMenuSysMoreRefresh();
 	afx_msg void OnMenuSysMoreShowdevtools();
+	virtual LRESULT DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 };

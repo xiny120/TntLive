@@ -46,7 +46,7 @@ void DlgRtmpPull::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(DlgRtmpPull, CDialog)
 	ON_WM_CLOSE()
-	ON_WM_ERASEBKGND()
+	//ON_WM_ERASEBKGND()
 	ON_WM_LBUTTONDBLCLK()
 	ON_MESSAGE(WM_MY_PULL_MESSAGE, OnMyMessage)
 	ON_BN_CLICKED(IDC_BTN_PULL, &DlgRtmpPull::OnBnClickedBtnPull)
@@ -61,7 +61,8 @@ void DlgRtmpPull::OnOK()
 
 void DlgRtmpPull::OnCancel()
 {
-	CDialog::EndDialog(0);
+	ShowWindow(SW_HIDE);
+	//CDialog::EndDialog(0);
 }
 
 void DlgRtmpPull::OnClose()
@@ -105,7 +106,7 @@ BOOL DlgRtmpPull::DestroyWindow()
 
 BOOL DlgRtmpPull::OnEraseBkgnd(CDC* pDC)
 {
-	return FALSE;
+	return TRUE;
 }
 
 LRESULT DlgRtmpPull::OnMyMessage(WPARAM wParam, LPARAM lParam)

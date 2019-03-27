@@ -12,8 +12,10 @@
 class SimpleHandler : public CefClient,
                       public CefDisplayHandler,
                       public CefLifeSpanHandler,
+	public CefJSDialogHandler,
                       public CefLoadHandler {
  public:
+	 HWND m_hWndDlg;
   explicit SimpleHandler(bool use_views);
   ~SimpleHandler();
 
@@ -44,6 +46,25 @@ class SimpleHandler : public CefClient,
                            ErrorCode errorCode,
                            const CefString& errorText,
                            const CefString& failedUrl) OVERRIDE;
+
+
+  //CefJSDialogHandler
+  virtual bool OnJSDialog(CefRefPtr<CefBrowser> browser,
+	  const CefString& origin_url,
+	  JSDialogType dialog_type,
+	  const CefString& message_text,
+	  const CefString& default_prompt_text,
+	  CefRefPtr<CefJSDialogCallback> callback,
+	  bool& suppress_message) OVERRIDE;
+
+  // CefClient methods
+  // Return the handler for JavaScript dialogs. If no handler is provided the
+  // default implementation will be used.
+
+  virtual CefRefPtr<CefJSDialogHandler> GetJSDialogHandler() {
+	  return this;
+  }
+
 
   // Request that all existing browser windows close.
   void CloseAllBrowsers(bool force_close);

@@ -42,6 +42,9 @@
     <ClInclude Include="simple_handler.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="xdefines.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LiveWin32.cpp">

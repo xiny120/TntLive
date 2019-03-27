@@ -44,7 +44,7 @@
 		{
 			"path": "pages/tag/tag",
 			"style": {
-				"navigationBarTitleText": "分类",
+				"navigationBarTitleText": "商城",
                 "enablePullDownRefresh": false
 			}
 		},

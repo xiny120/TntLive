@@ -3,11 +3,11 @@
 		<block v-for="(list, index) in lists" :key="index">
 			<view class="row">
 				<view class="card card-list2" v-for="(item,key) in list" @click="goDetail(item)" :key="key">
-					<image class="card-img card-list2-img" :src="item.img_src"></image>
-					<text class="card-num-view card-list2-num-view">{{item.img_num}}P</text>
+					<image class="card-img card-list2-img" :src="item.corver"></image>
 					<view class="card-bottm row">
-						<view class="car-title-view row">
-							<text class="card-title card-list2-title">{{item.title}}</text>
+						<view class="car-title-view column">
+							<text class="card-title ">{{item.title}}</text>
+							<text class="card-title card-list2-title">关注:{{item.follow}} 在线:{{item.onlines}}</text>
 						</view>
 						<view @click.stop="share(item)" class="card-share-view"></view>
 					</view>
@@ -89,13 +89,13 @@
 				}			
 				
 				uni.request({
-					url: this.$serverUrl + '/ver/1.00/api',//?page=' + (this.refreshing ? 1 : this.fetchPageNum) + '&per_page=10',
+					url: this.$serverUrl + '/api/1.00/public',//?page=' + (this.refreshing ? 1 : this.fetchPageNum) + '&per_page=10',
 					method: 'POST',
 					data:data,
 					dataType:'json',  
 					header:{  
 						'content-type':'application/json',
-						'mster-token':this.userInfo.SessionId,
+						//'mster-token':this.userInfo.SessionId,
 					}, 
 					fail:(ret)=>{
 						console.log(ret);
@@ -141,9 +141,21 @@
 				});
 			},
 			goDetail(e) {
-				uni.navigateTo({
-					url:"../detail/detail?data=" + encodeURIComponent(JSON.stringify(e))
-				})
+				console.log(e)
+				if(e.type == 1){
+					uni.switchTab({
+						url:"../tag/tag"
+					})
+				}else{
+					const data ={
+						cmd:"pulldlg",
+						data:e,
+					}
+					alert(JSON.stringify(data));
+					//uni.navigateTo({
+					//	url:"../detail/detail?data=" + encodeURIComponent(JSON.stringify(e))
+					//})
+				}
 			},
 			share(e) {
 				if (this.providerList.length === 0) {
