@@ -79,6 +79,23 @@ public:
 			return nullptr;
 	}
 
+	CefRefPtr<CefBrowser> GetBrowser(HWND hWnd) {
+		if (!browser_list_.empty()) {
+			BrowserList::iterator iter;
+			for (iter = browser_list_.begin(); iter != browser_list_.end(); iter++) {
+				HWND hWnd1 = (*iter)->GetHost()->GetWindowHandle();
+				HWND hWnd2 = GetParent(hWnd1);
+				if (hWnd == hWnd2) {
+					return *iter;
+				}
+			}
+			//return *browser_list_.begin();
+			return nullptr;
+		}
+		else
+			return nullptr;
+	}
+
  private:
   // Platform-specific implementation.
   void PlatformTitleChange(CefRefPtr<CefBrowser> browser,

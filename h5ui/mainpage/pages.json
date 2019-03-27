@@ -98,6 +98,10 @@
 				"navigationBarTitleText": "修改密码"
 			}
         }
+        ,{
+            "path" : "pages/chatroom/chatroom",
+            "style" : {}
+        }
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "white",

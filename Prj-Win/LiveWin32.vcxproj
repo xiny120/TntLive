@@ -239,6 +239,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CMyStatic.h" />
     <ClInclude Include="DlgRtmpPull.h" />
     <ClInclude Include="DlgRtmpPush.h" />
     <ClInclude Include="DlgVideo.h" />
@@ -250,6 +251,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="xdefines.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CMyStatic.cpp" />
     <ClCompile Include="DlgRtmpPull.cpp" />
     <ClCompile Include="DlgRtmpPush.cpp" />
     <ClCompile Include="DlgVideo.cpp" />

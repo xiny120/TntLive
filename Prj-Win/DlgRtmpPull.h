@@ -20,6 +20,7 @@
 #include "Resource.h"
 #include "RtmpGuester.h"
 #include "DlgVideo.h"
+#include "CMyStatic.h"
 #define WM_MY_PULL_MESSAGE (WM_USER + 102)
 
 // DlgVideo ¶Ô»°¿ò
@@ -57,6 +58,7 @@ public:
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	afx_msg LRESULT OnMyMessage(WPARAM wParam, LPARAM lParam);
 
+	CMyStatic m_myStatic;
 	CEdit	m_editUrl;
 	CButton m_btnRtmp;
 	CString m_strUrl;
@@ -68,4 +70,10 @@ private:
 	DlgVideo		*m_pDlgVideoMain;
 	RTMPGuester		*m_pAVRtmplayer;
 	
+public:
+	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
+	void Start();
+	void Stop();
+	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+	afx_msg void OnSize(UINT nType, int cx, int cy);
 };

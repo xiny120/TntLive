@@ -376,7 +376,7 @@ void CLiveWin32Dlg::OnMenuSysMoreShowdevtools()
 LRESULT CLiveWin32Dlg::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	// TODO: 在此添加专用代码和/或调用基类
-	TRACE("DefWindowProc...\r\n");
+	//TRACE("DefWindowProc...\r\n");
 
 	return CDialogEx::DefWindowProc(message, wParam, lParam);
 }

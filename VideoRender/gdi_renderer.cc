@@ -147,15 +147,9 @@ namespace webrtc {
 		webrtc::VideoFrame video_frame(videoFrame->video_frame_buffer(), 0, 0, videoFrame->rotation());
 		ConvertFromI420(video_frame, kARGB, 0, static_cast<uint8_t*>(pBits));
 		DrawBitmap(hwnd_, 0, 0, width_, height_, pBits);
-		char filename[1024] = { 0 };
-		sprintf(filename, "test%08d", fps_);
-		bmp_write((unsigned char*)pBits, 512, 512, filename);
-
-
-
-
-
-
+		//char filename[1024] = { 0 };
+		//sprintf(filename, "test%08d", fps_);
+		//bmp_write((unsigned char*)pBits, 512, 512, filename);
 		delete pBits;
 
 	}

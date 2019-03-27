@@ -42,6 +42,7 @@ BEGIN_MESSAGE_MAP(DlgVideo, CDialog)
 	ON_WM_CLOSE()
 	ON_WM_ERASEBKGND()
 	ON_WM_LBUTTONDBLCLK()
+	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 
@@ -87,4 +88,12 @@ void DlgVideo::OnLButtonDblClk(UINT nFlags, CPoint point)
 	//m_rDlgMain.OnFullScreen(this);
 
 	CDialog::OnLButtonDblClk(nFlags, point);
+}
+
+
+void DlgVideo::OnSize(UINT nType, int cx, int cy)
+{
+	CDialog::OnSize(nType, cx, cy);
+
+	// TODO: 在此处添加消息处理程序代码
 }

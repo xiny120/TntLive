@@ -45,6 +45,9 @@
     <ClInclude Include="xdefines.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="CMyStatic.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LiveWin32.cpp">
@@ -69,6 +72,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="simple_handler_win.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CMyStatic.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

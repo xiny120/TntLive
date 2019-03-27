@@ -17,6 +17,7 @@
 * See the GNU LICENSE file for more info.
 */
 #include "stdafx.h"
+#include "LiveWin32.h"
 #include "DlgRtmpPull.h"
 // DlgRtmpPull 对话框
 
@@ -50,6 +51,9 @@ BEGIN_MESSAGE_MAP(DlgRtmpPull, CDialog)
 	ON_WM_LBUTTONDBLCLK()
 	ON_MESSAGE(WM_MY_PULL_MESSAGE, OnMyMessage)
 	ON_BN_CLICKED(IDC_BTN_PULL, &DlgRtmpPull::OnBnClickedBtnPull)
+	ON_WM_GETMINMAXINFO()
+	ON_WM_SHOWWINDOW()
+	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 
@@ -62,12 +66,14 @@ void DlgRtmpPull::OnOK()
 void DlgRtmpPull::OnCancel()
 {
 	ShowWindow(SW_HIDE);
+	Stop();
 	//CDialog::EndDialog(0);
 }
 
 void DlgRtmpPull::OnClose()
 {
-	CDialog::EndDialog(0);
+	ShowWindow(SW_HIDE);
+	//CDialog::EndDialog(0);
 }
 
 BOOL DlgRtmpPull::OnInitDialog()
@@ -83,6 +89,39 @@ BOOL DlgRtmpPull::OnInitDialog()
 		ScreenToClient(rc);
 		m_pDlgVideoMain->SetWindowPos(NULL, rc.left, rc.top, rc.Width(), rc.Height(), SWP_SHOWWINDOW);
 	}
+
+	// Specify CEF browser settings here.
+	CefBrowserSettings browser_settings;
+
+	std::string url;
+
+	// Check if a "--url=" value was provided via the command-line. If so, use
+	// that instead of the default URL.
+	//url = command_line->GetSwitchValue("url");
+	if (url.empty())
+		url = "http://localhost:8080/live/h5client/mainpage/#/pages/chatroom/chatroom";
+
+	CefWindowInfo window_info;
+
+#if defined(OS_WIN)
+	// On Windows we need to specify certain flags that will be passed to
+	// CreateWindowEx().
+	RECT rc;
+	rc.left = 0;
+	rc.top = 0;
+	rc.bottom = 1000;
+	rc.right = 500;
+	CWnd* pWnd = this->GetDlgItem(IDC_STATIC_CEF3);
+	m_myStatic.SubclassDlgItem(IDC_STATIC_CEF3, this);
+	window_info.SetAsChild(pWnd->GetSafeHwnd(), rc);
+	//window_info.SetAsPopup(NULL, "cefsimple");
+#endif
+
+	// Create the first browser window.
+	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, browser_settings,
+		NULL);
+
+	PostMessage( WM_SIZE, 0, 0);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 异常: OCX 属性页应返回 FALSE
@@ -149,4 +188,90 @@ void DlgRtmpPull::OnBnClickedBtnPull()
 		RTMPGuester::Destory(m_pAVRtmplayer);
 		m_pAVRtmplayer = NULL;
 	}
+}
+
+
+void DlgRtmpPull::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
+{
+	//设置对话框最小宽度与高度
+	RECT rc;
+	if (m_pDlgVideoMain != NULL) {
+		if (IsWindow(m_pDlgVideoMain->GetSafeHwnd())) {
+			m_pDlgVideoMain->GetWindowRect(&rc);
+			lpMMI->ptMinTrackSize.x = rc.right - rc.left;
+			lpMMI->ptMinTrackSize.y = rc.bottom - rc.top;
+		}
+	}
+	__super::OnGetMinMaxInfo(lpMMI);
+}
+
+
+void DlgRtmpPull::Start()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	Stop();
+	if (m_pAVRtmplayer == NULL) {
+		m_pAVRtmplayer = RTMPGuester::Create(*this);
+		UpdateData(TRUE);
+		char ss[128];
+		memset(ss, 0, 128);
+		int fnlen = m_strUrl.GetLength();
+		for (int i = 0; i <= fnlen; i++) {
+			ss[i] = m_strUrl.GetAt(i);
+		}
+		m_pAVRtmplayer->StartRtmpPlay(ss, m_pDlgVideoMain->m_hWnd);
+		m_btnRtmp.SetWindowTextW(L"结束");
+	}
+}
+
+
+void DlgRtmpPull::Stop()
+{
+	if (m_pAVRtmplayer != NULL) {
+		m_btnRtmp.SetWindowTextW(L"拉流");
+		m_pAVRtmplayer->StopRtmpPlay();
+		RTMPGuester::Destory(m_pAVRtmplayer);
+		m_pAVRtmplayer = NULL;
+	}
+}
+
+
+void DlgRtmpPull::OnShowWindow(BOOL bShow, UINT nStatus)
+{
+	__super::OnShowWindow(bShow, nStatus);
+	if (!bShow) {
+		Stop();
+	}else {
+		Start();
+	}
+}
+
+
+void DlgRtmpPull::OnSize(UINT nType, int cx, int cy)
+{
+	__super::OnSize(nType, cx, cy);
+	CRect rcClient,rcVideo,rcChatroom;
+	GetClientRect(rcClient);
+	m_pDlgVideoMain->GetWindowRect(rcVideo);
+	rcChatroom = rcClient;
+	rcChatroom.left = rcVideo.right + 18;
+	if (IsWindow(this->GetSafeHwnd())) {
+		CWnd* pWnd = GetDlgItem(IDC_STATIC_CEF3);
+		if (IsWindow(pWnd->GetSafeHwnd())) {
+			pWnd->SetWindowPos(NULL, rcChatroom.left, rcChatroom.top, rcChatroom.Width(), rcChatroom.Height(), SWP_NOZORDER);
+
+			CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
+			if (pb != nullptr) {
+				auto hwnd = pb->GetHost()->GetWindowHandle();
+				//auto rect = RECT{ 0 };
+				//GetClientRect(&rect);
+
+				::SetWindowPos(hwnd, HWND_TOP, rcChatroom.left, rcChatroom.top, rcChatroom.right - rcChatroom.left, rcChatroom.bottom - rcChatroom.top, SWP_NOZORDER | SWP_NOMOVE);
+
+			}
+
+		}
+	}
+
+
 }

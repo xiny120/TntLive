@@ -220,7 +220,7 @@ void D3dRenderer::OnFrame(const cricket::VideoFrame& frame) {
   webrtc::VideoFrame video_frame(videoFrame->video_frame_buffer(), 0, 0, videoFrame->rotation());
   ConvertFromI420(video_frame, kARGB, 0, static_cast<uint8_t*>(lock_rect.pBits));
 
-  bmp_write((unsigned char*)lock_rect.pBits, 512, 512, "test");
+  //bmp_write((unsigned char*)lock_rect.pBits, 512, 512, "test");
   texture_->UnlockRect(0);
 
   d3d_device_->BeginScene();
