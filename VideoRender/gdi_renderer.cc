@@ -10,6 +10,7 @@
 #include "gdi_renderer.h"
 
 #include "webrtc/common_video/libyuv/include/webrtc_libyuv.h"
+#include "../Prj-Win/xdefines.h"
 
 namespace webrtc {
 
@@ -69,9 +70,10 @@ namespace webrtc {
 		width_ = width;
 		height_ = height;
 
-		::SetWindowPos(hwnd_, NULL, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
-		RECT rc;
-		::GetClientRect(hwnd_, &rc);
+		//::SetWindowPos(hwnd_, NULL, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
+		//RECT rc;
+		//::GetClientRect(hwnd_, &rc);
+		PostMessage(GetParent(hwnd_), WM_PULLDLG_RESIZE, width, height);
 
 	}
 

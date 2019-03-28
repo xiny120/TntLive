@@ -158,6 +158,7 @@ return;
 </script>
 
 <style>
+	@import './common/uni.css';
     @import './common/common.css';
 
     page,

@@ -35,13 +35,18 @@ public:
 
 // 对话框数据
 	enum { IDD = IDD_DIALOG_PULL };
+	CBrush brush;
 
 public:
 	//* For RTMPCGuesterEvent
-	virtual void OnRtmplayerOK() {};
-	virtual void OnRtmplayerStatus(int cacheTime, int curBitrate) {};
-	virtual void OnRtmplayerCache(int time) {};
-	virtual void OnRtmplayerClosed(int errcode) {};
+	virtual void OnRtmplayerOK() {
+	};
+	virtual void OnRtmplayerStatus(int cacheTime, int curBitrate) {
+	};
+	virtual void OnRtmplayerCache(int time) {
+	};
+	virtual void OnRtmplayerClosed(int errcode) {
+	};
 
 
 protected:
@@ -57,12 +62,15 @@ public:
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	afx_msg LRESULT OnMyMessage(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnPullDlgResize(WPARAM, LPARAM);
 
 	CMyStatic m_myStatic;
 	CEdit	m_editUrl;
 	CButton m_btnRtmp;
 	CString m_strUrl;
 	CStatic m_staticCaptrue;
+	int	m_nVideoWidth;
+	int m_nVideoHeight;
 
 	afx_msg void OnBnClickedBtnPull();
 
@@ -76,4 +84,5 @@ public:
 	void Stop();
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 };

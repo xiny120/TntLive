@@ -19,6 +19,7 @@
 #include "stdafx.h"
 #include "LiveWin32.h"
 #include "DlgRtmpPull.h"
+#include "xdefines.h"
 // DlgRtmpPull 对话框
 
 IMPLEMENT_DYNAMIC(DlgRtmpPull, CDialog)
@@ -50,14 +51,62 @@ BEGIN_MESSAGE_MAP(DlgRtmpPull, CDialog)
 	//ON_WM_ERASEBKGND()
 	ON_WM_LBUTTONDBLCLK()
 	ON_MESSAGE(WM_MY_PULL_MESSAGE, OnMyMessage)
+	ON_MESSAGE(WM_PULLDLG_RESIZE,OnPullDlgResize)
 	ON_BN_CLICKED(IDC_BTN_PULL, &DlgRtmpPull::OnBnClickedBtnPull)
 	ON_WM_GETMINMAXINFO()
 	ON_WM_SHOWWINDOW()
 	ON_WM_SIZE()
+	ON_WM_CTLCOLOR()
 END_MESSAGE_MAP()
 
 
 // DlgRtmpPull 消息处理程序
+
+LRESULT DlgRtmpPull::OnPullDlgResize(WPARAM wp, LPARAM lp) {
+
+	m_nVideoWidth = wp;
+	m_nVideoHeight = lp;
+	PostMessage(WM_SIZE, 0, 0);
+	return TRUE;
+	CRect rcClient, rcVideo, rcChatroom;
+	GetClientRect(rcClient);
+	rcVideo.left = 0;
+	rcVideo.top = 0;
+	rcVideo.right = wp;
+	rcVideo.bottom = lp;
+	if (m_pDlgVideoMain != NULL) {
+		if (IsWindow(m_pDlgVideoMain->GetSafeHwnd())) {
+			m_pDlgVideoMain->SetWindowPos(NULL, 0, 0, rcVideo.Width(), rcVideo.Height(), SWP_NOMOVE | SWP_NOZORDER);
+		}
+	}
+	return TRUE;
+	//m_pDlgVideoMain->GetWindowRect(rcVideo);
+	//ScreenToClient(rcVideo);
+	rcChatroom = rcClient;
+	rcChatroom.left = rcVideo.right + 18;
+
+
+
+	if (IsWindow(this->GetSafeHwnd())) {
+		CWnd* pWnd = GetDlgItem(IDC_STATIC_CEF3);
+		if (IsWindow(pWnd->GetSafeHwnd())) {
+			pWnd->SetWindowPos(NULL, rcChatroom.left, rcChatroom.top, rcChatroom.Width(), rcChatroom.Height(), SWP_NOZORDER);
+
+			CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
+			if (pb != nullptr) {
+				auto hwnd = pb->GetHost()->GetWindowHandle();
+				//auto rect = RECT{ 0 };
+				//GetClientRect(&rect);
+
+				::SetWindowPos(hwnd, HWND_TOP, rcChatroom.left, rcChatroom.top, rcChatroom.right - rcChatroom.left, rcChatroom.bottom - rcChatroom.top, SWP_NOZORDER | SWP_NOMOVE);
+
+			}
+
+		}
+	}
+
+	return TRUE;
+}
 
 void DlgRtmpPull::OnOK()
 {
@@ -79,13 +128,14 @@ void DlgRtmpPull::OnClose()
 BOOL DlgRtmpPull::OnInitDialog()
 {
 	CDialog::OnInitDialog();
+	brush.CreateSolidBrush(RGB(0, 0, 0));
 
 	{// Video player
 		m_pDlgVideoMain = new DlgVideo(this);
 		m_pDlgVideoMain->Create(DlgVideo::IDD, this);
 		CRect rc;
 		m_staticCaptrue.GetWindowRect(rc);
-		m_staticCaptrue.ShowWindow(SW_HIDE);
+		//m_staticCaptrue.ShowWindow(SW_HIDE);
 		ScreenToClient(rc);
 		m_pDlgVideoMain->SetWindowPos(NULL, rc.left, rc.top, rc.Width(), rc.Height(), SWP_SHOWWINDOW);
 	}
@@ -198,8 +248,9 @@ void DlgRtmpPull::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 	if (m_pDlgVideoMain != NULL) {
 		if (IsWindow(m_pDlgVideoMain->GetSafeHwnd())) {
 			m_pDlgVideoMain->GetWindowRect(&rc);
-			lpMMI->ptMinTrackSize.x = rc.right - rc.left;
-			lpMMI->ptMinTrackSize.y = rc.bottom - rc.top;
+			ScreenToClient(&rc);
+			lpMMI->ptMinTrackSize.x = rc.right - rc.left + rc.left * 2 + GetSystemMetrics(SM_CXFRAME) * 2;
+			lpMMI->ptMinTrackSize.y = rc.bottom - rc.top + rc.top * 2  + GetSystemMetrics(SM_CYSIZE) + GetSystemMetrics(SM_CYFRAME)*2;
 		}
 	}
 	__super::OnGetMinMaxInfo(lpMMI);
@@ -250,11 +301,59 @@ void DlgRtmpPull::OnShowWindow(BOOL bShow, UINT nStatus)
 void DlgRtmpPull::OnSize(UINT nType, int cx, int cy)
 {
 	__super::OnSize(nType, cx, cy);
+	CRect rcClient, rcVideo, rcChatroom,rcStatic;
+	GetClientRect(rcClient);
+	rcStatic = rcChatroom = rcClient;
+	rcChatroom.left = rcChatroom.right - 380;
+	rcVideo.left = 0;
+	rcVideo.top = 0;
+	rcVideo.right = m_nVideoWidth;
+	rcVideo.bottom = m_nVideoHeight;
+
+
+	if (rcChatroom.left < rcVideo.right) {
+		rcChatroom.left = rcVideo.right + GetSystemMetrics(SM_CYFRAME);
+	}
+
+	if (IsWindow(this->GetSafeHwnd())) {
+		CWnd* pWnd = GetDlgItem(IDC_STATIC_CEF3);
+		if (IsWindow(pWnd->GetSafeHwnd())) {
+			pWnd->SetWindowPos(NULL, rcChatroom.left, rcChatroom.top, rcChatroom.Width(), rcChatroom.Height(), SWP_NOZORDER);
+			CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
+			if (pb != nullptr) {
+				auto hwnd = pb->GetHost()->GetWindowHandle();
+				::SetWindowPos(hwnd, HWND_TOP, rcChatroom.left, rcChatroom.top, rcChatroom.right - rcChatroom.left, rcChatroom.bottom - rcChatroom.top, SWP_NOZORDER | SWP_NOMOVE);
+			}
+		}
+	}
+
+	rcStatic.right = rcChatroom.left - GetSystemMetrics(SM_CYFRAME);
+	if (rcStatic.right < rcVideo.right) {
+		rcStatic.right = rcVideo.right;
+	}
+
+	if (IsWindow(this->m_staticCaptrue.GetSafeHwnd())) {
+		m_staticCaptrue.SetWindowPos(NULL, 0, 0, rcStatic.Width(), rcStatic.Height(), SWP_NOMOVE | SWP_NOZORDER);
+	}
+
+	if (m_pDlgVideoMain != NULL) {
+		if (IsWindow(m_pDlgVideoMain->GetSafeHwnd())) {
+			m_pDlgVideoMain->SetWindowPos(NULL, 0, 0, rcVideo.Width(), rcVideo.Height(), SWP_NOMOVE | SWP_NOZORDER);
+		}
+	}
+
+
+	return;
+	/*
 	CRect rcClient,rcVideo,rcChatroom;
 	GetClientRect(rcClient);
 	m_pDlgVideoMain->GetWindowRect(rcVideo);
+	ScreenToClient(rcVideo);
 	rcChatroom = rcClient;
 	rcChatroom.left = rcVideo.right + 18;
+
+
+
 	if (IsWindow(this->GetSafeHwnd())) {
 		CWnd* pWnd = GetDlgItem(IDC_STATIC_CEF3);
 		if (IsWindow(pWnd->GetSafeHwnd())) {
@@ -273,5 +372,20 @@ void DlgRtmpPull::OnSize(UINT nType, int cx, int cy)
 		}
 	}
 
+	*/
+}
 
+
+HBRUSH DlgRtmpPull::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	HBRUSH hbr = __super::OnCtlColor(pDC, pWnd, nCtlColor);
+	
+	if (pWnd->GetDlgCtrlID() == IDC_STATIC_CAPTRUE) {
+		return (HBRUSH)brush.GetSafeHandle();
+	}
+
+	
+
+	
+	return hbr;
 }
