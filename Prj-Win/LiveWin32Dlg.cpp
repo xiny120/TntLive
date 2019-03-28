@@ -136,7 +136,7 @@ BOOL CLiveWin32Dlg::OnInitDialog()
 	
 	// Specify CEF global settings here.
 	CefSettings settings;
-	settings.log_severity = cef_log_severity_t::LOGSEVERITY_VERBOSE;
+	//settings.log_severity = cef_log_severity_t::LOGSEVERITY_VERBOSE;
 	settings.multi_threaded_message_loop = true;
 	settings.remote_debugging_port = 8088;
 #if !defined(CEF_USE_SANDBOX)
@@ -300,10 +300,7 @@ void CLiveWin32Dlg::OnBnClickedBtnPull()
 	// TODO: 在此添加控件通知处理程序代码
 	//DlgRtmpPull dlg;
 	//dlg.DoModal();
-	CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser();
-	if (pb != nullptr) {
-		pb->ReloadIgnoreCache();
-	}
+
 }
 
 

@@ -20,6 +20,7 @@
 #include "LiveWin32.h"
 #include "DlgRtmpPull.h"
 #include "xdefines.h"
+#include "include/cef_parser.h"
 // DlgRtmpPull 对话框
 
 IMPLEMENT_DYNAMIC(DlgRtmpPull, CDialog)
@@ -29,6 +30,9 @@ DlgRtmpPull::DlgRtmpPull()
 	, m_strUrl(_T("rtmp://www.pic98.com/live/livestream"))
 	, m_pAVRtmplayer(NULL)
 	, m_pDlgVideoMain(NULL)
+	, m_nVideoWidth(0)
+	, m_nVideoHeight(160)
+	, m_nChatroomWidth(420)
 {
 }
 
@@ -42,7 +46,7 @@ void DlgRtmpPull::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT_URL, m_editUrl);
 	DDX_Control(pDX, IDC_BTN_PULL, m_btnRtmp);
 	DDX_Text(pDX, IDC_EDIT_URL, m_strUrl);
-	DDX_Control(pDX, IDC_STATIC_CAPTRUE, m_staticCaptrue);
+	//DDX_Control(pDX, IDC_STATIC_CAPTRUE, m_staticCaptrue);
 }
 
 
@@ -56,7 +60,8 @@ BEGIN_MESSAGE_MAP(DlgRtmpPull, CDialog)
 	ON_WM_GETMINMAXINFO()
 	ON_WM_SHOWWINDOW()
 	ON_WM_SIZE()
-	ON_WM_CTLCOLOR()
+	//ON_WM_CTLCOLOR()
+	ON_WM_SYSCOMMAND()
 END_MESSAGE_MAP()
 
 
@@ -128,48 +133,54 @@ void DlgRtmpPull::OnClose()
 BOOL DlgRtmpPull::OnInitDialog()
 {
 	CDialog::OnInitDialog();
+
+	CMenu* pSysMenu = GetSystemMenu(FALSE);
+	if (pSysMenu != NULL)
+	{
+		//CMenu sysMoreMenu;
+		//sysMoreMenu.LoadMenu(IDR_MENU_SYS_MORE);
+		//pSysMenu->AppendMenu(MF_STRING | MF_POPUP | MF_BYCOMMAND, (UINT)sysMoreMenu.GetSubMenu(0)->m_hMenu, L"操作");
+		pSysMenu->AppendMenu(MF_STRING, IDR_MENU_SYS_MORE_SHOWDEVTOOLS, L"开发者工具");
+		pSysMenu->AppendMenu(MF_STRING, IDR_MENU_SYS_MORE_REFRESH, L"刷新界面");
+	}
+	m_myStatic.SubclassDlgItem(IDC_STATIC_CAPTRUE, this);
+
 	brush.CreateSolidBrush(RGB(0, 0, 0));
 
 	{// Video player
 		m_pDlgVideoMain = new DlgVideo(this);
 		m_pDlgVideoMain->Create(DlgVideo::IDD, this);
 		CRect rc;
-		m_staticCaptrue.GetWindowRect(rc);
+		m_myStatic.GetWindowRect(rc);
 		//m_staticCaptrue.ShowWindow(SW_HIDE);
 		ScreenToClient(rc);
 		m_pDlgVideoMain->SetWindowPos(NULL, rc.left, rc.top, rc.Width(), rc.Height(), SWP_SHOWWINDOW);
 	}
 
-	// Specify CEF browser settings here.
+	CRect rc1;
+	GetClientRect(rc1);
+	m_nVideoWidth = rc1.Width() - m_nChatroomWidth;
+
 	CefBrowserSettings browser_settings;
-
 	std::string url;
-
-	// Check if a "--url=" value was provided via the command-line. If so, use
-	// that instead of the default URL.
-	//url = command_line->GetSwitchValue("url");
 	if (url.empty())
 		url = "http://localhost:8080/live/h5client/mainpage/#/pages/chatroom/chatroom";
 
 	CefWindowInfo window_info;
-
-#if defined(OS_WIN)
-	// On Windows we need to specify certain flags that will be passed to
-	// CreateWindowEx().
 	RECT rc;
 	rc.left = 0;
 	rc.top = 0;
 	rc.bottom = 1000;
 	rc.right = 500;
 	CWnd* pWnd = this->GetDlgItem(IDC_STATIC_CEF3);
-	m_myStatic.SubclassDlgItem(IDC_STATIC_CEF3, this);
-	window_info.SetAsChild(pWnd->GetSafeHwnd(), rc);
-	//window_info.SetAsPopup(NULL, "cefsimple");
-#endif
 
-	// Create the first browser window.
-	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, browser_settings,
-		NULL);
+	window_info.SetAsChild(pWnd->GetSafeHwnd(), rc);
+	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, browser_settings,NULL);
+
+	url = "http://localhost:8080/live/h5client/mainpage/#/pages/medialist/medialist";
+	pWnd = this->GetDlgItem(IDC_STATIC_LIST);
+	window_info.SetAsChild(pWnd->GetSafeHwnd(), rc);
+	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, browser_settings, NULL);
 
 	PostMessage( WM_SIZE, 0, 0);
 
@@ -249,8 +260,8 @@ void DlgRtmpPull::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 		if (IsWindow(m_pDlgVideoMain->GetSafeHwnd())) {
 			m_pDlgVideoMain->GetWindowRect(&rc);
 			ScreenToClient(&rc);
-			lpMMI->ptMinTrackSize.x = rc.right - rc.left + rc.left * 2 + GetSystemMetrics(SM_CXFRAME) * 2;
-			lpMMI->ptMinTrackSize.y = rc.bottom - rc.top + rc.top * 2  + GetSystemMetrics(SM_CYSIZE) + GetSystemMetrics(SM_CYFRAME)*2;
+			lpMMI->ptMinTrackSize.x = m_nVideoWidth + GetSystemMetrics(SM_CXFRAME) * 2;
+			lpMMI->ptMinTrackSize.y = m_nVideoHeight  + GetSystemMetrics(SM_CYSIZE) + GetSystemMetrics(SM_CYFRAME)*2;
 		}
 	}
 	__super::OnGetMinMaxInfo(lpMMI);
@@ -259,9 +270,14 @@ void DlgRtmpPull::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 
 void DlgRtmpPull::Start()
 {
-	// TODO:  在此添加控件通知处理程序代码
 	Stop();
+	
 	if (m_pAVRtmplayer == NULL) {
+
+		std::string url;
+		if (url.empty())
+			url = m_strUri;
+
 		m_pAVRtmplayer = RTMPGuester::Create(*this);
 		UpdateData(TRUE);
 		char ss[128];
@@ -270,7 +286,7 @@ void DlgRtmpPull::Start()
 		for (int i = 0; i <= fnlen; i++) {
 			ss[i] = m_strUrl.GetAt(i);
 		}
-		m_pAVRtmplayer->StartRtmpPlay(ss, m_pDlgVideoMain->m_hWnd);
+		m_pAVRtmplayer->StartRtmpPlay(url.c_str(), m_pDlgVideoMain->m_hWnd);
 		m_btnRtmp.SetWindowTextW(L"结束");
 	}
 }
@@ -283,6 +299,12 @@ void DlgRtmpPull::Stop()
 		m_pAVRtmplayer->StopRtmpPlay();
 		RTMPGuester::Destory(m_pAVRtmplayer);
 		m_pAVRtmplayer = NULL;
+		//m_nVideoWidth = 0;
+		m_nVideoHeight = 160;
+		PostMessage(WM_SIZE, 0, 0);
+		CRect rc;
+		GetClientRect(rc);
+		//m_nVideoWidth = rc.Width() - m_nChatroomWidth;
 	}
 }
 
@@ -293,7 +315,27 @@ void DlgRtmpPull::OnShowWindow(BOOL bShow, UINT nStatus)
 	if (!bShow) {
 		Stop();
 	}else {
-		Start();
+		std::string url = "";
+		CefString str = CPullDlgData::me()->pop();
+		if (!str.empty()) {
+
+			CefRefPtr<CefValue> jsonObject = CefParseJSON(str, JSON_PARSER_ALLOW_TRAILING_COMMAS);
+			if (jsonObject->IsValid())
+			{
+				CefRefPtr<CefDictionaryValue> dict = jsonObject->GetDictionary();
+				CefString token = dict->GetString("cmd");
+				if (token == "pulldlg") {
+					CefRefPtr<CefDictionaryValue> data = dict->GetDictionary("data");
+					CefString roomid = data->GetString("id");
+					CefString pulluri = data->GetString("pulluri");
+					CefString background = data->GetString("background");
+					url = std::string(pulluri);
+					m_strUri = url;
+				}
+			}
+		}
+
+		//Start();
 	}
 }
 
@@ -301,10 +343,11 @@ void DlgRtmpPull::OnShowWindow(BOOL bShow, UINT nStatus)
 void DlgRtmpPull::OnSize(UINT nType, int cx, int cy)
 {
 	__super::OnSize(nType, cx, cy);
-	CRect rcClient, rcVideo, rcChatroom,rcStatic;
+	CRect rcClient, rcVideo, rcChatroom,rcStatic,rcList;
 	GetClientRect(rcClient);
-	rcStatic = rcChatroom = rcClient;
-	rcChatroom.left = rcChatroom.right - 380;
+	rcList = rcStatic = rcChatroom = rcClient;
+	rcChatroom.left = rcChatroom.right - m_nChatroomWidth ;
+	
 	rcVideo.left = 0;
 	rcVideo.top = 0;
 	rcVideo.right = m_nVideoWidth;
@@ -312,7 +355,7 @@ void DlgRtmpPull::OnSize(UINT nType, int cx, int cy)
 
 
 	if (rcChatroom.left < rcVideo.right) {
-		rcChatroom.left = rcVideo.right + GetSystemMetrics(SM_CYFRAME);
+		rcChatroom.left = rcVideo.right;// +GetSystemMetrics(SM_CYFRAME);
 	}
 
 	if (IsWindow(this->GetSafeHwnd())) {
@@ -327,52 +370,54 @@ void DlgRtmpPull::OnSize(UINT nType, int cx, int cy)
 		}
 	}
 
-	rcStatic.right = rcChatroom.left - GetSystemMetrics(SM_CYFRAME);
+	rcStatic.right = rcChatroom.left -GetSystemMetrics(SM_CYFRAME);
 	if (rcStatic.right < rcVideo.right) {
 		rcStatic.right = rcVideo.right;
 	}
 
-	if (IsWindow(this->m_staticCaptrue.GetSafeHwnd())) {
-		m_staticCaptrue.SetWindowPos(NULL, 0, 0, rcStatic.Width(), rcStatic.Height(), SWP_NOMOVE | SWP_NOZORDER);
+	int yAdj = (rcStatic.Height() - rcVideo.Height() );
+	rcList = rcStatic;
+	rcStatic.bottom = rcStatic.bottom - yAdj;
+	if (rcStatic.bottom < rcVideo.bottom) {
+		rcStatic.bottom = rcVideo.bottom;
+	}
+	rcList.top = rcStatic.bottom;// +GetSystemMetrics(SM_CXFRAME);
+	
+
+	if (IsWindow(this->m_myStatic.GetSafeHwnd())) {
+		m_myStatic.SetWindowPos(NULL, 0, 0, rcStatic.Width(), rcStatic.Height(), SWP_NOMOVE | SWP_NOZORDER);
+	}
+
+	CWnd* pList = this->GetDlgItem(IDC_STATIC_LIST);
+	if (pList != NULL) {
+		pList->SetWindowPos(NULL, rcList.left, rcList.top, rcList.Width(), rcList.Height(), SWP_NOZORDER);
+		if (IsWindow(pList->GetSafeHwnd())) {
+			CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pList->GetSafeHwnd());
+			if (pb != nullptr) {
+				auto hwnd = pb->GetHost()->GetWindowHandle();
+				::SetWindowPos(hwnd, HWND_TOP, rcList.left, rcList.top, rcList.right - rcList.left, rcList.bottom - rcList.top, SWP_NOZORDER | SWP_NOMOVE);
+			}
+		}
 	}
 
 	if (m_pDlgVideoMain != NULL) {
+		int x = 0;
+		int y = 0;
+		if (rcStatic.Height() > rcVideo.Height()) {
+			y = (rcStatic.Height() - rcVideo.Height()) / 2;
+		}
+		if (rcStatic.Width() > rcVideo.Width()) {
+			x = (rcStatic.Width() - rcVideo.Width()) / 2;
+		}
+
 		if (IsWindow(m_pDlgVideoMain->GetSafeHwnd())) {
-			m_pDlgVideoMain->SetWindowPos(NULL, 0, 0, rcVideo.Width(), rcVideo.Height(), SWP_NOMOVE | SWP_NOZORDER);
+			m_pDlgVideoMain->SetWindowPos(NULL, x, y, rcVideo.Width(), rcVideo.Height(), SWP_NOZORDER);
 		}
 	}
 
 
 	return;
-	/*
-	CRect rcClient,rcVideo,rcChatroom;
-	GetClientRect(rcClient);
-	m_pDlgVideoMain->GetWindowRect(rcVideo);
-	ScreenToClient(rcVideo);
-	rcChatroom = rcClient;
-	rcChatroom.left = rcVideo.right + 18;
 
-
-
-	if (IsWindow(this->GetSafeHwnd())) {
-		CWnd* pWnd = GetDlgItem(IDC_STATIC_CEF3);
-		if (IsWindow(pWnd->GetSafeHwnd())) {
-			pWnd->SetWindowPos(NULL, rcChatroom.left, rcChatroom.top, rcChatroom.Width(), rcChatroom.Height(), SWP_NOZORDER);
-
-			CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
-			if (pb != nullptr) {
-				auto hwnd = pb->GetHost()->GetWindowHandle();
-				//auto rect = RECT{ 0 };
-				//GetClientRect(&rect);
-
-				::SetWindowPos(hwnd, HWND_TOP, rcChatroom.left, rcChatroom.top, rcChatroom.right - rcChatroom.left, rcChatroom.bottom - rcChatroom.top, SWP_NOZORDER | SWP_NOMOVE);
-
-			}
-
-		}
-	}
-
-	*/
 }
 
 
@@ -388,4 +433,37 @@ HBRUSH DlgRtmpPull::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
 	
 	return hbr;
+}
+
+
+void DlgRtmpPull::OnSysCommand(UINT nID, LPARAM lParam)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	
+	if ((nID) == IDR_MENU_SYS_MORE_REFRESH) {
+
+		Start();
+		CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser();
+		if (pb != nullptr) {
+			CefWindowInfo win_info;
+			CefRefPtr<CefClient> client;
+			CefBrowserSettings settings;
+
+			pb->ReloadIgnoreCache();
+		}
+
+	}
+	else if ((nID) == IDR_MENU_SYS_MORE_SHOWDEVTOOLS) {
+		CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser();
+		if (pb != nullptr) {
+			CefWindowInfo win_info;
+			CefRefPtr<CefClient> client;
+			CefBrowserSettings settings;
+			win_info.SetAsPopup(GetSafeHwnd(), CefString("DevTools"));
+
+			pb->GetHost()->ShowDevTools(win_info, theApp.handler, settings, CefPoint());
+		}
+	}
+	
+	__super::OnSysCommand(nID, lParam);
 }

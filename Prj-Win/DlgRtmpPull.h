@@ -40,12 +40,14 @@ public:
 public:
 	//* For RTMPCGuesterEvent
 	virtual void OnRtmplayerOK() {
+		TRACE("OnRtmplayerOK");
 	};
 	virtual void OnRtmplayerStatus(int cacheTime, int curBitrate) {
 	};
 	virtual void OnRtmplayerCache(int time) {
 	};
 	virtual void OnRtmplayerClosed(int errcode) {
+		TRACE("OnRtmplayerClosed");
 	};
 
 
@@ -68,9 +70,11 @@ public:
 	CEdit	m_editUrl;
 	CButton m_btnRtmp;
 	CString m_strUrl;
-	CStatic m_staticCaptrue;
+	CefString m_strUri;
+	//CStatic m_staticCaptrue;
 	int	m_nVideoWidth;
 	int m_nVideoHeight;
+	int m_nChatroomWidth;
 
 	afx_msg void OnBnClickedBtnPull();
 
@@ -85,4 +89,5 @@ public:
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 };

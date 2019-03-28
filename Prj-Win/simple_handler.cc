@@ -164,6 +164,7 @@ bool SimpleHandler::OnJSDialog(CefRefPtr<CefBrowser> browser,
 			CefRefPtr<CefDictionaryValue> data = dict->GetDictionary("data");
 			CefString roomid = data->GetString("id");
 			CefString pulluri = data->GetString("pulluri");
+			CPullDlgData::me()->push(str0);
 			::PostMessage(m_hWndDlg, WM_PULLDLG, 0, 0);
 		}
 	}

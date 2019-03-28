@@ -19,6 +19,7 @@
 #include "stdafx.h"
 #include "LiveWin32.h"
 #include "LiveWin32Dlg.h"
+#include "xdefines.h"
 
 #include "simple_app.h"
 
@@ -105,6 +106,8 @@ BOOL CLiveWin32App::InitInstance()
 	// 公共控件类。
 	InitCtrls.dwICC = ICC_WIN95_CLASSES;
 	InitCommonControlsEx(&InitCtrls);
+	if (CPullDlgData::me() == NULL)
+		AfxMessageBox(L"错误0");
 
 
 	CString work = GetModuleDir();

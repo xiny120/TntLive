@@ -1,13 +1,17 @@
 <template>
 	<view >
-		<view id="content" style="display: flex;flex-direction: column;">
-			<view style="display: flex;flex-direction: column;padding: 8upx;" v-for="(message,index) in messages" :key="index" :message="message" :id="index">
+		<view id="content" style="display: flex;flex-direction: column;margin-right: 8upx;">
+			<view style="display: flex;flex-direction: column;padding: 8upx;margin-top: 4upx;" v-for="(message,index) in messages" :key="index" :message="message" :id="index">
 				<view style="display: flex;flex-direction: row;">
 					<view style="margin: 8upx;">
-						<image style="height: 60upx; width: 60upx;" src="https://img-cdn-qiniu.dcloud.net.cn/uniapp/images/uni@2x.png"></image>					
+						<image style="height: 48upx; width: 48upx;" src="https://img-cdn-qiniu.dcloud.net.cn/uniapp/images/uni@2x.png"></image>					
 					</view>
-					<text style="margin:4upx;color:#A0A0A0;">{{message.user}}</text>
-					<text style="margin:4upx;color:#C8C8C8;">{{message.datetime}}</text>
+					<view >
+						<text style="margin:4upx;color:#A0A0A0;">{{message.user}}</text>
+						<text style="margin:4upx;color:#C8C8C8;margin-left:18upx;">{{message.datetime}}</text>
+						
+					</view>
+					
 						
 				</view>
 				<view>{{message.content}}</view>
@@ -39,10 +43,10 @@
 				},
 				scrollTop: 0,
 				messages: [{
-					user: 'home',
+					user: '系统小喇叭',
 					type: 'head', //input,content 
 					content: '你好!',
-					datetime: '2019-2-25',
+					datetime: '2019-2-25 09:09:09',
 				}]
 			}
 		},
@@ -80,6 +84,7 @@
 			scrollToBottom: function () {
 				let view = uni.createSelectorQuery().select("#bottom");
 				let that = this;
+				
 				view.boundingClientRect(data => {
 					uni.pageScrollTo({
 						scrollTop: data.bottom,

@@ -187,7 +187,7 @@ void PlyBuffer::DoDecode()
 				pkt_video = lst_video_buffer_.front();
 				if (pkt_video->_dts <= play_video_time) {
 					lst_video_buffer_.pop_front();
-					LOG(LS_WARNING) << "play_cur_time_ " << play_cur_time_ << "\tpkt_video->_dts " << pkt_video->_dts;
+					//LOG(LS_WARNING) << "play_cur_time_ " << play_cur_time_ << "\tpkt_video->_dts " << pkt_video->_dts;
 				}
 				else {
 					pkt_video = NULL;

@@ -100,7 +100,15 @@
         }
         ,{
             "path" : "pages/chatroom/chatroom",
-            "style" : {}
+            "style" : {
+				"navigationStyle":"custom"  
+			}
+        }
+        ,{
+            "path" : "pages/medialist/medialist",
+            "style" : {
+				"navigationStyle":"custom"  
+			}
         }
     ],
 	"globalStyle": {
