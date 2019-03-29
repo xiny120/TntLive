@@ -4,11 +4,26 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <org.webrtc.SurfaceViewRenderer
-        android:id="@+id/suface_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
 
+    <RelativeLayout
+        android:id="@+id/layout_gesture"
+        android:layout_width="match_parent"
+        android:layout_height="800px"
+        android:background="#000"
+        android:gravity="center_horizontal">
+
+
+        <org.webrtc.SurfaceViewRenderer
+            android:id="@+id/suface_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </RelativeLayout>
+    <WebView
+        android:layout_below="@+id/layout_gesture"
+        android:id="@+id/webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
     <LinearLayout
         android:id="@+id/llayout_host_tools"
         android:layout_width="match_parent"

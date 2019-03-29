@@ -376,8 +376,8 @@ public class SurfaceViewRenderer extends SurfaceView
   public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
     Logging.d(TAG, getResourceName() + "Surface changed: " + width + "x" + height);
     synchronized (layoutLock) {
-      surfaceSize.x = width;
-      surfaceSize.y = height;
+      surfaceSize.x = width;//height;//
+      surfaceSize.y = height;//width;//
     }
     // Might have a pending frame waiting for a surface of correct size.
     runOnRenderThread(renderFrameRunnable);

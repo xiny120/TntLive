@@ -135,6 +135,9 @@ func (c *Client) readPump() {
 			if r["status"] != 0 {
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
 			}
+		case "toall":
+			c.hub.broadcast <- message
+
 		}
 	}
 }

@@ -19,25 +19,52 @@
 package org.anyrtc.anyrtmp;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.SurfaceHolder;
 import android.view.View;
+import android.webkit.JavascriptInterface;
+import android.webkit.JsResult;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.anyrtc.core.AnyRTMP;
 import org.anyrtc.core.RTMPGuestHelper;
 import org.anyrtc.core.RTMPGuestKit;
+import org.json.JSONObject;
 import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoRenderer;
 
 /**
  * Created by Eric on 2016/9/16.
  */
-public class GuestActivity extends Activity implements RTMPGuestHelper {
+public class GuestActivity extends Activity implements RTMPGuestHelper,  SurfaceHolder.Callback{
     private RTMPGuestKit mGuest = null;
+    private WebView webView;
 
     private TextView mTxtStatus = null;
     private SurfaceViewRenderer mSurfaceView = null;
     private VideoRenderer mRenderer = null;
+
+    private SurfaceHolder mHolder;
+
+    public static final float SHOW_SCALE = 16 * 1.0f / 9;
+
+    private RelativeLayout mSurfaceLayout;
+
+    //屏幕宽度
+    private int mScreenWidth;
+    //屏幕高度
+    private int mScreenHeight;
+    private DisplayMetrics displayMetrics;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +74,12 @@ public class GuestActivity extends Activity implements RTMPGuestHelper {
         {//* Init UI
             mTxtStatus = (TextView) findViewById(R.id.txt_rtmp_status);
             mSurfaceView = (SurfaceViewRenderer) findViewById(R.id.suface_view);
+
+            displayMetrics = new DisplayMetrics();
+            this.getWindow().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            mScreenWidth = displayMetrics.widthPixels;
+            mScreenHeight = displayMetrics.heightPixels;
+
             mSurfaceView.init(AnyRTMP.Inst().Egl().getEglBaseContext(), null);
             mRenderer = new VideoRenderer(mSurfaceView);
         }
@@ -56,7 +89,80 @@ public class GuestActivity extends Activity implements RTMPGuestHelper {
             mGuest = new RTMPGuestKit(this, this);
             mGuest.StartRtmpPlay(rtmpUrl, mRenderer.GetRenderPointer());
         }
+        initView();
+
+        webView = (WebView) findViewById(R.id.webview);
+        webView.getSettings().setDomStorageEnabled(true);
+        webView.getSettings().setAppCacheMaxSize(1024*1024*8);
+        String appCachePath = getApplicationContext().getCacheDir().getAbsolutePath();
+        webView.getSettings().setAppCachePath(appCachePath);
+        webView.getSettings().setAllowFileAccess(true);
+        webView.getSettings().setAppCacheEnabled(true);
+//        webView.loadUrl("file:///android_asset/test.html");//加载asset文件夹下html
+        webView.loadUrl("http://192.168.1.13:8080/live/h5client/mainpage/#/pages/chatroom/chatroom");//加载url
+
+        //使用webview显示html代码
+//        webView.loadDataWithBaseURL(null,"<html><head><title> 欢迎您 </title></head>" +
+//                "<body><h2>使用webview显示 html代码</h2></body></html>", "text/html" , "utf-8", null);
+
+        webView.addJavascriptInterface(this,"android");//添加js监听 这样html就能调用客户端
+        webView.setWebChromeClient(webChromeClient);
+        webView.setWebViewClient(webViewClient);
+
+        WebSettings webSettings=webView.getSettings();
+        webSettings.setJavaScriptEnabled(true);//允许使用js
+
+        /**
+         * LOAD_CACHE_ONLY: 不使用网络，只读取本地缓存数据
+         * LOAD_DEFAULT: （默认）根据cache-control决定是否从网络上取数据。
+         * LOAD_NO_CACHE: 不使用缓存，只从网络获取数据.
+         * LOAD_CACHE_ELSE_NETWORK，只要本地有，无论是否过期，或者no-cache，都使用缓存中的数据。
+         */
+        webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);//不使用缓存，只从网络获取数据.
+
+        //支持屏幕缩放
+        webSettings.setSupportZoom(true);
+        webSettings.setBuiltInZoomControls(true);
+
     }
+
+
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        //SV可见
+        //initMediaPlayer();
+    }
+
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder
+            , int format, int width, int height) {
+        //SV状态变化
+    }
+
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        //if (mMediaPlayer != null) {
+         //   mMediaPlayer.pause();
+        //    mCurrentPos = mMediaPlayer.getCurrentPosition();
+        //}
+    }
+
+    private void initView() {
+
+        mSurfaceLayout = (RelativeLayout) findViewById(R.id.layout_gesture);
+        RelativeLayout.LayoutParams lp =
+                (RelativeLayout.LayoutParams) mSurfaceLayout.getLayoutParams();
+        lp.width = mScreenWidth;//(int) (mScreenWidth * SHOW_SCALE);
+        lp.height = mScreenWidth*576/720;
+        mSurfaceLayout.setLayoutParams(lp);
+        //mSurfaceView.setLayoutParams(lp);
+        //mSurfaceView = (SurfaceView) findViewById(R.id.sv);
+        mHolder = mSurfaceView.getHolder();
+        mHolder.addCallback(this);
+    }
+
 
     @Override
     protected void onDestroy() {
@@ -126,4 +232,90 @@ public class GuestActivity extends Activity implements RTMPGuestHelper {
             }
         });
     }
+
+
+    //WebViewClient主要帮助WebView处理各种通知、请求事件
+    private WebViewClient webViewClient=new WebViewClient(){
+        @Override
+        public void onPageFinished(WebView view, String url) {//页面加载完成
+
+        }
+
+        @Override
+        public void onPageStarted(WebView view, String url, Bitmap favicon) {//页面开始加载
+
+        }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            Log.i("ansen","拦截url:"+url);
+            if(url.equals("http://www.google.com/")){
+                //Toast.makeText(MainActivity.this,"国内不能访问google,拦截该url",Toast.LENGTH_LONG).show();
+                return true;//表示我已经处理过了
+            }
+            return super.shouldOverrideUrlLoading(view, url);
+        }
+
+    };
+
+    //WebChromeClient主要辅助WebView处理Javascript的对话框、网站图标、网站title、加载进度等
+    private WebChromeClient webChromeClient=new WebChromeClient(){
+        //不支持js的alert弹窗，需要自己监听然后通过dialog弹窗
+        @Override
+        public boolean onJsAlert(WebView webView, String url, String message, JsResult result) {
+            //AlertDialog.Builder localBuilder = new AlertDialog.Builder(webView.getContext());
+            // localBuilder.setMessage(message).setPositiveButton("确定",null);
+            // localBuilder.setCancelable(false);
+            //localBuilder.create().show();
+            try {
+                JSONObject obj = new JSONObject(message);
+                String cmd = obj.getString("cmd");
+                JSONObject objData = obj.getJSONObject("data");
+                String pulluri = objData.getString("pulluri");
+
+                Intent it = new Intent(getApplicationContext(), GuestActivity.class);
+                Bundle bd = new Bundle();
+                bd.putString("rtmp_url", pulluri);
+                it.putExtras(bd);
+                startActivity(it);
+
+            }catch (Exception e1){
+                Log.i("",e1.toString());
+
+            }
+
+            //注意:
+            //必须要这一句代码:result.confirm()表示:
+            //处理结果为确定状态同时唤醒WebCore线程
+            //否则不能继续点击按钮
+            result.confirm();
+            return true;
+        }
+
+        //获取网页标题
+        @Override
+        public void onReceivedTitle(WebView view, String title) {
+            super.onReceivedTitle(view, title);
+            Log.i("ansen","网页标题:"+title);
+        }
+
+        //加载进度回调
+        @Override
+        public void onProgressChanged(WebView view, int newProgress) {
+
+        }
+    };
+
+    /**
+     * JS调用android的方法
+     * @param str
+     * @return
+     */
+    @JavascriptInterface //仍然必不可少
+    public void  getClient(String str){
+        Log.i("ansen","html调用客户端:"+str);
+    }
+
+
+
 }

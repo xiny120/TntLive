@@ -44,8 +44,9 @@ func SessionsSet(token string, ui *UserInfo) {
 func SessionsGet(token string) (*UserInfo, bool) {
 	ui := &UserInfo{}
 	ret := false
+	found := false
 
-	if ui, found := sessions[token]; found {
+	if ui, found = sessions[token]; found {
 		ret = true
 	} else {
 		ui = &UserInfo{}
@@ -60,10 +61,13 @@ func SessionsGet(token string) (*UserInfo, bool) {
 				_, err := f.Read(buffer)
 				if err == nil {
 					log.Println(string(buffer))
-					err3 := json.Unmarshal(buffer, &ui)
+					ui0 := &UserInfo{}
+					err3 := json.Unmarshal(buffer, &ui0)
 					if err3 == nil {
-						sessions[token] = ui
+						log.Println(ui0)
+						sessions[token] = ui0
 						ret = true
+						return ui0, ret
 					}
 				}
 			}

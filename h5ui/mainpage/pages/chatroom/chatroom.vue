@@ -1,5 +1,5 @@
 <template>
-	<view style="margin-right: 2upx;">
+	<view style="margin-right: 2upx;" id="mainView">
 		<view id="content" class="content" style="display: flex;flex-direction: column;margin-right: 8upx;">
 			<view style="display: flex;flex-direction: column;padding: 8upx;margin-top: 4upx;" v-for="(message,index) in messages" :key="index" :message="message" :id="index">
 				<view style="display: flex;flex-direction: row;">
@@ -45,7 +45,7 @@
 					footViewHeight: 90,
 					mitemHeight: 0,
 				},
-				scrollTop: 0,
+				//scrollTop: 0,
 				messages: [{
 					user: '系统小喇叭',
 					type: 'head', //input,content 
@@ -71,7 +71,9 @@
 		methods: {
 			initWebSocket:function(){
 				//const wsuris = ["ws://localhost:8090/ws","ws://localhost:8091/ws","ws://localhost:8092/ws"]
-				const wsuris = ["ws://localhost:8091/ws"]
+				const wsuris = ["ws://192.168.1.13:8091/ws"]
+				
+				
 				this.wsuriidx = this.wsuriidx + 1;
 				if(this.wsuriidx >= wsuris.length){
 					this.wsuriidx = 0;
@@ -96,6 +98,9 @@
 			websocketonmessage(res){ //数据接收 
 					const ans = JSON.parse(res.data);
 					switch(ans.t){
+						case "toall":
+							this.addMessage(ans.userInfo.UserName, ans.msg, false);
+						break;
 						case "checkin":
 							console.log(ans);
 							if(ans.status != 0){
@@ -122,10 +127,17 @@
 								console.log(e);
 							}					
 							try {
+								
 								uni.setStorageSync('sessionid', redata.sessionid);
 							} catch (e) {
 								// error
-							}						
+							}		
+							this.websockautor = false;
+							this.websock.close();
+							uni.showToast({
+								icon: 'none',
+								title: '请先登录哦！'
+							});											
 						break;						
 					}			
 			},
@@ -145,15 +157,33 @@
 				}
 			},			
 			websocketsend:function(msg){
+
 				if (this.websockopened) {
 					this.websock.send(msg);
 				} else {
-					this.socketMsgQueue.push(msg);
+					if(!this.websockautor){
+						uni.showToast({
+							icon: 'none',
+							title: '请先登录哦！'
+						});						
+					}else{				
+						this.socketMsgQueue.push(msg);
+					}
 				}				
 			},
 			getInputMessage: function (message) { //获取子组件的输入数据
-				this.addMessage(this.userInfo.UserName, message.content, false);
-				this.toRobot(message.content);
+				const data = {
+					t:"toall",
+					userInfo:{
+						UserName:this.userInfo.UserName,
+						UserUuid:this.userInfo.UserUuid,
+						avatarUrl:this.userInfo.avatarUrl,
+					},
+					msg:message.content,
+				}
+				//this.addMessage(this.userInfo.UserName, message.content, false);
+				//this.toRobot(message.content);
+				this.websocketsend(JSON.stringify(data));
 			},
 			addMessage: function (user, content, hasSub, subcontent) {
 				var that = this;
@@ -164,12 +194,27 @@
 					subcontent: subcontent,
 					datetime: '2019-02-29',
 				});
+				
+				setTimeout(function(){
+					that.scrollToBottom();
+				},1);					
+				
 			},
 			scrollToBottom: function () {
+				let mainView = uni.createSelectorQuery().select("#mainView");
+				
+				mainView.fields({
+				  size: true,
+				  scrollOffset: true
+				}, data => {
+				  console.log("得到节点信息" + JSON.stringify(data));
+				  console.log("节点的宽为" + data.width);
+				}).exec();				
+				
 				let view = uni.createSelectorQuery().select("#content");
 				let that = this;
 				view.boundingClientRect(data => {
-					console.log(data);
+
 					uni.pageScrollTo({
 						scrollTop: data.height,
 						duration: 1

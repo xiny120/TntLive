@@ -147,11 +147,28 @@
 						url:"../tag/tag"
 					})
 				}else{
-					const data ={
-						cmd:"pulldlg",
-						data:e,
+					if(this.hasLogin == 1){
+						const data ={
+							cmd:"pulldlg",
+							data:e,
+						}
+						alert(JSON.stringify(data));
+					}else{
+						uni.showModal({
+							title: '请先登录哦！',
+							//content: '确定切换账户吗？',
+							success: function (res) {
+								if (res.confirm) {				
+									
+									uni.navigateTo({
+										url:"../login/login"
+									})
+								} else if (res.cancel) {
+									console.log('用户点击取消');
+								}
+							}
+						});	
 					}
-					alert(JSON.stringify(data));
 					//uni.navigateTo({
 					//	url:"../detail/detail?data=" + encodeURIComponent(JSON.stringify(e))
 					//})

@@ -240,6 +240,9 @@ void DlgRtmpPull::Start()
 		}
 		m_pAVRtmplayer->StartRtmpPlay(url.c_str(), m_pDlgVideoMain->m_hWnd);
 		m_btnRtmp.SetWindowTextW(L"½áÊø");
+
+
+
 	}
 }
 
@@ -284,6 +287,13 @@ void DlgRtmpPull::OnShowWindow(BOOL bShow, UINT nStatus)
 					url = std::string(pulluri);
 					m_strUri = url;
 				}
+			}
+		}
+		CWnd* pWnd = this->GetDlgItem(IDC_STATIC_CEF3);
+		if (pWnd != NULL && IsWindow(pWnd->GetSafeHwnd())) {
+			CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
+			if (pb != nullptr) {
+				pb->ReloadIgnoreCache();
 			}
 		}
 
