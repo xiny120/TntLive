@@ -7,9 +7,7 @@ package main
 import (
 	"encoding/json"
 	_ "fmt"
-
 	//"log"
-	"xlog"
 )
 
 // Hub maintains the set of active clients and broadcasts messages to the
@@ -50,9 +48,9 @@ func (h *Hub) run() {
 				Sessionid: client.SessionId,
 			}
 			//msg := fmt.Sprint("{\"t\":\"sessionid\",\"sessionid\":\"%s\"}", client.SessionId)
-			msg, err := json.Marshal(data)
+			msg, _ := json.Marshal(data)
 			//log.Println(string(msg[:]))
-			xlog.Println("连接到来 ", data, "\t*\t", string(msg), "\t*\t", err)
+			//xlog.Println("连接到来 ", data, "\t*\t", string(msg), "\t*\t", err)
 			client.send <- msg
 		case client := <-h.unregister:
 			if _, ok := h.clients[client]; ok {

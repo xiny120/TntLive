@@ -41,50 +41,22 @@ func Private(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("mster-token")
 		log.Printf("Authenticated Middleware %s\n", token)
 
-		if _, found := sign.Sessions[token]; found {
+		if _, found := sign.SessionsGet(token); found {
 			// We found the token in our map
 			//log.Printf("Authenticated user %s\n", user)
 			// Pass down the request to the next middleware (or final handler)
 
 		} else {
-			failed := true
-			//http.Error(w, "Forbidden", http.StatusForbidden)
-			tfile := "./tokens/" + token
-			f, err3 := os.Open(tfile) //创建文件
-			if err3 == nil {
-				defer f.Close()
-				//str, err3 := f.ReadString() //f.WriteString(string(wbuf)) //写入文件(字节数组)
 
-				fileinfo, err := f.Stat()
-				if err == nil {
-
-					fileSize := fileinfo.Size()
-					buffer := make([]byte, fileSize)
-
-					_, err := f.Read(buffer)
-					if err == nil {
-						ui := &sign.UserInfo{}
-						err3 := json.Unmarshal(buffer, &ui)
-						if err3 == nil {
-							sign.Sessions[token] = ui
-							failed = false
-							//next.ServeHTTP(w, r)
-
-						}
-					}
-				}
+			res := make(map[string]interface{})
+			res["t"] = "not sign in"
+			res["status"] = 1
+			res["msg"] = "请登录后操作"
+			rmsg, err := json.Marshal(res)
+			if err == nil {
+				w.Write(rmsg)
 			}
-			if failed {
-				res := make(map[string]interface{})
-				res["t"] = "not sign in"
-				res["status"] = 1
-				res["msg"] = "请登录后操作"
-				rmsg, err := json.Marshal(res)
-				if err == nil {
-					w.Write(rmsg)
-				}
-				return
-			}
+			return
 		}
 
 		if f, ok := actions_private[action]; ok {
@@ -100,7 +72,7 @@ func f_authout(w http.ResponseWriter, r *http.Request, v *map[string]interface{}
 	log.Println("f_auth", *v)
 	token := r.Header.Get("mster-token")
 	res := make(map[string]interface{})
-	delete(sign.Sessions, token)
+	sign.SessionsDel(token)
 	tfile := "./tokens/" + token
 	os.Remove(tfile) //创建文件
 	res["t"] = "authout"

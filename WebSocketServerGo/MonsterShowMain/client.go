@@ -6,7 +6,6 @@ package main
 
 import (
 	_ "bytes"
-	"xlog"
 
 	//"database/sql"
 	"encoding/json"
@@ -51,23 +50,19 @@ var upgrader = websocket.Upgrader{
 
 // Client is a middleman between the websocket connection and the hub.
 type Client struct {
-	hub *Hub
-
-	// The websocket connection.
-	conn *websocket.Conn
-
-	// Buffered channel of outbound messages.
+	hub       *Hub
+	conn      *websocket.Conn
 	send      chan []byte
 	SessionId string //未登录之前，记录socket连接时生成的uuid,如果客户端免登录进来的，客户端上报后置换为客户端保存的uuid
 }
 
-// readPump pumps messages from the websocket connection to the hub.
-//
-// The application runs readPump in a per-connection goroutine. The application
-// ensures that there is at most one reader on a connection by executing all
-// reads from this goroutine.
 func (c *Client) readPump() {
 	defer func() {
+		if info := recover(); info != nil {
+			log.Println("触发了宕机", info)
+		} else {
+			log.Println("程序正常退出")
+		}
 		c.hub.unregister <- c
 		c.conn.Close()
 	}()
@@ -76,10 +71,8 @@ func (c *Client) readPump() {
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
 		mt, message, err := c.conn.ReadMessage()
-		log.Println("messageType:", mt, string(message))
 		if mt != 1 {
-			log.Println("messageType:", mt, " error!")
-			//break
+			log.Println("messageType:", mt, err)
 		}
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
@@ -89,7 +82,6 @@ func (c *Client) readPump() {
 		}
 		m := make(map[string]interface{})
 		r := make(map[string]interface{})
-		//var m interface{}
 		json.Unmarshal(message, &m)
 		log.Println(m)
 		switch m["t"] {
@@ -112,35 +104,49 @@ func (c *Client) readPump() {
 			password := m["password"].(string)
 			tt := sign.SignIn(account, password)
 			tt.SessionId = c.SessionId
-			log.Println(tt)
-			sign.Sessions[c.SessionId] = tt
+			//sign.Sessions[c.SessionId] = tt
+			sign.SessionsSet(c.SessionId, tt)
 			r["t"] = "sign in"
 			r["userinfo"] = tt
 			rmsg, err := json.Marshal(r)
 			if err == nil {
 				c.send <- rmsg
-				xlog.Println("sign in status", rmsg)
 			}
 
 		case "sign out": // 登出
 		case "checkin": //免密登录
-			xlog.Println("checkin 免密登录")
+			r["t"] = "checkin"
+			r["status"] = 1
+			r["msg"] = "用户密钥过期，请重新登录！"
+			if f, ok := sign.SessionsGet(m["sessionid"].(string)); ok {
+				v1 := m["userinfo"].(map[string]interface{})
+				v2 := v1["Token"].(string)
 
+				if f.Token == v2 {
+					r["status"] = 0
+					r["msg"] = "免密登录成功！"
+				}
+			}
+			rmsg, err := json.Marshal(r)
+			if err == nil {
+				c.send <- rmsg
+				log.Println("checkin 免密登录", r)
+			}
+			if r["status"] != 0 {
+				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
+			}
 		}
-
-		//message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		//c.hub.broadcast <- message
 	}
 }
 
-// writePump pumps messages from the hub to the websocket connection.
-//
-// A goroutine running writePump is started for each connection. The
-// application ensures that there is at most one writer to a connection by
-// executing all writes from this goroutine.
 func (c *Client) writePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
+		if info := recover(); info != nil {
+			log.Println("触发了宕机", info)
+		} else {
+			log.Println("程序正常退出")
+		}
 		ticker.Stop()
 		c.conn.Close()
 	}()
@@ -159,6 +165,7 @@ func (c *Client) writePump() {
 				return
 			}
 			w.Write(message)
+			log.Println("writePump", string(message))
 
 			// Add queued chat messages to the current websocket message.
 			n := len(c.send)
@@ -191,7 +198,7 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	ok, _ := uuid.NewV4()
 
 	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), SessionId: ok.String()}
-	log.Println(client)
+	log.Println("newClient", ok.String(), r)
 	client.hub.register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in

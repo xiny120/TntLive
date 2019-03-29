@@ -75,7 +75,7 @@ func f_auth(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
 	account := (*v)["account"].(string)
 	password := (*v)["password"].(string)
 	tt := sign.SignIn(account, password)
-	sign.Sessions[tt.SessionId] = tt
+	sign.SessionsSet(tt.SessionId, tt)
 	wbuf, werr := json.Marshal(tt)
 	if werr == nil {
 		tfile := "./tokens/" + tt.SessionId

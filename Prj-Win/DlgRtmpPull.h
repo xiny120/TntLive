@@ -75,6 +75,7 @@ public:
 	int	m_nVideoWidth;
 	int m_nVideoHeight;
 	int m_nChatroomWidth;
+	int m_nListHeight;
 
 	afx_msg void OnBnClickedBtnPull();
 

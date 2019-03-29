@@ -3,8 +3,9 @@ package sign
 import (
 	"cfg"
 	"database/sql"
+	"os"
 
-	//"encoding/json"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -30,8 +31,47 @@ const (
 )
 
 var (
-	Sessions = make(map[string]*UserInfo)
+	sessions = make(map[string]*UserInfo)
 )
+
+func SessionsDel(token string) {
+	delete(sessions, token)
+}
+func SessionsSet(token string, ui *UserInfo) {
+	sessions[token] = ui
+}
+
+func SessionsGet(token string) (*UserInfo, bool) {
+	ui := &UserInfo{}
+	ret := false
+
+	if ui, found := sessions[token]; found {
+		ret = true
+	} else {
+		ui = &UserInfo{}
+		tfile := "./tokens/" + token
+		f, err3 := os.Open(tfile) //创建文件
+		if err3 == nil {
+			defer f.Close()
+			fileinfo, err := f.Stat()
+			if err == nil {
+				fileSize := fileinfo.Size()
+				buffer := make([]byte, fileSize)
+				_, err := f.Read(buffer)
+				if err == nil {
+					log.Println(string(buffer))
+					err3 := json.Unmarshal(buffer, &ui)
+					if err3 == nil {
+						sessions[token] = ui
+						ret = true
+					}
+				}
+			}
+		}
+	}
+	log.Println("SessionsGet", token, ui, ret)
+	return ui, ret
+}
 
 func SignIn(un string, pwd string) *UserInfo {
 	ok, _ := uuid.NewV4()

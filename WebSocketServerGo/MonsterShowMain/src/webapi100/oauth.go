@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
+
+	//"os"
 	"ucenter"
 
 	"github.com/gorilla/mux"
@@ -51,37 +52,9 @@ func (amw *AuthenticationMiddleware) Middleware(next http.Handler) http.Handler 
 			token := r.Header.Get("mster-token")
 			log.Printf("Authenticated Middleware %s - %s\n", vars["action"], token)
 
-			if _, found := sign.Sessions[token]; found {
-				// We found the token in our map
-				//log.Printf("Authenticated user %s\n", user)
-				// Pass down the request to the next middleware (or final handler)
+			if _, found := sign.SessionsGet(token); found {
 				next.ServeHTTP(w, r)
 			} else {
-				//http.Error(w, "Forbidden", http.StatusForbidden)
-				tfile := "./tokens/" + token
-				f, err3 := os.Open(tfile) //创建文件
-				if err3 == nil {
-					defer f.Close()
-					//str, err3 := f.ReadString() //f.WriteString(string(wbuf)) //写入文件(字节数组)
-
-					fileinfo, err := f.Stat()
-					if err == nil {
-
-						fileSize := fileinfo.Size()
-						buffer := make([]byte, fileSize)
-
-						_, err := f.Read(buffer)
-						if err == nil {
-							ui := &sign.UserInfo{}
-							err3 := json.Unmarshal(buffer, &ui)
-							if err3 == nil {
-								sign.Sessions[token] = ui
-								next.ServeHTTP(w, r)
-								return
-							}
-						}
-					}
-				}
 				res := make(map[string]interface{})
 				res["t"] = "not sign in"
 				res["status"] = 1

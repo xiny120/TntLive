@@ -30,9 +30,10 @@ DlgRtmpPull::DlgRtmpPull()
 	, m_strUrl(_T("rtmp://www.pic98.com/live/livestream"))
 	, m_pAVRtmplayer(NULL)
 	, m_pDlgVideoMain(NULL)
-	, m_nVideoWidth(0)
-	, m_nVideoHeight(160)
+	, m_nVideoWidth(720)
+	, m_nVideoHeight(576)
 	, m_nChatroomWidth(420)
+	, m_nListHeight(220)
 {
 }
 
@@ -68,78 +69,29 @@ END_MESSAGE_MAP()
 // DlgRtmpPull 消息处理程序
 
 LRESULT DlgRtmpPull::OnPullDlgResize(WPARAM wp, LPARAM lp) {
-
 	m_nVideoWidth = wp;
 	m_nVideoHeight = lp;
 	PostMessage(WM_SIZE, 0, 0);
 	return TRUE;
-	CRect rcClient, rcVideo, rcChatroom;
-	GetClientRect(rcClient);
-	rcVideo.left = 0;
-	rcVideo.top = 0;
-	rcVideo.right = wp;
-	rcVideo.bottom = lp;
-	if (m_pDlgVideoMain != NULL) {
-		if (IsWindow(m_pDlgVideoMain->GetSafeHwnd())) {
-			m_pDlgVideoMain->SetWindowPos(NULL, 0, 0, rcVideo.Width(), rcVideo.Height(), SWP_NOMOVE | SWP_NOZORDER);
-		}
-	}
-	return TRUE;
-	//m_pDlgVideoMain->GetWindowRect(rcVideo);
-	//ScreenToClient(rcVideo);
-	rcChatroom = rcClient;
-	rcChatroom.left = rcVideo.right + 18;
-
-
-
-	if (IsWindow(this->GetSafeHwnd())) {
-		CWnd* pWnd = GetDlgItem(IDC_STATIC_CEF3);
-		if (IsWindow(pWnd->GetSafeHwnd())) {
-			pWnd->SetWindowPos(NULL, rcChatroom.left, rcChatroom.top, rcChatroom.Width(), rcChatroom.Height(), SWP_NOZORDER);
-
-			CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
-			if (pb != nullptr) {
-				auto hwnd = pb->GetHost()->GetWindowHandle();
-				//auto rect = RECT{ 0 };
-				//GetClientRect(&rect);
-
-				::SetWindowPos(hwnd, HWND_TOP, rcChatroom.left, rcChatroom.top, rcChatroom.right - rcChatroom.left, rcChatroom.bottom - rcChatroom.top, SWP_NOZORDER | SWP_NOMOVE);
-
-			}
-
-		}
-	}
-
-	return TRUE;
 }
 
-void DlgRtmpPull::OnOK()
-{
+void DlgRtmpPull::OnOK(){
 }
 
-void DlgRtmpPull::OnCancel()
-{
+void DlgRtmpPull::OnCancel(){
 	ShowWindow(SW_HIDE);
 	Stop();
-	//CDialog::EndDialog(0);
 }
 
-void DlgRtmpPull::OnClose()
-{
+void DlgRtmpPull::OnClose(){
 	ShowWindow(SW_HIDE);
-	//CDialog::EndDialog(0);
 }
 
-BOOL DlgRtmpPull::OnInitDialog()
-{
+BOOL DlgRtmpPull::OnInitDialog(){
 	CDialog::OnInitDialog();
-
 	CMenu* pSysMenu = GetSystemMenu(FALSE);
 	if (pSysMenu != NULL)
 	{
-		//CMenu sysMoreMenu;
-		//sysMoreMenu.LoadMenu(IDR_MENU_SYS_MORE);
-		//pSysMenu->AppendMenu(MF_STRING | MF_POPUP | MF_BYCOMMAND, (UINT)sysMoreMenu.GetSubMenu(0)->m_hMenu, L"操作");
 		pSysMenu->AppendMenu(MF_STRING, IDR_MENU_SYS_MORE_SHOWDEVTOOLS, L"开发者工具");
 		pSysMenu->AppendMenu(MF_STRING, IDR_MENU_SYS_MORE_REFRESH, L"刷新界面");
 	}
@@ -260,8 +212,8 @@ void DlgRtmpPull::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 		if (IsWindow(m_pDlgVideoMain->GetSafeHwnd())) {
 			m_pDlgVideoMain->GetWindowRect(&rc);
 			ScreenToClient(&rc);
-			lpMMI->ptMinTrackSize.x = m_nVideoWidth + GetSystemMetrics(SM_CXFRAME) * 2;
-			lpMMI->ptMinTrackSize.y = m_nVideoHeight  + GetSystemMetrics(SM_CYSIZE) + GetSystemMetrics(SM_CYFRAME)*2;
+			lpMMI->ptMinTrackSize.x = m_nVideoWidth + m_nChatroomWidth + GetSystemMetrics(SM_CXFRAME) * 2;
+			lpMMI->ptMinTrackSize.y = m_nVideoHeight + m_nListHeight + GetSystemMetrics(SM_CYSIZE) + GetSystemMetrics(SM_CYFRAME)*2;
 		}
 	}
 	__super::OnGetMinMaxInfo(lpMMI);
@@ -300,7 +252,7 @@ void DlgRtmpPull::Stop()
 		RTMPGuester::Destory(m_pAVRtmplayer);
 		m_pAVRtmplayer = NULL;
 		//m_nVideoWidth = 0;
-		m_nVideoHeight = 160;
+		//m_nVideoHeight = 160;
 		PostMessage(WM_SIZE, 0, 0);
 		CRect rc;
 		GetClientRect(rc);
