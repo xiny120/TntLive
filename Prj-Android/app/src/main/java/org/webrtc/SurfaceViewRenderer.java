@@ -112,6 +112,13 @@ public class SurfaceViewRenderer extends SurfaceView
     }
   };
 
+  public Point getVideoSize(){
+    Point pt = new Point();
+    pt.x = frameWidth;
+    pt.y = frameHeight;
+    return pt;
+  }
+
   /**
    * Standard View constructor. In order to render something, you must first call init().
    */

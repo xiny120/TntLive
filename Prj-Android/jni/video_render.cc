@@ -43,8 +43,12 @@ public:
     }
     
 public:
-    bool Init(size_t width, size_t height){return true;};
-    void Resize(size_t width, size_t height){};
+    bool Init(size_t width, size_t height){
+        return true;
+    };
+    void Resize(size_t width, size_t height){
+
+    };
     void Destroy(){};
     
 private:

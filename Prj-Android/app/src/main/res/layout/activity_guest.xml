@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:background="@color/colorBlack"
     android:layout_height="match_parent">
 
 
@@ -30,16 +31,25 @@
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
+        android:orientation="vertical"
         android:gravity="right">
 
         <ImageView
             android:id="@+id/btn_close"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="15dp"
+            android:layout_margin="8dp"
             android:onClick="OnBtnClicked"
             android:scaleType="centerInside"
             android:src="@mipmap/btn_close" />
+        <ImageView
+            android:id="@+id/btn_tofullscreen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:onClick="OnBtnClicked"
+            android:scaleType="centerInside"
+            android:src="@mipmap/tofullscreen" />
     </LinearLayout>
 
     <TextView
@@ -48,7 +58,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_below="@+id/llayout_host_tools"
-        android:layout_margin="15dp"
+        android:layout_margin="8dp"
         android:text="RTMP"
+        android:visibility="gone"
         android:textColor="@android:color/holo_red_dark" />
 </RelativeLayout>

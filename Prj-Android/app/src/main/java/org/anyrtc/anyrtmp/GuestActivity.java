@@ -20,18 +20,26 @@ package org.anyrtc.anyrtmp;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.Point;
+import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.View;
+import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,6 +50,8 @@ import org.anyrtc.core.RTMPGuestKit;
 import org.json.JSONObject;
 import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoRenderer;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * Created by Eric on 2016/9/16.
@@ -61,7 +71,10 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
     private RelativeLayout mSurfaceLayout;
 
     //屏幕宽度
+    private boolean mFullScreen;
     private int mScreenWidth;
+    private int mVideoWidth;
+    private int mVideoLeft;
     //屏幕高度
     private int mScreenHeight;
     private DisplayMetrics displayMetrics;
@@ -72,6 +85,7 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         setContentView(R.layout.activity_guest);
 
         {//* Init UI
+            mFullScreen = false;
             mTxtStatus = (TextView) findViewById(R.id.txt_rtmp_status);
             mSurfaceView = (SurfaceViewRenderer) findViewById(R.id.suface_view);
 
@@ -79,6 +93,8 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
             this.getWindow().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
             mScreenWidth = displayMetrics.widthPixels;
             mScreenHeight = displayMetrics.heightPixels;
+            mVideoWidth = mScreenWidth * 4 / 5;
+            mVideoLeft = (mScreenWidth - mVideoWidth) / 2;
 
             mSurfaceView.init(AnyRTMP.Inst().Egl().getEglBaseContext(), null);
             mRenderer = new VideoRenderer(mSurfaceView);
@@ -99,7 +115,7 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         webView.getSettings().setAllowFileAccess(true);
         webView.getSettings().setAppCacheEnabled(true);
 //        webView.loadUrl("file:///android_asset/test.html");//加载asset文件夹下html
-        webView.loadUrl("http://192.168.1.13:8080/live/h5client/mainpage/#/pages/chatroom/chatroom");//加载url
+        webView.loadUrl(getResources().getString(R.string.app_uri) + "#/pages/chatroom/chatroom");//加载url
 
         //使用webview显示html代码
 //        webView.loadDataWithBaseURL(null,"<html><head><title> 欢迎您 </title></head>" +
@@ -154,8 +170,9 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         mSurfaceLayout = (RelativeLayout) findViewById(R.id.layout_gesture);
         RelativeLayout.LayoutParams lp =
                 (RelativeLayout.LayoutParams) mSurfaceLayout.getLayoutParams();
-        lp.width = mScreenWidth;//(int) (mScreenWidth * SHOW_SCALE);
-        lp.height = mScreenWidth*576/720;
+        lp.width = mVideoWidth;//(int) (mScreenWidth * SHOW_SCALE);
+        lp.height = mVideoWidth*576/720;
+        lp.leftMargin = mVideoLeft;
         mSurfaceLayout.setLayoutParams(lp);
         //mSurfaceView.setLayoutParams(lp);
         //mSurfaceView = (SurfaceView) findViewById(R.id.sv);
@@ -175,6 +192,95 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         }
     }
 
+
+    //当指定了android:configChanges="orientation"后,方向改变时onConfigurationChanged被调用,并且activity不再销毁重建
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        View btn = findViewById(R.id.btn_tofullscreen);
+        super.onConfigurationChanged(newConfig);
+        switch (newConfig.orientation) {
+            case Configuration.ORIENTATION_PORTRAIT://竖屏
+                Log.i(TAG,"竖屏");
+                mFullScreen = false;
+                ((ImageView) btn).setImageResource(R.mipmap.tofullscreen);
+                break;
+            case Configuration.ORIENTATION_LANDSCAPE://横屏
+                Log.i(TAG,"横屏");
+                mFullScreen = true;
+                ((ImageView) btn).setImageResource(R.mipmap.tosmallwindow);
+                //getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//remove notification bar  即全屏
+
+            default:
+                break;
+        }
+
+        fullScreenChange(!mFullScreen);
+
+        Point ptVideo = mSurfaceView.getVideoSize();
+        displayMetrics = new DisplayMetrics();
+        this.getWindow().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        mScreenWidth = displayMetrics.widthPixels;
+        mScreenHeight = displayMetrics.heightPixels;
+
+        mVideoWidth = mScreenWidth * 4 / 5;
+        mVideoLeft = (mScreenWidth - mVideoWidth) / 2;
+
+        mSurfaceLayout = (RelativeLayout) findViewById(R.id.layout_gesture);
+        RelativeLayout.LayoutParams lp =
+                (RelativeLayout.LayoutParams) mSurfaceLayout.getLayoutParams();
+        lp.width = mVideoWidth;//(int) (mScreenWidth * SHOW_SCALE);
+        lp.height = mVideoWidth*ptVideo.y/ptVideo.x;
+
+        if(lp.height > mScreenHeight){
+            lp.height = mScreenHeight;
+            lp.width = lp.height * ptVideo.x / ptVideo.y;
+        }
+        lp.leftMargin = mVideoLeft;
+        mSurfaceLayout.setLayoutParams(lp);
+    }
+
+ public void fullScreenChange(boolean fullScreen) {
+//SharedPreferences mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+//boolean fullScreen = mPreferences.getBoolean("fullScreen", false);
+WindowManager.LayoutParams attrs = getWindow().getAttributes();
+System.out.println("fullScreen的值:" + fullScreen);
+if (fullScreen) {
+attrs.flags &= (~WindowManager.LayoutParams.FLAG_FULLSCREEN);
+getWindow().setAttributes(attrs);
+//取消全屏设置
+getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+//mPreferences.edit().putBoolean("fullScreen", false).commit() ;
+    if (Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 19) {
+        //低版本sdk
+        View v = getWindow().getDecorView();
+        v.setSystemUiVisibility(View.VISIBLE);
+    } else if (Build.VERSION.SDK_INT >= 19) {
+        View decorView = getWindow().getDecorView();
+        int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+        decorView.setSystemUiVisibility(uiOptions);
+    }
+
+
+} else {
+attrs.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
+getWindow().setAttributes(attrs);
+getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+//mPreferences.edit().putBoolean("fullScreen", true).commit();
+    if (Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 19) {
+        View v = getWindow().getDecorView();
+        v.setSystemUiVisibility(View.GONE);
+    } else if (Build.VERSION.SDK_INT >= 19) {
+        View decorView = getWindow().getDecorView();
+        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_FULLSCREEN;
+        decorView.setSystemUiVisibility(uiOptions);
+    }
+
+}
+}
+
+
     /**
      * the button click event listener
      *
@@ -188,6 +294,17 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
                 mGuest = null;
             }
             finish();
+        }else if(btn.getId() == R.id.btn_tofullscreen){
+            //mFullScreen = !mFullScreen;
+            if(!mFullScreen){
+
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
+            }else{
+
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            }
+
         }
     }
 
@@ -263,26 +380,6 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         //不支持js的alert弹窗，需要自己监听然后通过dialog弹窗
         @Override
         public boolean onJsAlert(WebView webView, String url, String message, JsResult result) {
-            //AlertDialog.Builder localBuilder = new AlertDialog.Builder(webView.getContext());
-            // localBuilder.setMessage(message).setPositiveButton("确定",null);
-            // localBuilder.setCancelable(false);
-            //localBuilder.create().show();
-            try {
-                JSONObject obj = new JSONObject(message);
-                String cmd = obj.getString("cmd");
-                JSONObject objData = obj.getJSONObject("data");
-                String pulluri = objData.getString("pulluri");
-
-                Intent it = new Intent(getApplicationContext(), GuestActivity.class);
-                Bundle bd = new Bundle();
-                bd.putString("rtmp_url", pulluri);
-                it.putExtras(bd);
-                startActivity(it);
-
-            }catch (Exception e1){
-                Log.i("",e1.toString());
-
-            }
 
             //注意:
             //必须要这一句代码:result.confirm()表示:
