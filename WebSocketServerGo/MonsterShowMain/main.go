@@ -13,6 +13,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"webapi100"
 
 	"github.com/gorilla/mux"
@@ -78,14 +79,29 @@ func main() {
 	cfg.Cfg["tidb"] = "pic98:vck123456@tcp(106.14.145.51:4000)/Pic98"
 	cfg.Cfg["mssql"] = connString
 	flag.Parse()
-	hub := newHub()
-	go hub.run()
+	//hub := newHub()
+	//go hub.run()
+	var hubs [999]*Hub
 
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", serveHome)
-	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		serveWs(hub, w, r)
+	r.HandleFunc("/ws/{id}", func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+
+		id, _ := strconv.Atoi(vars["id"])
+		if id > 0 && id < 1000 {
+			if hubs[id] == nil {
+				log.Println("hubs[id] is nil")
+				hubs[id] = newHub()
+				go hubs[id].run()
+			}
+			log.Println("serveTest - ", r.URL, " - ", vars["id"], id, hubs[id])
+			serveWs(hubs[id], w, r)
+		} else {
+			http.Error(w, "NotFound", http.StatusNotFound)
+		}
+
 	})
 
 	// webapi 1.0.0 协议

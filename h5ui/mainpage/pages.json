@@ -109,6 +109,11 @@
             "style" : {
 				"navigationStyle":"custom"  
 			}
+        }        ,{
+            "path" : "pages/chatroom02/chatroom02",
+            "style" : {
+				"navigationStyle":"custom"  
+			}
         }
     ],
 	"globalStyle": {

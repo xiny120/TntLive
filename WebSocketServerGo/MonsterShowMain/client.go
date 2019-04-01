@@ -201,7 +201,7 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	ok, _ := uuid.NewV4()
 
 	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), SessionId: ok.String()}
-	log.Println("newClient", ok.String(), r)
+	log.Println("newClient", client)
 	client.hub.register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in

@@ -147,6 +147,8 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
     public void surfaceCreated(SurfaceHolder holder) {
         //SV可见
         //initMediaPlayer();
+        Point pt = mSurfaceView.getVideoSize();
+        Log.i("Tag",pt.toString());
     }
 
 
@@ -154,6 +156,8 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
     public void surfaceChanged(SurfaceHolder holder
             , int format, int width, int height) {
         //SV状态变化
+        Point pt = mSurfaceView.getVideoSize();
+        Log.i("Tag",pt.toString());
     }
 
 
