@@ -11,7 +11,8 @@
 						<text style="margin:4upx;color:#C8C8C8;margin-left:18upx;">{{message.datetime}}</text>
 					</view>
 				</view>
-				<view>{{message.content}}</view>
+				<view><uParse :content="message.content" @preview="preview" @navigate="navigate" /></view>
+				
 			</view>
 		</view>
 		<view class="foot">
@@ -22,8 +23,8 @@
 
 <script>
 	import lyMarkdown from '../../components/ly-markdown/ly-markdown.vue';
-	import messageShow from '../../components/im-chat/messageshow.vue';
-
+	import marked from '../../components/marked'
+	import uParse from '../../components/uParse/src/wxParse.vue'
     import {
         mapState,
         mapMutations
@@ -49,14 +50,14 @@
 				messages: [{
 					user: '系统小喇叭',
 					type: 'head', //input,content 
-					content: '评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面评论界面!',
+					content: '唐能通短线是银 中国首个证券理论创始人 短线是银作者 中国最大盘中直播主讲人',
 					datetime: '2019-2-25 09:09:09',
 				}]
 			}
 		},
 		components: {
 			lyMarkdown,
-			messageShow
+			uParse,
 		},
 		onLoad: function () {
 			console.log("onLoad................");
@@ -69,9 +70,22 @@
 		},
 		computed: mapState(['userInfo']),
 		methods: {
+			preview(src, e) {
+				// do something
+				console.log("src: " + src);
+			},
+			navigate(href, e) {
+				// 如允许点击超链接跳转，则应该打开一个新页面，并传入href，由新页面内嵌webview组件负责显示该链接内容
+				console.log("href: " + href);
+				uni.showModal({
+					content : "点击链接为：" + href,
+					showCancel:false
+				})
+			},		
+			
 			initWebSocket:function(){
 				//const wsuris = ["ws://localhost:8090/ws","ws://localhost:8091/ws","ws://localhost:8092/ws"]
-				const wsuris = ["ws://192.168.1.13:8091/ws/001"]
+				const wsuris = ["ws://localhost:8091/ws/001"]
 				
 				
 				this.wsuriidx = this.wsuriidx + 1;

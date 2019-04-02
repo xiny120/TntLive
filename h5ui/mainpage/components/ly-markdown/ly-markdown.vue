@@ -2,7 +2,8 @@
 	
 	<view style="display: flex;flex-direction: column;height: 180upx;min-height: 180upx; width: 100%;">
 		<view class="footer1">
-			<text>emoji</text>
+			<image  @click="emojiClick('dianzan')" mode="aspectFit" style="height: 64upx; width: 128upx;" src="../../static/dianzan.png"></image>
+			<image  @click="emojiClick('dianzan02')" mode="aspectFit" style="height: 64upx; width: 128upx;" src="../../static/dianzan02.png"></image>
 		</view>		
 		<view class="footer">
 			<view class="footer-left">
@@ -135,6 +136,21 @@
 				})
 				// #endif
 			},
+			emojiClick(obj){
+				var uri = "";
+				if(obj == 'dianzan'){
+					uri = "http://www.gwgz.com/images_man/dianzan@48.png";
+				}else if(obj == 'dianzan02'){
+					uri = "http://www.gwgz.com/images_man/dianzan02@48.png";
+				}
+				
+				//点击发送按钮时，通知父组件用户输入的内容
+				this.$emit('send-message', {
+					type: 'text',
+					content: "<img src='" + uri +"'>"
+				});				
+				
+			},
 			toolBarClick(type) {
 				if (type == 'bold') {
 					this.textareaDataSync += "**粗体文字** "
@@ -229,8 +245,9 @@
 	.footer1 {
 		display: flex;
 		flex-direction: row;
+		align-content:flex-start;
 		width: 100%;
-		height: 60;
+		height: 60upx;
 		min-height: 60upx;
 		border-top: solid 1px #bbb;
 		overflow: hidden;

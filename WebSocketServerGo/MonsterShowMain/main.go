@@ -48,6 +48,43 @@ func hello_abc(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	initDB()
+	flag.Parse()
+	var hubs [999]*Hub
+	for i := 0; i < len(hubs); i++ {
+		hubs[i] = newHub()
+		go hubs[i].run()
+	}
+	r := mux.NewRouter()
+
+	r.HandleFunc("/", serveHome)
+	r.HandleFunc("/ws/{id}", func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+
+		id, err := strconv.Atoi(vars["id"])
+		if err == nil {
+			if id > 0 && id < 1000 {
+				if hubs[id] != nil {
+					log.Println("serveTest - ", r.URL, " - ", vars["id"], id, hubs[id])
+					serveWs(hubs[id], w, r)
+				}
+			}
+		}
+		http.Error(w, "NotFound", http.StatusNotFound)
+	})
+
+	// webapi 1.0.0 协议
+	r.HandleFunc("/api/1.00/private", webapi100.Private)
+	r.HandleFunc("/api/1.00/public", webapi100.Public)
+
+	log.Println(*addr)
+	err := http.ListenAndServe(*addr, r)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
+}
+
+func initDB() {
 	fi, err0 := os.Open("conf/mssql.dat")
 	if err0 != nil {
 		fmt.Printf("Error: %s\n", err0)
@@ -76,48 +113,6 @@ func main() {
 		fmt.Println(connString)
 	}
 
-	cfg.Cfg["tidb"] = "pic98:vck123456@tcp(106.14.145.51:4000)/Pic98"
+	cfg.Cfg["tidb"] = "pic98:" + conf[5] + "@tcp(106.14.145.51:4000)/Pic98"
 	cfg.Cfg["mssql"] = connString
-	flag.Parse()
-	//hub := newHub()
-	//go hub.run()
-	var hubs [999]*Hub
-
-	r := mux.NewRouter()
-
-	r.HandleFunc("/", serveHome)
-	r.HandleFunc("/ws/{id}", func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-
-		id, _ := strconv.Atoi(vars["id"])
-		if id > 0 && id < 1000 {
-			if hubs[id] == nil {
-				log.Println("hubs[id] is nil")
-				hubs[id] = newHub()
-				go hubs[id].run()
-			}
-			log.Println("serveTest - ", r.URL, " - ", vars["id"], id, hubs[id])
-			serveWs(hubs[id], w, r)
-		} else {
-			http.Error(w, "NotFound", http.StatusNotFound)
-		}
-
-	})
-
-	// webapi 1.0.0 协议
-	r.HandleFunc("/api/1.00/private", webapi100.Private)
-	r.HandleFunc("/api/1.00/public", webapi100.Public)
-	//s := r.PathPrefix("/api/1.00").Subrouter()
-	//s0 := s.PathPrefix("/hello").Subrouter()
-	//s0.HandleFunc("/abc", hello_abc)
-	//s.HandleFunc("/{action}", webapi100.ServeWebapi100)
-	//amw := webapi100.AuthenticationMiddleware{}
-	//amw.Populate()
-	//s.Use(amw.Middleware)
-
-	log.Println(*addr)
-	err := http.ListenAndServe(*addr, r)
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
-	}
 }

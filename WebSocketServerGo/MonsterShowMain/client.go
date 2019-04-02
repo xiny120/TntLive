@@ -104,7 +104,6 @@ func (c *Client) readPump() {
 			password := m["password"].(string)
 			tt := sign.SignIn(account, password)
 			tt.SessionId = c.SessionId
-			//sign.Sessions[c.SessionId] = tt
 			sign.SessionsSet(c.SessionId, tt)
 			r["t"] = "sign in"
 			r["userinfo"] = tt

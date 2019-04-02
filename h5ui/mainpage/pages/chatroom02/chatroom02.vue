@@ -22,7 +22,6 @@
 
 <script>
 	import lyMarkdown from '../../components/ly-markdown/ly-markdown.vue';
-	import messageShow from '../../components/im-chat/messageshow.vue';
 
     import {
         mapState,
@@ -56,7 +55,6 @@
 		},
 		components: {
 			lyMarkdown,
-			messageShow
 		},
 		onLoad: function () {
 			console.log("onLoad................");
