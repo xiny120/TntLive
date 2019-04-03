@@ -2,8 +2,12 @@ package srs_auth
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
+	"ucenter"
+
+	"strings"
 )
 
 func ServeSrs(w http.ResponseWriter, r *http.Request) {
@@ -25,51 +29,50 @@ func ServeSrs(w http.ResponseWriter, r *http.Request) {
 		Param    string `json:"param"`
 		ClientId int64  `json:"client_id"`
 	}
-	//log.Println(r.URL)
-	//var v interface{}
 	err := json.NewDecoder(r.Body).Decode(&data)
-	//err := json.Unmarshal(r.Body., &data)
+	//log.Println(data, err)
+	retstr := "1"
 	if err == nil {
-		log.Println(data)
-		/*
-			v1 := v.(map[string]interface{})
-			action := ""
-			app := ""
-			stream := ""
-			param := "?"
-			client_id := 0
-			//action := v1["action"]
-			if action_, ok := v1["action"]; ok {
-				action = action_.(string)
-			}
-			if app_, ok := v1["app"]; ok {
-				app = app_.(string)
-			}
-			if stream_, ok := v1["stream"]; ok {
-				stream = stream_.(string)
-			}
-			if client_id_, ok := v1["client_id"]; ok {
-				//client_id = int(client_id_.(float64))
-				client_id = int(client_id_.(int))
-			}
-			if param_, ok := v1["param"]; ok {
-				param = param_.(string)
-			}
-
-			log.Println(action, app, stream, client_id, param)
-		*/
 		switch data.Action {
 		case "on_connect":
+			retstr = "0"
 
 		case "on_publish":
+			pars, err := uri2map(data.Param)
+			if err == nil {
+				ui, _ := sign.SessionsGet(pars["sessionid"])
+				log.Println(ui)
+				if ui.Token == pars["token"] {
+					retstr = "0"
+				}
+			}
 		case "on_unpublish":
+			retstr = "0"
 		case "on_close":
+			retstr = "0"
 		case "on_play":
+			retstr = "0"
 		case "on_stop":
+			retstr = "0"
 		}
-		//http.Error(w, "NotFound", http.StatusNotFound)
-		w.Write([]byte("0"))
-	} else {
-		w.Write([]byte("1"))
 	}
+	w.Write([]byte(retstr))
+}
+
+func uri2map(uri string) (map[string]string, error) {
+	m := make(map[string]string)
+	if len(uri) < 1 {
+		return m, errors.New("uri is none")
+	}
+	if uri[0:1] == "?" {
+		uri = uri[1:]
+	}
+
+	pars := strings.Split(uri, "&")
+	for _, par := range pars {
+		parkv := strings.Split(par, "=")
+		m[parkv[0]] = parkv[1]
+	}
+	log.Println(m)
+	return m, nil
 }
