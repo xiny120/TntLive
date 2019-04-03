@@ -60,11 +60,11 @@ func SessionsGet(token string) (*UserInfo, bool) {
 				buffer := make([]byte, fileSize)
 				_, err := f.Read(buffer)
 				if err == nil {
-					log.Println(string(buffer))
+					//log.Println(string(buffer))
 					ui0 := &UserInfo{}
 					err3 := json.Unmarshal(buffer, &ui0)
 					if err3 == nil {
-						log.Println(ui0)
+						//log.Println(ui0)
 						sessions[token] = ui0
 						ret = true
 						return ui0, ret
@@ -73,7 +73,7 @@ func SessionsGet(token string) (*UserInfo, bool) {
 			}
 		}
 	}
-	log.Println("SessionsGet", token, ui, ret)
+	//log.Println("SessionsGet", token, ui, ret)
 	return ui, ret
 }
 

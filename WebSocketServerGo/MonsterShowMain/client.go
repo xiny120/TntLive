@@ -5,17 +5,24 @@
 package main
 
 import (
+	"bufio"
 	_ "bytes"
+	"cfg"
+	"fmt"
+	"io"
+	"os"
 
 	//"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 	"ucenter"
 
 	"github.com/satori/go.uuid"
 
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	_ "github.com/mattn/go-adodb"
 )
@@ -37,6 +44,7 @@ const (
 var (
 	newline = []byte{'\n'}
 	space   = []byte{' '}
+	hubs    [999]*Hub
 )
 
 var upgrader = websocket.Upgrader{
@@ -59,9 +67,9 @@ type Client struct {
 func (c *Client) readPump() {
 	defer func() {
 		if info := recover(); info != nil {
-			log.Println("触发了宕机", info)
+			log.Println("client ", c.SessionId, "触发了宕机,终止读任务", info)
 		} else {
-			log.Println("程序正常退出")
+			log.Println("client ", c.SessionId, "都任务完成,终止读任务", info)
 		}
 		c.hub.unregister <- c
 		c.conn.Close()
@@ -71,72 +79,72 @@ func (c *Client) readPump() {
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
 		mt, message, err := c.conn.ReadMessage()
-		if mt != 1 {
-			log.Println("messageType:", mt, err)
-		}
+
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
 			}
 			break
 		}
-		m := make(map[string]interface{})
-		r := make(map[string]interface{})
-		json.Unmarshal(message, &m)
-		log.Println(m)
-		switch m["t"] {
-		case "sign up": // 注册
-			account := m["account"].(string)
-			password := m["password"].(string)
-			email := m["email"].(string)
-			cellphone := m["cellphone"].(string)
-			r["t"] = "sign up"
-			r["status"] = 1
-			r["info"] = (account + password + email + cellphone)
+		if mt == 1 {
+			m := make(map[string]interface{})
+			r := make(map[string]interface{})
+			json.Unmarshal(message, &m)
 
-			rmsg, err := json.Marshal(r)
-			if err == nil {
-				c.send <- rmsg
-			}
+			switch m["t"] {
+			case "sign up": // 注册
+				account := m["account"].(string)
+				password := m["password"].(string)
+				email := m["email"].(string)
+				cellphone := m["cellphone"].(string)
+				r["t"] = "sign up"
+				r["status"] = 1
+				r["info"] = (account + password + email + cellphone)
 
-		case "sign in": // 登录
-			account := m["account"].(string)
-			password := m["password"].(string)
-			tt := sign.SignIn(account, password)
-			tt.SessionId = c.SessionId
-			sign.SessionsSet(c.SessionId, tt)
-			r["t"] = "sign in"
-			r["userinfo"] = tt
-			rmsg, err := json.Marshal(r)
-			if err == nil {
-				c.send <- rmsg
-			}
-
-		case "sign out": // 登出
-		case "checkin": //免密登录
-			r["t"] = "checkin"
-			r["status"] = 1
-			r["msg"] = "用户密钥过期，请重新登录！"
-			if f, ok := sign.SessionsGet(m["sessionid"].(string)); ok {
-				v1 := m["userinfo"].(map[string]interface{})
-				v2 := v1["Token"].(string)
-
-				if f.Token == v2 {
-					r["status"] = 0
-					r["msg"] = "免密登录成功！"
+				rmsg, err := json.Marshal(r)
+				if err == nil {
+					c.send <- rmsg
 				}
-			}
-			rmsg, err := json.Marshal(r)
-			if err == nil {
-				c.send <- rmsg
-				log.Println("checkin 免密登录", r)
-			}
-			if r["status"] != 0 {
-				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
-			}
-		case "toall":
-			c.hub.broadcast <- message
 
+			case "sign in": // 登录
+				account := m["account"].(string)
+				password := m["password"].(string)
+				tt := sign.SignIn(account, password)
+				tt.SessionId = c.SessionId
+				sign.SessionsSet(c.SessionId, tt)
+				r["t"] = "sign in"
+				r["userinfo"] = tt
+				rmsg, err := json.Marshal(r)
+				if err == nil {
+					c.send <- rmsg
+				}
+
+			case "sign out": // 登出
+			case "checkin": //免密登录
+				r["t"] = "checkin"
+				r["status"] = 1
+				r["msg"] = "用户密钥过期，请重新登录！"
+				if f, ok := sign.SessionsGet(m["sessionid"].(string)); ok {
+					v1 := m["userinfo"].(map[string]interface{})
+					v2 := v1["Token"].(string)
+
+					if f.Token == v2 {
+						r["status"] = 0
+						r["msg"] = "免密登录成功！"
+					}
+				}
+				rmsg, err := json.Marshal(r)
+				if err == nil {
+					c.send <- rmsg
+					log.Println("checkin 免密登录", r)
+				}
+				if r["status"] != 0 {
+					c.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				}
+			case "toall":
+				c.hub.broadcast <- message
+
+			}
 		}
 	}
 }
@@ -145,9 +153,9 @@ func (c *Client) writePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		if info := recover(); info != nil {
-			log.Println("触发了宕机", info)
+			log.Println("client ", c.SessionId, "写任务触发宕机，终止执行")
 		} else {
-			log.Println("程序正常退出")
+			log.Println("client ", c.SessionId, "写任务成功完成，终止执行")
 		}
 		ticker.Stop()
 		c.conn.Close()
@@ -157,7 +165,6 @@ func (c *Client) writePump() {
 		case message, ok := <-c.send:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
-				// The hub closed the channel.
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
@@ -169,11 +176,8 @@ func (c *Client) writePump() {
 			w.Write(message)
 			log.Println("writePump", string(message))
 
-			// Add queued chat messages to the current websocket message.
 			n := len(c.send)
-			//log.Println("len(c.send):", n)
 			for i := 0; i < n; i++ {
-
 				w.Write(newline)
 				w.Write(<-c.send)
 			}
@@ -190,21 +194,74 @@ func (c *Client) writePump() {
 	}
 }
 
-// serveWs handles websocket requests from the peer.
+// websocket连接请求处理handlefunc
 func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
+	} else {
+		ok, _ := uuid.NewV4()
+		client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), SessionId: ok.String()}
+		log.Println("newClient SessionId", client.SessionId)
+		client.hub.register <- client
+		// 开启client的数据读写任务。
+		go client.writePump()
+		go client.readPump()
+	}
+}
+
+func serveWebSocket(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err == nil {
+		if id > 0 && id < 1000 {
+			if hubs[id] != nil {
+				//log.Println("serveTest - ", r.URL, " - ", vars["id"], id, hubs[id])
+				serveWs(hubs[id], w, r)
+			}
+		}
+	}
+	http.Error(w, "NotFound", http.StatusNotFound)
+}
+
+func initHubs() {
+	// 初始化hubs,每个hubs代表一个websocket聊天室，每个go main支持 999个聊天室。
+
+	for i := 0; i < len(hubs); i++ {
+		hubs[i] = newHub()
+		go hubs[i].run()
+	}
+}
+
+func initDB() {
+	fi, err0 := os.Open("conf/mssql.dat")
+	if err0 != nil {
+		fmt.Printf("Error: %s\n", err0)
 		return
 	}
-	ok, _ := uuid.NewV4()
+	defer fi.Close()
 
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), SessionId: ok.String()}
-	log.Println("newClient", client)
-	client.hub.register <- client
+	br := bufio.NewReader(fi)
+	var conf []string
 
-	// Allow collection of memory referenced by the caller by doing all work in
-	// new goroutines.
-	go client.writePump()
-	go client.readPump()
+	for {
+		a, _, c := br.ReadLine()
+		if c == io.EOF {
+			break
+		}
+		conf = append(conf, string(a))
+	}
+	//fmt.Println(conf)
+	var isdebug = false
+
+	//连接字符串
+	//connString := fmt.Sprintf("server=%s;port%d;database=%s;user id=%s;password=%s", server, port, database, user, password)
+	connString := fmt.Sprintf("Provider=SQLOLEDB;Data Source=%s;Initial Catalog=%s;user id=%s;password=%s", conf[0], conf[2], conf[3], conf[4])
+
+	if isdebug {
+		fmt.Println(connString)
+	}
+
+	cfg.Cfg["tidb"] = "pic98:" + conf[5] + "@tcp(106.14.145.51:4000)/Pic98"
+	cfg.Cfg["mssql"] = connString
 }
