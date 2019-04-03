@@ -17,37 +17,48 @@ func ServeSrs(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		return
 	}
-
+	var data struct {
+		Action   string `json:"action"`
+		App      string `json:"app"`
+		Hello    string `json:"hello"`
+		Stream   string `json:"stream"`
+		Param    string `json:"param"`
+		ClientId int64  `json:"client_id"`
+	}
 	//log.Println(r.URL)
-	var v interface{}
-	err := json.NewDecoder(r.Body).Decode(&v)
+	//var v interface{}
+	err := json.NewDecoder(r.Body).Decode(&data)
+	//err := json.Unmarshal(r.Body., &data)
 	if err == nil {
-		v1 := v.(map[string]interface{})
-		action := ""
-		app := ""
-		stream := ""
-		param := "?"
-		client_id := 0
-		//action := v1["action"]
-		if action_, ok := v1["action"]; ok {
-			action = action_.(string)
-		}
-		if app_, ok := v1["app"]; ok {
-			app = app_.(string)
-		}
-		if stream_, ok := v1["stream"]; ok {
-			stream = stream_.(string)
-		}
-		if client_id_, ok := v1["client_id"]; ok {
-			//client_id = int(client_id_.(float64))
-			client_id = int(client_id_.(int))
-		}
-		if param_, ok := v1["param"]; ok {
-			param = param_.(string)
-		}
+		log.Println(data)
+		/*
+			v1 := v.(map[string]interface{})
+			action := ""
+			app := ""
+			stream := ""
+			param := "?"
+			client_id := 0
+			//action := v1["action"]
+			if action_, ok := v1["action"]; ok {
+				action = action_.(string)
+			}
+			if app_, ok := v1["app"]; ok {
+				app = app_.(string)
+			}
+			if stream_, ok := v1["stream"]; ok {
+				stream = stream_.(string)
+			}
+			if client_id_, ok := v1["client_id"]; ok {
+				//client_id = int(client_id_.(float64))
+				client_id = int(client_id_.(int))
+			}
+			if param_, ok := v1["param"]; ok {
+				param = param_.(string)
+			}
 
-		log.Println(action, app, stream, client_id, param)
-		switch action {
+			log.Println(action, app, stream, client_id, param)
+		*/
+		switch data.Action {
 		case "on_connect":
 
 		case "on_publish":
