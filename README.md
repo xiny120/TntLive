@@ -1,3 +1,9 @@
+# MonsterShow Live Base on anyRTC-RTMP-OpenSource
+
+在开源代码基础上加入h5ui界面，改造成拉流软件。集成拉流认证，实时聊天功能。
+流服务器使用SRS，一个开源rtmp直播流媒体服务器。
+推流软件用OBS https://github.com/xiny120/obs-studio
+
 # anyRTC-RTMP-OpenSource
 <img src="http://118.178.143.146/p/4/j7KqCl" width="313" alt="AnyRTC-RTMP" /> </br>
 本次开源的客户端基于RTMP协议的推流拉流客户端，采用跨平台架构设计，一套代码支持Android、iOS、Windows等平台。</br>
