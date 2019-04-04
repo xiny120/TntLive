@@ -22,7 +22,8 @@
             "mode" : "hash",
             "base" : "/live/h5client/mainpage/"
         },
-        "title" : "MonsterLiveShow"
+        "title" : "MonsterLiveShow",
+        "domain" : "www.gwgz.com"
     }
 }
 // 小程序特有相关

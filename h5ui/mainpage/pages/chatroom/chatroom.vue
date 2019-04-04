@@ -85,7 +85,7 @@
 			
 			initWebSocket:function(){
 				//const wsuris = ["ws://localhost:8090/ws","ws://localhost:8091/ws","ws://localhost:8092/ws"]
-				const wsuris = ["ws://localhost:8091/ws/001"]
+				const wsuris = ["ws://www.gwgz.com:8091/ws/001"]
 				
 				
 				this.wsuriidx = this.wsuriidx + 1;

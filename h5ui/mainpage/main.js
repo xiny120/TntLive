@@ -7,7 +7,7 @@ Vue.config.productionTip = false
 
 Vue.prototype.$store = store
 
-Vue.prototype.$serverUrl = 'http://localhost:8091';
+Vue.prototype.$serverUrl = 'http://www.gwgz.com:8091';
 
 App.mpType = 'app'
 

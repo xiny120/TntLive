@@ -5,7 +5,7 @@
     <string name="watch_live">拉流</string>
     <string name="str_rtmp">RTMP</string>
 
-    <string name="app_uri">http://192.168.1.13:8080/live/h5client/mainpage/</string>
+    <string name="app_uri">http://gpk01.gwgz.com/live/h5client/mainpage/</string>
     <string name="hint_rtmp_url">输入推流/拉流地址</string>
     <string name="str_rtmp_success">RTMP 连接成功</string>
     <string name="str_rtmp_failed">RTMP 连接失败</string>
