@@ -33,6 +33,7 @@
 	export default {
 		data() {
 			return {
+				sessionid:"",
 				websockautor:true,
 				websockopened:false,
 				websock:null,
@@ -85,7 +86,7 @@
 			
 			initWebSocket:function(){
 				//const wsuris = ["ws://localhost:8090/ws","ws://localhost:8091/ws","ws://localhost:8092/ws"]
-				const wsuris = ["ws://www.gwgz.com:8091/ws/001"]
+				const wsuris = [this.$wssUrl + "/ws/001"]
 				
 				
 				this.wsuriidx = this.wsuriidx + 1;
@@ -119,13 +120,16 @@
 							console.log(ans);
 							if(ans.status != 0){
 								this.websockautor = false;
+							}else{
+								
 							}
 						break;
 						case "sessionid":
-							var sessionid;
+							
 							var userinfo;
 							try {
-								sessionid = uni.getStorageSync('sessionid');
+								//sessionid = uni.getStorageSync('sessionid');
+								//uni.setStorage({key: 'userinfo', data: ui});	
 								userinfo = uni.getStorageSync('userinfo');
 								if(userinfo){
 									//let ui = JSON.parse(userinfo);
@@ -142,7 +146,7 @@
 							}					
 							try {
 								
-								uni.setStorageSync('sessionid', redata.sessionid);
+								//uni.setStorageSync('sessionid', redata.sessionid);
 							} catch (e) {
 								// error
 							}		

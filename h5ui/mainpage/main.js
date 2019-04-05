@@ -6,8 +6,9 @@ import store from './store'
 Vue.config.productionTip = false
 
 Vue.prototype.$store = store
-
-Vue.prototype.$serverUrl = 'http://www.gwgz.com:8091';
+Vue.prototype.$baseUrl = 'localhost:8091';
+Vue.prototype.$serverUrl = 'http://'+Vue.prototype.$baseUrl;
+Vue.prototype.$wssUrl = 'ws://'+Vue.prototype.$baseUrl;
 
 App.mpType = 'app'
 

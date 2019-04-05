@@ -165,6 +165,11 @@ bool SimpleHandler::OnJSDialog(CefRefPtr<CefBrowser> browser,
 			CefString roomid = data->GetString("id");
 			CefString pulluri = data->GetString("pulluri");
 			CPullDlgData::me()->push(str0);
+
+			data = dict->GetDictionary("ui");
+			CefString sessionid = data->GetString("SessionId");
+			CefString token = data->GetString("Token");
+			
 			::PostMessage(m_hWndDlg, WM_PULLDLG, 0, 0);
 		}
 	}

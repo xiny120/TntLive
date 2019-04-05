@@ -128,10 +128,13 @@ public class MainActivity extends AppCompatActivity {
                 String cmd = obj.getString("cmd");
                 JSONObject objData = obj.getJSONObject("data");
                 String pulluri = objData.getString("pulluri");
+                objData = obj.getJSONObject("ui");
+                String sid = objData.getString("SessionId");
+                String tkn = objData.getString("Token");
 
                 Intent it = new Intent(getApplicationContext(), GuestActivity.class);
                 Bundle bd = new Bundle();
-                bd.putString("rtmp_url", pulluri);
+                bd.putString("rtmp_url", pulluri+"?sessionid=" + sid + "&token=" + tkn);
                 it.putExtras(bd);
                 startActivity(it);
 

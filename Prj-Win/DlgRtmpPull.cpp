@@ -116,7 +116,7 @@ BOOL DlgRtmpPull::OnInitDialog(){
 	CefBrowserSettings browser_settings;
 	std::string url;
 	if (url.empty())
-		url = "http://localhost:8080/live/h5client/mainpage/#/pages/chatroom/chatroom";
+		url = "http://gpk01.gwgz.com/live/h5client/mainpage/#/pages/chatroom/chatroom";
 
 	CefWindowInfo window_info;
 	RECT rc;
@@ -129,7 +129,7 @@ BOOL DlgRtmpPull::OnInitDialog(){
 	window_info.SetAsChild(pWnd->GetSafeHwnd(), rc);
 	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, browser_settings,NULL);
 
-	url = "http://localhost:8080/live/h5client/mainpage/#/pages/medialist/medialist";
+	url = "http://gpk01.gwgz.com/live/h5client/mainpage/#/pages/medialist/medialist";
 	pWnd = this->GetDlgItem(IDC_STATIC_LIST);
 	window_info.SetAsChild(pWnd->GetSafeHwnd(), rc);
 	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, browser_settings, NULL);
@@ -284,8 +284,16 @@ void DlgRtmpPull::OnShowWindow(BOOL bShow, UINT nStatus)
 					CefString roomid = data->GetString("id");
 					CefString pulluri = data->GetString("pulluri");
 					CefString background = data->GetString("background");
+
+					data = dict->GetDictionary("ui");
+					CefString sessionid = data->GetString("SessionId");
+					CefString token = data->GetString("Token");
+
 					url = std::string(pulluri);
-					m_strUri = url;
+					std::string sid = std::string(sessionid);
+					std::string tkn  = std::string(token);
+
+					m_strUri = url + "?sessionid="+sid + "&token=" + tkn;
 				}
 			}
 		}
@@ -297,7 +305,7 @@ void DlgRtmpPull::OnShowWindow(BOOL bShow, UINT nStatus)
 			}
 		}
 
-		//Start();
+		Start();
 	}
 }
 
@@ -401,11 +409,12 @@ HBRUSH DlgRtmpPull::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 void DlgRtmpPull::OnSysCommand(UINT nID, LPARAM lParam)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	CWnd* pWnd = this->GetDlgItem(IDC_STATIC_CEF3);
 	
 	if ((nID) == IDR_MENU_SYS_MORE_REFRESH) {
 
-		Start();
-		CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser();
+		
+		CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
 		if (pb != nullptr) {
 			CefWindowInfo win_info;
 			CefRefPtr<CefClient> client;
@@ -416,7 +425,8 @@ void DlgRtmpPull::OnSysCommand(UINT nID, LPARAM lParam)
 
 	}
 	else if ((nID) == IDR_MENU_SYS_MORE_SHOWDEVTOOLS) {
-		CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser();
+		
+		CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
 		if (pb != nullptr) {
 			CefWindowInfo win_info;
 			CefRefPtr<CefClient> client;

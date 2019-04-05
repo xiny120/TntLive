@@ -151,6 +151,7 @@
 						const data ={
 							cmd:"pulldlg",
 							data:e,
+							ui:this.userInfo,
 						}
 						alert(JSON.stringify(data));
 					}else{

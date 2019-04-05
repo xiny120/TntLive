@@ -7,6 +7,7 @@ package main
 import (
 	"encoding/json"
 	_ "fmt"
+	"log"
 	//"log"
 )
 
@@ -49,14 +50,16 @@ func (h *Hub) run() {
 			}
 			//msg := fmt.Sprint("{\"t\":\"sessionid\",\"sessionid\":\"%s\"}", client.SessionId)
 			msg, _ := json.Marshal(data)
-			//log.Println(string(msg[:]))
+			log.Println("websocket comming ", string(msg[:]))
 			//xlog.Println("连接到来 ", data, "\t*\t", string(msg), "\t*\t", err)
 			client.send <- msg
 		case client := <-h.unregister:
+			log.Println("websocket gone ")
 			if _, ok := h.clients[client]; ok {
 				delete(h.clients, client)
 				close(client.send)
 			}
+
 		case message := <-h.broadcast:
 			for client := range h.clients {
 				select {

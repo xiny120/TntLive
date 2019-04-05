@@ -69,7 +69,7 @@ func (c *Client) readPump() {
 		if info := recover(); info != nil {
 			log.Println("client ", c.SessionId, "触发了宕机,终止读任务", info)
 		} else {
-			log.Println("client ", c.SessionId, "都任务完成,终止读任务", info)
+			log.Println("client ", c.SessionId, "读任务完成,终止读任务")
 		}
 		c.hub.unregister <- c
 		c.conn.Close()
@@ -78,74 +78,78 @@ func (c *Client) readPump() {
 	c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
-		mt, message, err := c.conn.ReadMessage()
+		_, message, err := c.conn.ReadMessage()
 
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("error: %v", err)
+				log.Printf("用户：", c.SessionId, "error: %v", err)
 			}
 			break
 		}
-		if mt == 1 {
-			m := make(map[string]interface{})
-			r := make(map[string]interface{})
-			json.Unmarshal(message, &m)
+		//if mt == 1 {
+		m := make(map[string]interface{})
+		r := make(map[string]interface{})
+		json.Unmarshal(message, &m)
 
-			switch m["t"] {
-			case "sign up": // 注册
-				account := m["account"].(string)
-				password := m["password"].(string)
-				email := m["email"].(string)
-				cellphone := m["cellphone"].(string)
-				r["t"] = "sign up"
-				r["status"] = 1
-				r["info"] = (account + password + email + cellphone)
+		switch m["t"] {
+		case "sign up": // 注册
+			account := m["account"].(string)
+			password := m["password"].(string)
+			email := m["email"].(string)
+			cellphone := m["cellphone"].(string)
+			r["t"] = "sign up"
+			r["status"] = 1
+			r["info"] = (account + password + email + cellphone)
 
-				rmsg, err := json.Marshal(r)
-				if err == nil {
-					c.send <- rmsg
-				}
+			rmsg, err := json.Marshal(r)
+			if err == nil {
+				c.send <- rmsg
+			}
 
-			case "sign in": // 登录
-				account := m["account"].(string)
-				password := m["password"].(string)
-				tt := sign.SignIn(account, password)
-				tt.SessionId = c.SessionId
-				sign.SessionsSet(c.SessionId, tt)
-				r["t"] = "sign in"
-				r["userinfo"] = tt
-				rmsg, err := json.Marshal(r)
-				if err == nil {
-					c.send <- rmsg
-				}
+		case "sign in": // 登录
+			account := m["account"].(string)
+			password := m["password"].(string)
+			tt := sign.SignIn(account, password)
+			tt.SessionId = c.SessionId
+			sign.SessionsSet(c.SessionId, tt)
+			r["t"] = "sign in"
+			r["userinfo"] = tt
+			rmsg, err := json.Marshal(r)
+			if err == nil {
+				c.send <- rmsg
+			}
+			log.Println("用户：", account, tt.UserId)
 
-			case "sign out": // 登出
-			case "checkin": //免密登录
-				r["t"] = "checkin"
-				r["status"] = 1
-				r["msg"] = "用户密钥过期，请重新登录！"
-				if f, ok := sign.SessionsGet(m["sessionid"].(string)); ok {
-					v1 := m["userinfo"].(map[string]interface{})
-					v2 := v1["Token"].(string)
+		case "sign out": // 登出
+		case "checkin": //免密登录
+			r["t"] = "checkin"
+			r["status"] = 1
+			r["msg"] = "用户密钥过期，请重新登录！"
+			un := ""
+			if f, ok := sign.SessionsGet(m["sessionid"].(string)); ok {
+				v1 := m["userinfo"].(map[string]interface{})
+				v2 := v1["Token"].(string)
+				un = f.UserName
 
-					if f.Token == v2 {
-						r["status"] = 0
-						r["msg"] = "免密登录成功！"
-					}
+				if f.Token == v2 {
+					r["status"] = 0
+					r["msg"] = "免密登录成功！"
 				}
-				rmsg, err := json.Marshal(r)
-				if err == nil {
-					c.send <- rmsg
-					log.Println("checkin 免密登录", r)
-				}
-				if r["status"] != 0 {
-					c.conn.WriteMessage(websocket.CloseMessage, []byte{})
-				}
-			case "toall":
-				c.hub.broadcast <- message
+			}
+			rmsg, err := json.Marshal(r)
+			if err == nil {
+				c.send <- rmsg
 
 			}
+			if r["status"] != 0 {
+				c.hub.unregister <- c //c.conn.WriteMessage(websocket.CloseMessage, []byte{})
+			}
+			log.Println("用户：", un, m["sessionid"], "checkin 免密登录", r["status"], r["msg"])
+		case "toall":
+			c.hub.broadcast <- message
+
 		}
+		//}
 	}
 }
 
@@ -153,7 +157,7 @@ func (c *Client) writePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		if info := recover(); info != nil {
-			log.Println("client ", c.SessionId, "写任务触发宕机，终止执行")
+			log.Println("client ", c.SessionId, "写任务触发宕机，终止执行", info)
 		} else {
 			log.Println("client ", c.SessionId, "写任务成功完成，终止执行")
 		}
@@ -166,15 +170,17 @@ func (c *Client) writePump() {
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				log.Println("用户：", c.SessionId, "关闭连接..")
 				return
 			}
 
 			w, err := c.conn.NextWriter(websocket.TextMessage)
 			if err != nil {
+				log.Println("用户：", c.SessionId, "NextWriter create 失败..", err)
 				return
 			}
 			w.Write(message)
-			log.Println("writePump", string(message))
+			//log.Println("writePump", string(message))
 
 			n := len(c.send)
 			for i := 0; i < n; i++ {
@@ -183,11 +189,13 @@ func (c *Client) writePump() {
 			}
 
 			if err := w.Close(); err != nil {
+				log.Println("用户：", c.SessionId, "NextWriter close 失败..", err)
 				return
 			}
 		case <-ticker.C:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				log.Println("用户：", c.SessionId, "websocket.PingMessage 失败..", err)
 				return
 			}
 		}
@@ -195,33 +203,35 @@ func (c *Client) writePump() {
 }
 
 // websocket连接请求处理handlefunc
-func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
+func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request, conn *websocket.Conn) {
+	ok, _ := uuid.NewV4()
+	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), SessionId: ok.String()}
+	//log.Println("newClient SessionId", client.SessionId)
+	client.hub.register <- client
+	// 开启client的数据读写任务。
+	go client.writePump()
+	go client.readPump()
+
+}
+
+func serveWebSocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 	} else {
-		ok, _ := uuid.NewV4()
-		client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), SessionId: ok.String()}
-		log.Println("newClient SessionId", client.SessionId)
-		client.hub.register <- client
-		// 开启client的数据读写任务。
-		go client.writePump()
-		go client.readPump()
-	}
-}
-
-func serveWebSocket(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
-	if err == nil {
-		if id > 0 && id < 1000 {
-			if hubs[id] != nil {
-				//log.Println("serveTest - ", r.URL, " - ", vars["id"], id, hubs[id])
-				serveWs(hubs[id], w, r)
+		vars := mux.Vars(r)
+		id, err := strconv.Atoi(vars["id"])
+		if err == nil {
+			if id > 0 && id < 1000 {
+				if hubs[id] != nil {
+					//log.Println("serveTest - ", r.URL, " - ", vars["id"], id, hubs[id])
+					serveWs(hubs[id], w, r, conn)
+				}
 			}
+		} else {
+			http.Error(w, "NotFound", http.StatusNotFound)
 		}
 	}
-	http.Error(w, "NotFound", http.StatusNotFound)
 }
 
 func initHubs() {

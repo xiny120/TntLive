@@ -3,6 +3,7 @@ package srs_auth
 import (
 	"encoding/json"
 	"errors"
+
 	"log"
 	"net/http"
 	"ucenter"
@@ -41,7 +42,7 @@ func ServeSrs(w http.ResponseWriter, r *http.Request) {
 			pars, err := uri2map(data.Param)
 			if err == nil {
 				ui, _ := sign.SessionsGet(pars["sessionid"])
-				log.Println(ui)
+				//log.Println(ui)
 				if ui.Token == pars["token"] {
 					retstr = "0"
 				}
@@ -51,12 +52,21 @@ func ServeSrs(w http.ResponseWriter, r *http.Request) {
 		case "on_close":
 			retstr = "0"
 		case "on_play":
-			retstr = "0"
+			pars, err := uri2map(data.Param)
+			if err == nil {
+				ui, _ := sign.SessionsGet(pars["sessionid"])
+				//log.Println(ui)
+				if ui.Token == pars["token"] {
+					retstr = "0"
+				}
+			}
+			log.Println("用户：", pars["sessionid"], retstr)
 		case "on_stop":
 			retstr = "0"
 		}
 	}
 	w.Write([]byte(retstr))
+	//log.Println("SRS AUTH ", retstr, data.Action, data.ClientId)
 }
 
 func uri2map(uri string) (map[string]string, error) {
@@ -73,6 +83,6 @@ func uri2map(uri string) (map[string]string, error) {
 		parkv := strings.Split(par, "=")
 		m[parkv[0]] = parkv[1]
 	}
-	log.Println(m)
+	//log.Println(m)
 	return m, nil
 }
