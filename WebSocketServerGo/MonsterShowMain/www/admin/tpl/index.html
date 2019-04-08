@@ -143,15 +143,18 @@
     <main class="app-content">
         <div class="tab-content" id="v-pills-tabContent">
           <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
-            Home       
+            {{template "home" .}}      
           </div>
           <div class="tab-pane fade" id="v-pills-member-request" role="tabpanel" aria-labelledby="v-pills-member-request-tab">
+            {{template "memberrequest" .}}
               Member request
           </div>
           <div class="tab-pane fade" id="v-pills-member-query" role="tabpanel" aria-labelledby="v-pills-member-query-tab">
+            {{template "memberquery" .}}
             Member query
           </div>   
           <div class="tab-pane fade" id="v-pills-member-admin" role="tabpanel" aria-labelledby="v-pills-member-admin-tab">
+            {{template "memberadmin" .}}
             Member Admin
           </div>  
           <div class="tab-pane fade" id="v-pills-member-techer" role="tabpanel" aria-labelledby="v-pills-member-techer-tab">

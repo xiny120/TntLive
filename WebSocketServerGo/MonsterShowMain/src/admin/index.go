@@ -1,15 +1,24 @@
 package admin
 
 import (
+	"html/template"
 	"log"
 	"net/http"
-	"strings"
+	//"strings"
 )
 
 func ServeAdmin(w http.ResponseWriter, r *http.Request) {
-	//file := "static" + r.URL.Path
-	file := strings.Replace(r.URL.Path, "/", "www/", 1)
-	log.Println(file)
-
-	http.ServeFile(w, r, file)
+	log.Println(r.URL.Path)
+	if r.URL.Path == "/admin/" {
+		t, _ := template.ParseFiles(
+			"www/admin/tpl/index.html",
+			"www/admin/tpl/home.html",
+			"www/admin/tpl/memberrequest.html",
+			"www/admin/tpl/memberquery.html",
+			"www/admin/tpl/memberadmin.html")
+		log.Println(r.URL.Path, t.Name())
+		t.Execute(w, "Hello world")
+	} else {
+		http.ServeFile(w, r, "www"+r.URL.Path)
+	}
 }
