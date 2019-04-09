@@ -21,7 +21,7 @@
 
 #define PLY_MIN_TIME	500		// 0.5s
 #define PLY_MAX_TIME	600000		// 10minute
-#define PLY_RED_TIME	250		// redundancy time
+#define PLY_RED_TIME	150		// redundancy time org 250
 #define PLY_MAX_DELAY	1000		// 1 second
 #define PLY_MAX_CACHE   160      	// 16s
 
@@ -64,7 +64,7 @@ PlyBuffer::~PlyBuffer()
 
 void PlyBuffer::SetCacheSize(int miliseconds/*ms*/)
 {
-	if (miliseconds > 500 && miliseconds <= 600000) {	//* 0.5s ~ 10 minute
+	if (miliseconds > PLY_MIN_TIME && miliseconds <= PLY_MAX_TIME) {	//* 0.5s ~ 10 minute
 		cache_time_ = miliseconds;
 	}
 }
