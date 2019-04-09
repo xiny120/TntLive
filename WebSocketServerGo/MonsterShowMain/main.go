@@ -31,9 +31,14 @@ func main() {
 	r.HandleFunc("/api/1.00/private", webapi100.Private) // webapi 1.0.0 协议
 	r.HandleFunc("/api/1.00/public", webapi100.Public)
 	r.HandleFunc("/srs", srs_auth.ServeSrs)
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("www/")))
 	log.Println("ListenAndServe Success at: ", *addr)
 	err := http.ListenAndServe(*addr, r)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
+}
+
+func test(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.URL.Path)
 }
