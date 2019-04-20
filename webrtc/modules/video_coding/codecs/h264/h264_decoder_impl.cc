@@ -445,6 +445,7 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
   // |AVGetBuffer2|'s use of |avcodec_align_dimensions|. This crops the image
   // without copying the underlying buffer.
   rtc::scoped_refptr<VideoFrameBuffer> buf = video_frame->video_frame_buffer();
+	//LOG(LS_WARNING) << "DecodedImageCallback::Decoded width:" << buf->width() << "height:" << buf->height();
   if (av_frame_->width != buf->width() || av_frame_->height != buf->height()) {
     rtc::scoped_refptr<VideoFrameBuffer> cropped_buf(
         new rtc::RefCountedObject<WrappedI420Buffer>(

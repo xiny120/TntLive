@@ -27,6 +27,8 @@ import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -48,6 +50,7 @@ import org.anyrtc.core.AnyRTMP;
 import org.anyrtc.core.RTMPGuestHelper;
 import org.anyrtc.core.RTMPGuestKit;
 import org.json.JSONObject;
+import org.webrtc.RendererCommon;
 import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoRenderer;
 
@@ -79,6 +82,16 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
     private int mScreenHeight;
     private DisplayMetrics displayMetrics;
 
+    /**
+     * 接收解析后传过来的数据
+     */
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            mTxtStatus.setVisibility(View.GONE);
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,7 +109,21 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
             mVideoWidth = mScreenWidth * 4 / 5;
             mVideoLeft = (mScreenWidth - mVideoWidth) / 2;
 
-            mSurfaceView.init(AnyRTMP.Inst().Egl().getEglBaseContext(), null);
+            mSurfaceView.init(AnyRTMP.Inst().Egl().getEglBaseContext(), new RendererCommon.RendererEvents(){
+                /**
+                 * Callback fired once first frame is rendered.
+                 */
+                public void onFirstFrameRendered(){
+                    handler.sendMessage(handler.obtainMessage());
+                };
+
+                /**
+                 * Callback fired when rendered frame resolution or rotation has changed.
+                 */
+                public void onFrameResolutionChanged(int videoWidth, int videoHeight, int rotation){
+
+                };
+            });
             mRenderer = new VideoRenderer(mSurfaceView);
         }
 
@@ -182,6 +209,7 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         //mSurfaceView = (SurfaceView) findViewById(R.id.sv);
         mHolder = mSurfaceView.getHolder();
         mHolder.addCallback(this);
+        mTxtStatus.setVisibility(View.VISIBLE);
     }
 
 

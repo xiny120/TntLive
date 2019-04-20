@@ -133,12 +133,18 @@ BOOL CLiveWin32Dlg::OnInitDialog()
 	//* ShowWindow(SW_MINIMIZE);
 
 	// TODO:  在此添加额外的初始化代码
-	
+	CStringA path;
+	GetModuleFileNameA(NULL, path.GetBufferSetLength(MAX_PATH + 1), MAX_PATH);
+	path.ReleaseBuffer();
+	int pos = path.ReverseFind('\\');
+	path = path.Left(pos);
 	// Specify CEF global settings here.
 	CefSettings settings;
 	//settings.log_severity = cef_log_severity_t::LOGSEVERITY_VERBOSE;
 	settings.multi_threaded_message_loop = true;
 	settings.remote_debugging_port = 8088;
+	cef_string_from_ascii(path.GetBuffer(), path.GetLength(), &settings.cache_path);
+	
 #if !defined(CEF_USE_SANDBOX)
 	settings.no_sandbox = true;
 #endif

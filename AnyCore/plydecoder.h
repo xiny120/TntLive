@@ -68,7 +68,7 @@ private:
 
 	//* For audio
 	aac_dec_t		aac_decoder_;
-	uint8_t			audio_cache_[8192];
+	uint8_t			audio_cache_[8192*2];
 	int				a_cache_len_;
 	uint32_t		aac_sample_hz_;
 	uint8_t			aac_channels_;

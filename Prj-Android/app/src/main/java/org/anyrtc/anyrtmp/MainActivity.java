@@ -25,6 +25,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
@@ -44,6 +45,9 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText mEditRtmpUrl;
     private WebView webView;
+    //设置时间间隔和上次退出时间
+    private static final long TIME=2000;
+    private long exitTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +92,36 @@ public class MainActivity extends AppCompatActivity {
             //mEditRtmpUrl = (EditText) findViewById(R.id.edit_rtmp_url);
         }
         AnyRTMP.Inst();
+    }
+
+    //重写onKeyDown方法
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        //判断是否按的后退键，而且按了一次
+        if(keyCode== KeyEvent.KEYCODE_BACK&&event.getRepeatCount()==0)
+        {
+            //获取当前的系统时间，和exitTime相减，判断两次间隔是否大于规定时间
+            //exitTime没有初始值则默认为0
+            //如果大于设定的时间，则弹出提示，同时把exitTime设置为当前时间
+            if(System.currentTimeMillis()-exitTime>TIME)
+            {
+                // 这里处理一下浏览器的back动作。
+                if(webView.canGoBack()){
+                    webView.goBack();
+                    return false;
+                }
+                Toast.makeText(this,"再按一次退出程序",Toast.LENGTH_LONG).show();
+                exitTime= System.currentTimeMillis();
+            }
+            else
+            {
+                //如果再次按后退的时间小于规定时间，则退出
+                finish();
+            }
+            //消费事件
+            return true;
+        }
+        //不处理事件
+        return false;
     }
 
     //WebViewClient主要帮助WebView处理各种通知、请求事件

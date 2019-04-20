@@ -361,6 +361,8 @@ public class SurfaceViewRenderer extends SurfaceView
     synchronized (layoutLock) {
       isSurfaceCreated = true;
     }
+    frameWidth = 640;
+    frameHeight = 480;
     tryCreateEglSurface();
   }
 
