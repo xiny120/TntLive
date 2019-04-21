@@ -23,6 +23,11 @@
     </RelativeLayout>
     <WebView
         android:layout_below="@+id/layout_gesture"
+        android:id="@+id/webviewmeidalist"
+        android:layout_width="match_parent"
+        android:layout_height="900px"/>
+    <WebView
+        android:layout_below="@+id/webviewmeidalist"
         android:id="@+id/webview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>

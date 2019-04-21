@@ -42,6 +42,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -62,6 +63,9 @@ import static android.content.ContentValues.TAG;
 public class GuestActivity extends Activity implements RTMPGuestHelper,  SurfaceHolder.Callback{
     private RTMPGuestKit mGuest = null;
     private WebView webView;
+    private WebView mwvMediaList;
+
+    private LinearLayout mToolbar = null;
 
     private TextView mTxtStatus = null;
     private SurfaceViewRenderer mSurfaceView = null;
@@ -89,6 +93,14 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         @Override
         public void handleMessage(Message msg) {
             mTxtStatus.setVisibility(View.GONE);
+            mToolbar.setVisibility(View.VISIBLE);
+            RelativeLayout.LayoutParams lp =
+                    (RelativeLayout.LayoutParams) mSurfaceLayout.getLayoutParams();
+            lp.width = mVideoWidth;//(int) (mScreenWidth * SHOW_SCALE);
+            lp.height = mVideoWidth*576/720;
+            lp.leftMargin = mVideoLeft;
+            mSurfaceLayout.setLayoutParams(lp);
+            mwvMediaList.setVisibility(View.GONE);
         }
     };
 
@@ -101,6 +113,10 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
             mFullScreen = false;
             mTxtStatus = (TextView) findViewById(R.id.txt_rtmp_status);
             mSurfaceView = (SurfaceViewRenderer) findViewById(R.id.suface_view);
+            mToolbar = (LinearLayout)findViewById(R.id.llayout_host_tools);
+            mToolbar.setVisibility(View.GONE);
+            mwvMediaList = (WebView)findViewById(R.id.webviewmeidalist);
+
 
             displayMetrics = new DisplayMetrics();
             this.getWindow().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -202,7 +218,7 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         RelativeLayout.LayoutParams lp =
                 (RelativeLayout.LayoutParams) mSurfaceLayout.getLayoutParams();
         lp.width = mVideoWidth;//(int) (mScreenWidth * SHOW_SCALE);
-        lp.height = mVideoWidth*576/720;
+        lp.height = 120;//mVideoWidth*576/720;
         lp.leftMargin = mVideoLeft;
         mSurfaceLayout.setLayoutParams(lp);
         //mSurfaceView.setLayoutParams(lp);
