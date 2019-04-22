@@ -32,6 +32,7 @@
 #include "structs.h"
 
 #include "output.h"
+#include <stdio.h>
 
 #ifndef FIXED_POINT
 
@@ -110,15 +111,21 @@ static void to_PCM_16bit(NeAACDecStruct *hDecoder, real_t **input,
         if (hDecoder->upMatrix)
         {
             ch  = hDecoder->internal_channel[0];
+						//FILE* f = fopen("c:\\temp\\abc.pcm", "ab+");
+						
             for(i = 0; i < frame_len; i++)
             {
                 real_t inp0 = input[ch][i];
 
                 CLIP(inp0, 32767.0f, -32768.0f);
-
+								int16_t out= (int16_t)lrintf(inp0);
+								//fwrite(&out,sizeof(out),1, f);
+								//fwrite(&out, sizeof(out), 1, f);
                 (*sample_buffer)[(i*2)+0] = (int16_t)lrintf(inp0);
                 (*sample_buffer)[(i*2)+1] = (int16_t)lrintf(inp0);
             }
+						//fwrite(*sample_buffer, 1, frame_len * 2, f);
+					//	fclose(f);
         } else {
             ch  = hDecoder->internal_channel[0];
             ch1 = hDecoder->internal_channel[1];

@@ -52,6 +52,7 @@ public:
 
 	virtual void OnGetPcmData(const void * pcm, const int len,const int rate, const int channels) {
 		short* p = (short*)pcm;
+		return;
 		
 		if (m_pAudioMarketOut >= ((short*)m_pAudioMarker + m_iAudioMarker/2)) {
 			m_pAudioMarketOut = (short*)m_pAudioMarker;

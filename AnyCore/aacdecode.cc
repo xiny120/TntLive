@@ -22,11 +22,14 @@
 #include "webrtc/base/logging.h"
 #include "third_party/faad2-2.7/include/faad.h"
 
+//FILE* f;
+
 aac_dec_t aac_decoder_open(unsigned char* adts, unsigned int len, unsigned char* outChannels, unsigned int* outSampleHz)
 {
 	unsigned long samplerate;
 	unsigned char channels;
 	NeAACDecHandle decoder = NULL;
+	//f = fopen("c:\\temp\\abc.pcm", "wb");
 	
 	//open decoder  
 	decoder = NeAACDecOpen();
@@ -47,6 +50,7 @@ void aac_decoder_close(void*pHandle)
 		NeAACDecClose(pHandle);
 		pHandle = NULL;
 	}
+	//fclose(f);
 }
 int aac_decoder_decode_frame(void*pHandle, unsigned char* inbuf, unsigned int inlen, unsigned char* outbuf, unsigned int* outlen)
 {
@@ -64,6 +68,7 @@ int aac_decoder_decode_frame(void*pHandle, unsigned char* inbuf, unsigned int in
 		else if (pcm_data && frame_info.samples > 0)
 		{
 			*outlen = frame_info.samples * frame_info.channels;
+			//fwrite(pcm_data, 1, frame_info.samples * frame_info.channels, f);
 			memcpy(outbuf, pcm_data, frame_info.samples * frame_info.channels);
 		}
 	}

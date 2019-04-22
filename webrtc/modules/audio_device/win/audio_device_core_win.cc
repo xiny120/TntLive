@@ -2228,12 +2228,13 @@ int32_t AudioDeviceWindowsCore::InitPlayout()
         WEBRTC_TRACE(kTraceInfo, kTraceAudioDevice, _id, "cbSize         : %d", pWfxOut->cbSize);
     }
 
+
     // Set wave format
     Wfx.wFormatTag = WAVE_FORMAT_PCM;
     Wfx.wBitsPerSample = 16;
     Wfx.cbSize = 0;
 
-    const int freqs[] = {48000, 44100, 16000, 96000, 32000, 8000};
+    const int freqs[] = {11025,22050,44100,48000,  16000, 96000, 32000, 8000};
     hr = S_FALSE;
 
     // Iterate over frequencies and channels, in order of priority
