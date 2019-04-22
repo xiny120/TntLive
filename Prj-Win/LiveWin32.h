@@ -42,7 +42,9 @@ public:
 	CefRefPtr<SimpleApp> app;
 	CefRefPtr<SimpleHandler> handler;
 	CefMainArgs main_args;
-
+	short*		m_soundMarker[10];			// 次声波水印。
+	int			m_iSoundMarker[10];
+	int	m_iUserId;
 // 实现
 
 	DECLARE_MESSAGE_MAP()

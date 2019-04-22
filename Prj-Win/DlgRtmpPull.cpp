@@ -23,6 +23,8 @@
 #include "include/cef_parser.h"
 // DlgRtmpPull 对话框
 
+extern int gUserId;
+
 IMPLEMENT_DYNAMIC(DlgRtmpPull, CDialog)
 
 DlgRtmpPull::DlgRtmpPull()
@@ -34,6 +36,7 @@ DlgRtmpPull::DlgRtmpPull()
 	, m_nVideoHeight(576)
 	, m_nChatroomWidth(420)
 	, m_nListHeight(220)
+	, m_pAudioMarker(NULL)
 {
 }
 
@@ -97,6 +100,12 @@ BOOL DlgRtmpPull::OnInitDialog(){
 	}
 	m_myStatic.SubclassDlgItem(IDC_STATIC_CAPTRUE, this);
 
+
+
+	srand(time(NULL));
+
+
+
 	brush.CreateSolidBrush(RGB(0, 0, 0));
 
 	{// Video player
@@ -135,6 +144,10 @@ BOOL DlgRtmpPull::OnInitDialog(){
 	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, browser_settings, NULL);
 
 	PostMessage( WM_SIZE, 0, 0);
+
+
+
+
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 异常: OCX 属性页应返回 FALSE
@@ -226,6 +239,47 @@ void DlgRtmpPull::Start()
 	
 	if (m_pAVRtmplayer == NULL) {
 
+		delete[] m_pAudioMarker;
+		CString strId;
+		int id = 0;
+		m_iAudioMarker = 0;
+		strId.Format(_T("%d"), gUserId);
+		TRACE(strId);
+		TRACE("\r\n");
+		for (int i = 0; i < strId.GetLength(); i++)
+		{
+			id = _tstoi(strId.Mid(i, 1));
+			m_iAudioMarker += theApp.m_iSoundMarker[id] + 12000;
+		}
+
+		int RANGE_MIN = 200;
+		int RANGE_MAX = 240;
+		srand(time(NULL));
+		m_iAudioMarketId = 0;
+		m_iAudioMarketIdNew = 0;
+		m_iAudioMarketLast = time(NULL);
+		m_iAudioMarketStart[0] = (((double)rand() / (double)(RAND_MAX + 1)) * (RANGE_MAX - RANGE_MIN) + RANGE_MIN);
+		m_iAudioMarketStart[0] -= 200;
+		if (m_iAudioMarketStart[0] <= 20)
+			m_iAudioMarketStart[0] = 20;
+		for (int i = 1; i < _countof(m_iAudioMarketStart); i++)
+		{
+			m_iAudioMarketStart[i] = m_iAudioMarketStart[i - 1] + m_iAudioMarketStart[i - 1] + (((double)rand() / (double)RAND_MAX) * RANGE_MAX + RANGE_MIN);
+		}
+
+		m_pAudioMarker = new char[m_iAudioMarker];
+		m_pAudioMarketOut = (short*)m_pAudioMarker;
+		memset(m_pAudioMarker, 0, m_iAudioMarker);
+		char* pCur = m_pAudioMarker;
+		for (int i = 0; i < strId.GetLength(); i++)
+		{
+			id = _tstoi(strId.Mid(i, 1));
+			memcpy(pCur, theApp.m_soundMarker[id], theApp.m_iSoundMarker[id]);
+			pCur += theApp.m_iSoundMarker[id] + 12000;
+		}
+
+
+
 		std::string url;
 		if (url.empty())
 			url = m_strUri;
@@ -294,6 +348,7 @@ void DlgRtmpPull::OnShowWindow(BOOL bShow, UINT nStatus)
 					std::string tkn  = std::string(token);
 
 					m_strUri = url + "?sessionid="+sid + "&token=" + tkn;
+					
 				}
 			}
 		}

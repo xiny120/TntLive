@@ -100,8 +100,12 @@ void PlyBuffer::CacheH264Data(const uint8_t*pdata, int len, uint32_t ts)
 
 void PlyBuffer::CachePcmData(const uint8_t*pdata, int len, uint32_t ts)
 {
-	LOG(LS_WARNING) << " CachePcmData " << len << " - " << ts;
+	//LOG(LS_WARNING) << " CachePcmData " << len << " - " << ts;
 	PlyPacket* pkt = new PlyPacket(false);
+	uint8_t* p = (uint8_t*)pdata;
+	//for (int i = 0; i < len; i++) {
+	//	p[i] = 0;
+	//}
 	pkt->SetData(pdata, len, ts);
 	rtc::CritScope cs(&cs_list_audio_);
 	got_audio_ = true;

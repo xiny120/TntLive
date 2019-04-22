@@ -18,6 +18,7 @@
 
 #include "xdefines.h"
 
+extern int gUserId;
 namespace {
 
 SimpleHandler* g_instance = NULL;
@@ -169,6 +170,9 @@ bool SimpleHandler::OnJSDialog(CefRefPtr<CefBrowser> browser,
 			data = dict->GetDictionary("ui");
 			CefString sessionid = data->GetString("SessionId");
 			CefString token = data->GetString("Token");
+			gUserId = data->GetInt("UserId");
+
+			
 			
 			::PostMessage(m_hWndDlg, WM_PULLDLG, 0, 0);
 		}

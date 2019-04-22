@@ -362,6 +362,8 @@ long NEAACDECAPI NeAACDecInit(NeAACDecHandle hpDecoder,
     if (can_decode_ot(hDecoder->object_type) < 0)
         return -1;
 
+		
+
     return bits;
 }
 

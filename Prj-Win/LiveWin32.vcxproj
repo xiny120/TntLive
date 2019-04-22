@@ -267,6 +267,16 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ResourceCompile Include="LiveWin32.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\0_192k.snd" />
+    <None Include="res\1_192k.snd" />
+    <None Include="res\2_192k.snd" />
+    <None Include="res\3_192k.snd" />
+    <None Include="res\4_192k.snd" />
+    <None Include="res\5_192k.snd" />
+    <None Include="res\6_192k.snd" />
+    <None Include="res\7_192k.snd" />
+    <None Include="res\8_192k.snd" />
+    <None Include="res\9_192k.snd" />
     <None Include="res\LiveWin32.rc2" />
   </ItemGroup>
   <ItemGroup>

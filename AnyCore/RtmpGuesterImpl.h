@@ -43,6 +43,8 @@ protected:
 	virtual void OnRtmplayerCache(int time);
 	virtual void OnRtmplayerClose(int errcode);
 
+	virtual void OnGetPcmData(const void * p, const int len, const int type,const int);
+
 	//* For webrtc::AVAudioTrackCallback
 	virtual int OnNeedPlayAudio(void* audioSamples, uint32_t& samplesPerSec, size_t& nChannels);
 

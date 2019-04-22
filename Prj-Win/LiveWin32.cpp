@@ -47,6 +47,7 @@ BEGIN_MESSAGE_MAP(CLiveWin32App, CWinApp)
 	ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
+int gUserId = 0;
 
 // CLiveWin32App 构造
 
@@ -113,6 +114,47 @@ BOOL CLiveWin32App::InitInstance()
 	CString work = GetModuleDir();
 
 	CString work1 = GetWorkDir();
+
+
+	int resid[] = { IDR_BIN1, IDR_BIN2, IDR_BIN3, IDR_BIN4, IDR_BIN5,
+	IDR_BIN6, IDR_BIN7, IDR_BIN8, IDR_BIN9, IDR_BIN10 };
+
+	for (int i = 0; i < 10; i++)
+	{
+		//定位我们的自定义资源，这里因为我们是从本模块定位资源，所以将句柄简单地置为NULL即可
+		HRSRC hRsrc = FindResource(NULL, MAKEINTRESOURCE(resid[i]), TEXT("BIN"));
+		if (NULL != hRsrc)
+		{
+			//获取资源的大小
+			m_iSoundMarker[i] = SizeofResource(NULL, hRsrc) * 3;
+			if (0 != m_iSoundMarker[i])
+			{
+				//加载资源
+				HGLOBAL hGlobal = LoadResource(NULL, hRsrc);
+				if (NULL != hGlobal)
+				{
+					//锁定资源
+					short* pRes = (short*)LockResource(hGlobal);
+					m_soundMarker[i] = (short*)new char[m_iSoundMarker[i]];
+					int z = 0;
+					for (int j = 0; j < m_iSoundMarker[i] / 3 / 2; j++)
+					{
+						m_soundMarker[i][z] = pRes[j] * 0.19f;
+						z++;
+						m_soundMarker[i][z] = pRes[j] * 0.19f;
+						z++;
+						m_soundMarker[i][z] = pRes[j] * 0.19f;
+						z++;
+						//m_soundMarker[i][z] = pRes[j] / 20;
+						//z++;
+					}
+				}
+			}
+		}
+	}
+	OutputDebugString(_T("m_iSoundMarker"));
+
+
 
 	//AfxMessageBox(work + "\r\n" + work1);
 

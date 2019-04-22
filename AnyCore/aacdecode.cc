@@ -19,6 +19,7 @@
 #include "pluginaac.h"
 #include <stdio.h>
 #include <string.h>
+#include "webrtc/base/logging.h"
 #include "third_party/faad2-2.7/include/faad.h"
 
 aac_dec_t aac_decoder_open(unsigned char* adts, unsigned int len, unsigned char* outChannels, unsigned int* outSampleHz)
@@ -37,6 +38,7 @@ aac_dec_t aac_decoder_open(unsigned char* adts, unsigned int len, unsigned char*
 	}
 	*outChannels = channels;
 	*outSampleHz = samplerate;
+	LOG(LS_WARNING) << " aac_decoder_open samplerate: " << samplerate << " channels:" << channels;
 	return decoder;
 }
 void aac_decoder_close(void*pHandle)

@@ -100,8 +100,16 @@ void RtmpGuesterImpl::OnRtmplayerClose(int errcode)
 	callback_.OnRtmplayerClosed(errcode);
 }
 
+void RtmpGuesterImpl::OnGetPcmData(const void* p, const int len,const int type,const int)
+{
+	callback_.OnGetPcmData(p, len, type,0);
+}
+
 //* For webrtc::AVAudioTrackCallback
 int RtmpGuesterImpl::OnNeedPlayAudio(void* audioSamples, uint32_t& samplesPerSec, size_t& nChannels)
 {
-	return ((webrtc::AnyRtmplayerImpl*)av_rtmp_player_)->GetNeedPlayAudio(audioSamples, samplesPerSec, nChannels);
+	int ret = ((webrtc::AnyRtmplayerImpl*)av_rtmp_player_)->GetNeedPlayAudio(audioSamples, samplesPerSec, nChannels);
+	if(ret> 0)
+		callback_.OnGetPcmData(audioSamples,ret, samplesPerSec, nChannels);
+	return ret;
 }

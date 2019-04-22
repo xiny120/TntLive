@@ -49,6 +49,7 @@ public:
 	virtual void OnRtmplayerStatus(int cacheTime, int curBitrate) = 0;
 	virtual void OnRtmplayerCache(int time) = 0;
 	virtual void OnRtmplayerClose(int errcode) = 0;
+	virtual void OnGetPcmData(const void*, const int, const int,const int) = 0;
 };
 
 #endif	// __ANY_RTMP_PLAYER_INTERFACE_H__
