@@ -87,16 +87,36 @@
     <None Include="res\LiveWin32.rc2">
       <Filter>资源文件</Filter>
     </None>
-    <None Include="res\0_192k.snd" />
-    <None Include="res\1_192k.snd" />
-    <None Include="res\2_192k.snd" />
-    <None Include="res\3_192k.snd" />
-    <None Include="res\4_192k.snd" />
-    <None Include="res\5_192k.snd" />
-    <None Include="res\6_192k.snd" />
-    <None Include="res\7_192k.snd" />
-    <None Include="res\8_192k.snd" />
-    <None Include="res\9_192k.snd" />
+    <None Include="res\0_192k.snd">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="res\1_192k.snd">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="res\2_192k.snd">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="res\3_192k.snd">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="res\4_192k.snd">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="res\5_192k.snd">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="res\6_192k.snd">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="res\7_192k.snd">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="res\8_192k.snd">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="res\9_192k.snd">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\LiveWin32.ico">

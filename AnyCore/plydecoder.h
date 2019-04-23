@@ -54,6 +54,14 @@ protected:
 
 	//* For webrtc::DecodedImageCallback
 	virtual int32_t Decoded(webrtc::VideoFrame& decodedImage);
+public:
+	int gethz() {
+		return aac_sample_hz_	;
+	}
+
+	int getchan() {
+		return aac_channels_;
+	}
 
 private:
 	bool			running_;

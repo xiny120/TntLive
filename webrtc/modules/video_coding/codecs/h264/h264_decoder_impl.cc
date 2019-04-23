@@ -379,7 +379,7 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
                                      &frame_decoded,
                                      &packet);
   if (result < 0) {
-    LOG(LS_ERROR) << "avcodec_decode_video2 error: " << result;
+   // LOG(LS_ERROR) << "avcodec_decode_video2 error: " << result;
     ReportError();
     return WEBRTC_VIDEO_CODEC_ERROR;
   }

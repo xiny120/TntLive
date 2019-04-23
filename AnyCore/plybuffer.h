@@ -89,17 +89,26 @@ protected:
 	void DoDecode();
 
 private:
+	void* fastbuf;
+	int fastbuflen;
+	int fastbuflen0;
+	uint32_t fast_dts_begin;
+	uint32_t fast_dts_end;
+	int fastbufleft;
+	int fastbufi;
 	PlyBufferCallback		&callback_;
+	bool	gofast;
 	bool					got_audio_;
 	int						cache_time_;
 	int						cache_delta_;
-    int                     buf_cache_time_;
+  int                     buf_cache_time_;
 	PlyStuts				ply_status_;
 	rtc::Thread				*worker_thread_;
 	uint32_t				sys_fast_video_time_;	// Ãë¿ªÊ±¼äÖá
 	uint32_t				rtmp_fast_video_time_;
 	uint32_t				rtmp_cache_time_;
 	uint32_t				play_cur_time_;
+	int hz,chan;
 	rtc::CriticalSection	cs_list_audio_;
 	std::list<PlyPacket*>	lst_audio_buffer_;
 	rtc::CriticalSection	cs_list_video_;

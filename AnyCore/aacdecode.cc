@@ -41,7 +41,7 @@ aac_dec_t aac_decoder_open(unsigned char* adts, unsigned int len, unsigned char*
 	}
 	*outChannels = channels;
 	*outSampleHz = samplerate;
-	LOG(LS_WARNING) << " aac_decoder_open samplerate: " << samplerate << " channels:" << channels;
+	LOG(LS_WARNING) << " aac_decoder_open samplerate: " << samplerate << " channels:" << (int)channels;
 	return decoder;
 }
 void aac_decoder_close(void*pHandle)
