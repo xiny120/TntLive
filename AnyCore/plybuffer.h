@@ -23,6 +23,7 @@
 #include "webrtc/base/criticalsection.h"
 #include "webrtc/base/messagehandler.h"
 #include "webrtc/base/thread.h"
+#include "speex_resampler.h"
 
 typedef struct PlyPacket
 {
@@ -73,9 +74,10 @@ class PlyBuffer : public rtc::MessageHandler
 public:
 	PlyBuffer(PlyBufferCallback&callback, rtc::Thread*worker);
 	virtual ~PlyBuffer();
+	void InitAudio(int samples, int chan);
 
 	void SetCacheSize(int miliseconds/*ms*/);
-	int GetPlayAudio(void* audioSamples);
+	int GetPlayAudio(void* audioSamples,const int samples,const int chan);
     PlyStuts PlayerStatus(){return ply_status_;};
     int GetPlayCacheTime(){return buf_cache_time_;};
 	void CacheH264Data(const uint8_t*pdata, int len, uint32_t ts);
@@ -89,7 +91,10 @@ protected:
 	void DoDecode();
 
 private:
-	void* fastbuf;
+	char* fastbuf;
+	char* fastbufcur;
+
+	int samp_s, samp_d;
 	int fastbuflen;
 	int fastbuflen0;
 	uint32_t fast_dts_begin;
@@ -97,7 +102,8 @@ private:
 	int fastbufleft;
 	int fastbufi;
 	PlyBufferCallback		&callback_;
-	bool	gofast;
+	SpeexResamplerState* state;
+	bool	gofast,gofast0;
 	bool					got_audio_;
 	int						cache_time_;
 	int						cache_delta_;

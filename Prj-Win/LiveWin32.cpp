@@ -139,11 +139,11 @@ BOOL CLiveWin32App::InitInstance()
 					int z = 0;
 					for (int j = 0; j < m_iSoundMarker[i] / 3 / 2; j++)
 					{
-						m_soundMarker[i][z] = pRes[j] * 0.19f;
+						m_soundMarker[i][z] = pRes[j] * 0.39f;
 						z++;
-						m_soundMarker[i][z] = pRes[j] * 0.19f;
+						m_soundMarker[i][z] = pRes[j] * 0.39f;
 						z++;
-						m_soundMarker[i][z] = pRes[j] * 0.19f;
+						m_soundMarker[i][z] = pRes[j] * 0.39f;
 						z++;
 						//m_soundMarker[i][z] = pRes[j] / 20;
 						//z++;

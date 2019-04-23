@@ -193,7 +193,7 @@ int32_t AnyRtmpCore::NeedMorePlayData(const size_t nSamples, const size_t nBytes
 {
 	rtc::CritScope cs(&cs_audio_track_);
 	if (audio_track_callback_ != NULL) {
-		char aac_buf[kMaxAacSizeSamples];
+		char aac_buf[kMaxAacSizeSamples * 2];
 		uint32_t sampleHz = 0;
 		size_t channel = 0;
 		int readed = audio_track_callback_->OnNeedPlayAudio(aac_buf, sampleHz, channel);

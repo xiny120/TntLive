@@ -52,14 +52,14 @@ public:
 
 	virtual void OnGetPcmData(const void * pcm, const int len,const int rate, const int channels) {
 		short* p = (short*)pcm;
-		return;
+		//return;
 		
 		if (m_pAudioMarketOut >= ((short*)m_pAudioMarker + m_iAudioMarker/2)) {
 			m_pAudioMarketOut = (short*)m_pAudioMarker;
 		}
 		for (int i = 0; i < len/ channels; i++) {
 			short val = *m_pAudioMarketOut++;
-			int adj = p[i] * 0.8f + val;// ((p[i] * 0.7f) + val * 0.29f);
+			int adj = p[i] * 0.61f + val;// ((p[i] * 0.7f) + val * 0.29f);
 			if (adj > 32767) {
 				//	adj = 32767;
 				TRACE("adj > 32767\r\n");

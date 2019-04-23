@@ -281,6 +281,7 @@ void PlyDecoder::AddAACData(const uint8_t*pdata, int len, uint32_t ts)
 			if (aac_channels_ == 0)
 				aac_channels_ = 1;
 			aac_frame_per10ms_size_ = (aac_sample_hz_ / 100) * sizeof(int16_t) * aac_channels_;
+			ply_buffer_->InitAudio(aac_sample_hz_, aac_channels_);
 		}
 		else {
 			unsigned int outlen = 0;
@@ -308,7 +309,7 @@ int PlyDecoder::GetPcmData(void* audioSamples, uint32_t& samplesPerSec, size_t& 
 	}
 	samplesPerSec = aac_sample_hz_;
 	nChannels = aac_channels_;
-	return ply_buffer_->GetPlayAudio(audioSamples);
+	return ply_buffer_->GetPlayAudio(audioSamples, aac_sample_hz_, aac_channels_);
 }
 
 void PlyDecoder::Run()

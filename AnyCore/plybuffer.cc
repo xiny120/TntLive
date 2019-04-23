@@ -20,14 +20,16 @@
 #include "webrtc/base/logging.h"
 #include "plydecoder.h"
 
+
 #define PLY_MIN_TIME	500		// 0.5s
 #define PLY_MAX_TIME	600000		// 10minute
 #define PLY_RED_TIME	200		// redundancy time org 250
-#define PLY_2LOW_TIME 1000 * 3	// 播放延迟太长了。缓冲了3秒数据了。滞后3秒。
+#define PLY_2LOW_TIME 100 * 15	// 播放延迟太长了。缓冲了3秒数据了。滞后3秒。
 #define PLY_MAX_DELAY	1000		// 1 second
-#define PLY_MAX_CACHE   160      	// 16s
+#define PLY_MAX_CACHE   30      	// 16s
 
 #define PB_TICK	1011
+
 
 PlyBuffer::PlyBuffer(PlyBufferCallback&callback, rtc::Thread*worker)
 	: callback_(callback)
@@ -35,24 +37,40 @@ PlyBuffer::PlyBuffer(PlyBufferCallback&callback, rtc::Thread*worker)
 	, got_audio_(false)
 	, cache_time_(500)	// default 1000ms(1s)
 	, cache_delta_(1)
-	, buf_cache_time_(0)
+	, buf_cache_time_(100)
 	, ply_status_(PS_Fast)
 	, sys_fast_video_time_(0)
 	, rtmp_fast_video_time_(0)
 	, rtmp_cache_time_(0)
 	, play_cur_time_(0)
 	, gofast(false)
+	, gofast0(true)
 	, fastbuf(0)
 	, fastbuflen(0)
 	, fastbufleft(0)
 	, fastbufi(0)
+	, state(0)
+	, samp_s(280)
+	, samp_d(240)
 {
 	ASSERT(worker != NULL);
 	PlyDecoder* pd = (PlyDecoder*)worker;
-	hz = pd->gethz();
-	chan = pd->getchan();
+
 	worker_thread_ = worker;
 	worker_thread_->PostDelayed(RTC_FROM_HERE, 1, this, PB_TICK);
+}
+
+void PlyBuffer::InitAudio(int samples, int chan_) {
+	hz = samples;
+	chan = chan_;
+
+	int err = -1;
+	state = speex_resampler_init(2, //spx_uint32_t nb_channels,
+		hz,//samp_s,//hz, //spx_uint32_t in_rate,
+		hz*samp_d/samp_s,// hz * 4 / 5, //spx_uint32_t out_rate,
+		10,     //int quality,
+		&err    //int *err
+	);
 }
 
 
@@ -70,6 +88,7 @@ PlyBuffer::~PlyBuffer()
 		lst_video_buffer_.erase(iter++);
 		delete pkt;
 	}
+	speex_resampler_destroy(state);
 }
 
 void PlyBuffer::SetCacheSize(int miliseconds/*ms*/)
@@ -78,67 +97,76 @@ void PlyBuffer::SetCacheSize(int miliseconds/*ms*/)
 		cache_time_ = miliseconds;
 	}
 }
-int PlyBuffer::GetPlayAudio(void* audioSamples)
+
+int gcd(int x, int y)
+
+{
+
+	while (x != y)
+
+	{
+
+		if (x > y) x = x - y;
+
+		else
+
+			y = y - x;
+
+	}
+
+	return x;
+
+}
+int PlyBuffer::GetPlayAudio(void* audioSamples,const int samples,const int chan)
 {
 	int ret = 0;
 	rtc::CritScope cs(&cs_list_audio_);
 	if (lst_audio_buffer_.size() > 0) {
-		if (lst_audio_buffer_.size() < 50)
-			gofast = false;
+		//if (lst_audio_buffer_.size() < 50) {
+	//		gofast = false;
+	//		gofast0 = true;
+	//	}
 		if (gofast) {
 			// 2秒声音用1秒播放，说话速度快一倍。3秒声音用2秒播放，说话速度快0.5倍？
 			// 4秒声音用3秒播放，速度快0.25倍？5变4
-			if (fastbufleft < 1) {
-				fastbufi = 0;
-				std::list<PlyPacket*>::iterator iter = lst_audio_buffer_.begin();
-				int len = 0;
-				for (int j = 0; j < 5; j++) {
-					len += (*iter)->_data_len;
-					iter++;
-				}
-				if (len > fastbuflen) {
-					fastbuflen = len;
-					delete[] fastbuf;
-					fastbuf = new char[fastbuflen];
-				}
-				char* pcur = (char*)fastbuf;
-				fast_dts_begin = lst_audio_buffer_.front()->_dts;
-				for (int i = 0; i < 5; i++) {
-					PlyPacket* pkt_front = lst_audio_buffer_.front();
-					ret = pkt_front->_data_len;
-					//play_cur_time_ = pkt_front->_dts;
-					fast_dts_end = pkt_front->_dts;
-					//memcpy(audioSamples, pkt_front->_data, pkt_front->_data_len);
-					memcpy(pcur, pkt_front->_data, pkt_front->_data_len);
-					pcur += pkt_front->_data_len;
-					fastbufleft += pkt_front->_data_len;
-					lst_audio_buffer_.pop_front();
-					delete pkt_front;
-					//if (i = 4)
-					//	break;
-				}
-				//pcur = (char*)fastbuf;
-				
-				short* pd = (short*)fastbuf;
-				short* ps = pd;
-				
-				for (int i = 0; i < fastbufleft/2; ) {
-					int j = i; i += 5;
-					pd += 4;
-					ps += 5;
-					memcpy(pd, ps, 4);
-				}
-				fastbuflen0 = (char*)pd - fastbuf;
+			// 480 500 12000, 480 510 8160, 480 520 6240,  480 540 4320, 480 560 3360
+			std::list<PlyPacket*>::iterator iter = lst_audio_buffer_.begin();
+			unsigned int len = 0;
+			int i = 0;
+			int total = samp_d /gcd(samp_d, samp_s) * samp_s / samp_d;
+			for (i = 0; i < total; i++) {
+				len += (*iter)->_data_len;
+				iter++;
 			}
-			char* pcur = (char*)fastbuf;
-			ret = fastbuflen0 / 4;
-			play_cur_time_ = (fast_dts_end - fast_dts_begin)  * (fastbufi) / 4 + fast_dts_begin;
-			memcpy(audioSamples, pcur + fastbufi*ret,ret);
-			fastbufleft -= ret;
-			fastbufi++;
-			//if (fastbufleft < 1)
-			//	gofast = false;
+			if (fastbuflen < len) {
+				fastbuflen = len;
+				delete[] fastbuf;
+				fastbufcur = fastbuf = new char[fastbuflen];
+			}
+			//char* pcur = (char*)fastbuf;
+			len = fastbufcur - fastbuf ;
+			for (i = 0; i < total; i++) {
+				PlyPacket* pkt_front = lst_audio_buffer_.front();
+				ret = pkt_front->_data_len;
+				play_cur_time_ = pkt_front->_dts;
+				memcpy(fastbufcur, pkt_front->_data, pkt_front->_data_len);
+				len += pkt_front->_data_len;
+				fastbufcur += pkt_front->_data_len;
+				lst_audio_buffer_.pop_front();
+				delete pkt_front;
+				if (len >= samp_s * 4)
+					break;
+			}
 
+			//len = len / 2;
+			unsigned int pLen = samp_s,inlen = samp_s ;
+			ret = speex_resampler_process_interleaved_int(state, (short*)fastbuf, &inlen, (short*)audioSamples, &pLen);
+			//LOG(LS_WARNING) << "speex_resampler ret:" << ret << " len:" << inlen << " - outlen:" << pLen;
+			ret = pLen*4;
+			memmove(fastbuf, &fastbuf[samp_s * 4], len - samp_s * 4);
+			fastbufcur = &fastbuf[(len - samp_s * 4)];
+			//fwrite(outBuffer, 4, pLen, out);
+			
 		}
 		else {
 			PlyPacket* pkt_front = lst_audio_buffer_.front();
@@ -270,9 +298,12 @@ void PlyBuffer::DoDecode()
 			}
 		}
 
-
+		LOG(LS_WARNING) << "lst_audio_buffer_.size " << lst_audio_buffer_.size()
+			<< " lst_video_buffer_.size " << lst_video_buffer_.size()
+			<< " media_buf_time " << media_buf_time;
 
 		if (media_buf_time <= PLY_RED_TIME) {
+			LOG(LS_WARNING) << "media_buf_time <= PLY_RED_TIME";
 			// Play buffer is so small, then we need buffer it?
 			callback_.OnPause();
 			ply_status_ = PS_Cache;
@@ -285,12 +316,17 @@ void PlyBuffer::DoDecode()
 		}
 		else if(media_buf_time >= PLY_2LOW_TIME) {
 			{
-				rtc::CritScope cs(&cs_list_audio_);
-				gofast = true;
+				//rtc::CritScope cs(&cs_list_audio_);
+				if (gofast0) {
+					gofast = true;
+					gofast0 = false;
+				}
 			}
-			LOG(LS_WARNING) << "lst_audio_buffer_.size " << lst_audio_buffer_.size() 
-				<< " lst_video_buffer_.size " << lst_video_buffer_.size()
-				<< " media_buf_time " << media_buf_time;
+
+		}
+		else if (media_buf_time <= PLY_RED_TIME * 2) {
+			gofast0 = true;
+			gofast = false;
 		}
 		buf_cache_time_ = media_buf_time;
 	}

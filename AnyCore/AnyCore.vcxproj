@@ -179,27 +179,33 @@
     <ClCompile Include="RtmpHosterImpl.cc" />
     <ClCompile Include="anyrtmpull.cc" />
     <ClCompile Include="anyrtmpush.cc" />
+    <ClCompile Include="speex_resampler.cpp" />
     <ClCompile Include="srs_librtmp\srs_librtmp.cpp" />
     <ClCompile Include="videofilter.cc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="arch.h" />
     <ClInclude Include="avcodec.h" />
     <ClInclude Include="anyrtmpcore.h" />
     <ClInclude Include="anyrtmplayer.h" />
     <ClInclude Include="anyrtmplayer_interface.h" />
     <ClInclude Include="anyrtmpstreamer.h" />
     <ClInclude Include="anyrtmpstream_interface.h" />
+    <ClInclude Include="config.h" />
     <ClInclude Include="pluginaac.h" />
     <ClInclude Include="plybuffer.h" />
     <ClInclude Include="plydecoder.h" />
+    <ClInclude Include="resample_sse.h" />
     <ClInclude Include="RtmpGuester.h" />
     <ClInclude Include="RtmpGuesterImpl.h" />
     <ClInclude Include="RtmpHoster.h" />
     <ClInclude Include="RtmpHosterImpl.h" />
     <ClInclude Include="anyrtmpull.h" />
     <ClInclude Include="anyrtmpush.h" />
+    <ClInclude Include="speex_resampler.h" />
     <ClInclude Include="srs_librtmp\srs_kernel_codec.h" />
     <ClInclude Include="srs_librtmp\srs_librtmp.h" />
+    <ClInclude Include="stack_alloc.h" />
     <ClInclude Include="videofilter.h" />
   </ItemGroup>
   <ItemGroup>
