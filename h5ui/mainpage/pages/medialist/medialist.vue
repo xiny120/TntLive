@@ -2,7 +2,7 @@
 	<view class="index">
 		<uni-list>
 			<block v-for="(item, index) in lists" :key="index">
-			<uni-list-item :title="item.NickName" :note="item.CreateDate" show-extra-icon="true" ></uni-list-item>
+				<uni-list-item :title="item.NickName" :note="item.CreateDate" show-extra-icon="true"  @click="goDetail(item)" ></uni-list-item>
 			</block>
 			<!--<uni-list-item title="标题文字" note="描述信息" show-extra-icon="true" :extra-icon="{color: '#4cd964',size: '22',type: 'spinner'}"></uni-list-item>-->
 		</uni-list>		
@@ -107,7 +107,7 @@
 			}
 			this.getData();
 		},
-		computed: mapState(['userInfo','roomid']),
+		computed: mapState(['userInfo','roomid','hasLogin']),
 		methods: {
 			...mapMutations(['getroomid',]),
 			getData(e) {
@@ -128,6 +128,7 @@
 					success: (ret) => {
 						if (ret.statusCode !== 200) {
 							console.log("请求失败", ret)
+						
 						} else {
 							if(ret.data.status != 0){
 								uni.showToast({
@@ -165,9 +166,33 @@
 				});
 			},
 			goDetail(e) {
-				uni.navigateTo({
-					url: "../detail/detail?data=" + encodeURIComponent(JSON.stringify(e))
-				})
+				//uni.navigateTo({
+				//	url: "../detail/detail?data=" + encodeURIComponent(JSON.stringify(e))
+				//})
+				if(this.hasLogin == 1){
+					const data ={
+						cmd:"pulldlghis",
+						data:e,
+						ui:this.userInfo,
+					}
+					alert(JSON.stringify(data));
+				}else{
+					uni.showModal({
+						title: '请先登录哦！',
+						//content: '确定切换账户吗？',
+						success: function (res) {
+							if (res.confirm) {				
+								
+								uni.navigateTo({
+									url:"../login/login"
+								})
+							} else if (res.cancel) {
+								console.log('用户点击取消');
+							}
+						}
+					});	
+				}				
+				
 			},
 			share(e) {
 				if (this.providerList.length === 0) {

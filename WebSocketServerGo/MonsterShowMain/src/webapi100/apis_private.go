@@ -145,6 +145,7 @@ func f_medialist(w http.ResponseWriter, r *http.Request, v *map[string]interface
 	res["medialist"] = mis
 	res["msg"] = ""
 	rmsg, err := json.Marshal(res)
+	log.Println(rmsg)
 	if err == nil {
 		w.Write(rmsg)
 	}

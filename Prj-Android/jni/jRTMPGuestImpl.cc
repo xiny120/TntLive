@@ -102,3 +102,7 @@ void JRTMPGuestImpl::OnRtmplayerClosed(int errcode)
 		jni->CallVoidMethod(m_jJavaObj, j_callJavaMId, errcode);
 	}
 }
+
+void JRTMPGuestImpl::OnGetPcmData(const void * p, const int len, const int type,const int){
+
+}

@@ -99,8 +99,8 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
             lp.width = mVideoWidth;//(int) (mScreenWidth * SHOW_SCALE);
             lp.height = mVideoWidth*576/720;
             lp.leftMargin = mVideoLeft;
-            mSurfaceLayout.setLayoutParams(lp);
-            mwvMediaList.setVisibility(View.GONE);
+            //mSurfaceLayout.setLayoutParams(lp);
+            //mwvMediaList.setVisibility(View.GONE);
         }
     };
 
@@ -149,7 +149,8 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
             mGuest.StartRtmpPlay(rtmpUrl, mRenderer.GetRenderPointer());
         }
         initView();
-
+        WebSettings webSettings;
+/*
         webView = (WebView) findViewById(R.id.webview);
         webView.getSettings().setDomStorageEnabled(true);
         webView.getSettings().setAppCacheMaxSize(1024*1024*8);
@@ -171,6 +172,35 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         WebSettings webSettings=webView.getSettings();
         webSettings.setJavaScriptEnabled(true);//允许使用js
 
+
+        webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);//不使用缓存，只从网络获取数据.
+
+        //支持屏幕缩放
+        webSettings.setSupportZoom(true);
+        webSettings.setBuiltInZoomControls(true);
+*/
+
+        mwvMediaList = (WebView) findViewById(R.id.webviewmeidalist);
+        mwvMediaList.getSettings().setDomStorageEnabled(true);
+        mwvMediaList.getSettings().setAppCacheMaxSize(1024*1024*8);
+        String appCachePath = getApplicationContext().getCacheDir().getAbsolutePath();
+        mwvMediaList.getSettings().setAppCachePath(appCachePath);
+        mwvMediaList.getSettings().setAllowFileAccess(true);
+        mwvMediaList.getSettings().setAppCacheEnabled(true);
+//        webView.loadUrl("file:///android_asset/test.html");//加载asset文件夹下html
+        mwvMediaList.loadUrl(getResources().getString(R.string.app_uri) + "#/pages/medialist/medialist");//加载url
+
+        //使用webview显示html代码
+//        webView.loadDataWithBaseURL(null,"<html><head><title> 欢迎您 </title></head>" +
+//                "<body><h2>使用webview显示 html代码</h2></body></html>", "text/html" , "utf-8", null);
+
+        mwvMediaList.addJavascriptInterface(this,"android");//添加js监听 这样html就能调用客户端
+        mwvMediaList.setWebChromeClient(webChromeClient);
+        mwvMediaList.setWebViewClient(webViewClient);
+
+        webSettings=mwvMediaList.getSettings();
+        webSettings.setJavaScriptEnabled(true);//允许使用js
+
         /**
          * LOAD_CACHE_ONLY: 不使用网络，只读取本地缓存数据
          * LOAD_DEFAULT: （默认）根据cache-control决定是否从网络上取数据。
@@ -182,6 +212,8 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         //支持屏幕缩放
         webSettings.setSupportZoom(true);
         webSettings.setBuiltInZoomControls(true);
+        mwvMediaList.setWebContentsDebuggingEnabled(true);
+
 
     }
 
@@ -364,7 +396,7 @@ getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mTxtStatus.setText(R.string.str_rtmp_play_success);
+                mTxtStatus.setText(R.string.str_rtmp);
             }
         });
     }
@@ -374,7 +406,8 @@ getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mTxtStatus.setText(String.format(getString(R.string.str_rtmp_pull_status), cacheTime, curBitrate));
+                if(curBitrate > 0 && cacheTime > 0)
+                    mTxtStatus.setText(String.format(getString(R.string.str_rtmp_pull_status), cacheTime, curBitrate));
             }
         });
     }

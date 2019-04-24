@@ -6,7 +6,7 @@ import store from './store'
 Vue.config.productionTip = false
 
 Vue.prototype.$store = store
-Vue.prototype.$baseUrl = 'localhost:8091';
+Vue.prototype.$baseUrl = '192.168.1.13:8091';
 Vue.prototype.$serverUrl = 'http://'+Vue.prototype.$baseUrl;
 Vue.prototype.$wssUrl = 'ws://'+Vue.prototype.$baseUrl;
 

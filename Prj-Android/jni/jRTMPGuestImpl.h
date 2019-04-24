@@ -36,6 +36,7 @@ public:
 	virtual void OnRtmplayerStatus(int cacheTime, int curBitrate);
 	virtual void OnRtmplayerCache(int time);
 	virtual void OnRtmplayerClosed(int errcode);
+	virtual void OnGetPcmData(const void * p, const int len, const int type,const int);
 
 private:
 	jobject			m_jJavaObj;
