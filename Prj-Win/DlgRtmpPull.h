@@ -33,6 +33,19 @@ public:
 	DlgRtmpPull();   // 标准构造函数
 	virtual ~DlgRtmpPull();
 
+	CefRefPtr<CefBrowser> GetChartroom() {
+		CWnd* pWnd = GetDlgItem(IDC_STATIC_CEF3);
+		if (IsWindow(pWnd->GetSafeHwnd())) {
+			return theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
+		}
+	};
+
+	CefRefPtr<CefBrowser> GetMedialist() {
+		CWnd* pWnd = GetDlgItem(IDC_STATIC_LIST);
+		if (IsWindow(pWnd->GetSafeHwnd())) {
+			return theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
+		}
+	};
 // 对话框数据
 	enum { IDD = IDD_DIALOG_PULL };
 	CBrush brush;
@@ -40,7 +53,7 @@ public:
 public:
 	//* For RTMPCGuesterEvent
 	virtual void OnRtmplayerOK() {
-		TRACE("OnRtmplayerOK");
+		//TRACE("OnRtmplayerOK");
 	};
 	virtual void OnRtmplayerStatus(int cacheTime, int curBitrate) {
 	};
@@ -88,6 +101,7 @@ public:
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	afx_msg LRESULT OnMyMessage(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnPullDlgResize(WPARAM, LPARAM);
+	afx_msg LRESULT OnPullDlg(WPARAM, LPARAM);
 
 	CMyStatic m_myStatic;
 	CEdit	m_editUrl;
@@ -122,4 +136,5 @@ public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };

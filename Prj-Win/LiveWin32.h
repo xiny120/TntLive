@@ -39,9 +39,11 @@ public:
 // ÖØĞ´
 public:
 	virtual BOOL InitInstance();
+	
 	CefRefPtr<SimpleApp> app;
 	CefRefPtr<SimpleHandler> handler;
 	CefMainArgs main_args;
+	
 	short*		m_soundMarker[10];			// ´ÎÉù²¨Ë®Ó¡¡£
 	int			m_iSoundMarker[10];
 	int	m_iUserId;

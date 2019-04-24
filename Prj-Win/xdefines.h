@@ -6,7 +6,7 @@
 #include "include/cef_client.h"
 
 #define WM_PULLDLG WM_USER + 0x100
-#define WM_PULLDLG_RESIZE WM_USER + 0x100
+#define WM_PULLDLG_RESIZE WM_USER + 0x101
 
 class CPullDlgData {
 private:

@@ -69,7 +69,7 @@ func (c *Client) readPump() {
 		if info := recover(); info != nil {
 			log.Println("client ", c.SessionId, "触发了宕机,终止读任务", info)
 		} else {
-			log.Println("client ", c.SessionId, "读任务完成,终止读任务")
+			//log.Println("client ", c.SessionId, "读任务完成,终止读任务")
 		}
 		c.hub.unregister <- c
 		c.conn.Close()
@@ -125,11 +125,11 @@ func (c *Client) readPump() {
 			r["t"] = "checkin"
 			r["status"] = 1
 			r["msg"] = "用户密钥过期，请重新登录！"
-			un := ""
+			//un := ""
 			if f, ok := sign.SessionsGet(m["sessionid"].(string)); ok {
 				v1 := m["userinfo"].(map[string]interface{})
 				v2 := v1["Token"].(string)
-				un = f.UserName
+				//un = f.UserName
 
 				if f.Token == v2 {
 					r["status"] = 0
@@ -144,7 +144,7 @@ func (c *Client) readPump() {
 			if r["status"] != 0 {
 				c.hub.unregister <- c //c.conn.WriteMessage(websocket.CloseMessage, []byte{})
 			}
-			log.Println("用户：", un, m["sessionid"], "checkin 免密登录", r["status"], r["msg"])
+			//log.Println("用户：", un, m["sessionid"], "checkin 免密登录", r["status"], r["msg"])
 		case "toall":
 			c.hub.broadcast <- message
 
@@ -159,7 +159,7 @@ func (c *Client) writePump() {
 		if info := recover(); info != nil {
 			log.Println("client ", c.SessionId, "写任务触发宕机，终止执行", info)
 		} else {
-			log.Println("client ", c.SessionId, "写任务成功完成，终止执行")
+			//log.Println("client ", c.SessionId, "写任务成功完成，终止执行")
 		}
 		ticker.Stop()
 		c.conn.Close()
@@ -170,7 +170,7 @@ func (c *Client) writePump() {
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
-				log.Println("用户：", c.SessionId, "关闭连接..")
+				//log.Println("用户：", c.SessionId, "关闭连接..")
 				return
 			}
 

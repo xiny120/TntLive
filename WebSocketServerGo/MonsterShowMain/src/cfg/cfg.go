@@ -6,7 +6,8 @@ import (
 )
 
 var (
-	Cfg = make(map[string]string)
+	Cfg            = make(map[string]string)
+	SrsDvrBasepath = "E:/mzgp/share/"
 )
 
 type Mssql struct {

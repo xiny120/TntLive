@@ -29,7 +29,7 @@
 #define new DEBUG_NEW
 #endif
 
-
+extern std::string m_baseurl;
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
 class CAboutDlg : public CDialogEx
@@ -168,7 +168,7 @@ BOOL CLiveWin32Dlg::OnInitDialog()
 	// that instead of the default URL.
 	//url = command_line->GetSwitchValue("url");
 	if (url.empty())
-		url = "http://gpk01.gwgz.com/live/h5client/mainpage/#/";
+		url = m_baseurl + "live/h5client/mainpage/#/";
 
 	CefWindowInfo window_info;
 
@@ -329,11 +329,11 @@ void CLiveWin32Dlg::OnCancel()
 BOOL CLiveWin32Dlg::PreTranslateMessage(MSG* pMsg)
 {
 	// TODO: 在此添加专用代码和/或调用基类
-	if (pMsg->message == WM_PULLDLG) {
+	//if (pMsg->message == WM_PULLDLG) {
 		//DlgRtmpPull dlg;
 		//dlg.DoModal();
-		m_pDlgRtmpPull->ShowWindow(SW_SHOWNORMAL);
-	}
+	//	m_pDlgRtmpPull->ShowWindow(SW_SHOWNORMAL);
+//	}
 
 	return CDialogEx::PreTranslateMessage(pMsg);
 }

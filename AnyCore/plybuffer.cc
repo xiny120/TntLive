@@ -23,10 +23,10 @@
 
 #define PLY_MIN_TIME	500		// 0.5s
 #define PLY_MAX_TIME	600000		// 10minute
-#define PLY_RED_TIME	200		// redundancy time org 250
-#define PLY_2LOW_TIME 100 * 15	// 播放延迟太长了。缓冲了3秒数据了。滞后3秒。
-#define PLY_MAX_DELAY	1000		// 1 second
-#define PLY_MAX_CACHE   30      	// 16s
+#define PLY_RED_TIME	250		// redundancy time org 250
+#define PLY_2LOW_TIME 100 * 20	// 播放延迟太长了。缓冲了3秒数据了。滞后3秒。
+#define PLY_MAX_DELAY	1500		// 1 second
+#define PLY_MAX_CACHE   40      	// 16s
 
 #define PB_TICK	1011
 
@@ -35,9 +35,9 @@ PlyBuffer::PlyBuffer(PlyBufferCallback&callback, rtc::Thread*worker)
 	: callback_(callback)
 	, worker_thread_(NULL)
 	, got_audio_(false)
-	, cache_time_(500)	// default 1000ms(1s)
+	, cache_time_(600)	// default 1000ms(1s)
 	, cache_delta_(1)
-	, buf_cache_time_(100)
+	, buf_cache_time_(200)
 	, ply_status_(PS_Fast)
 	, sys_fast_video_time_(0)
 	, rtmp_fast_video_time_(0)
@@ -88,7 +88,10 @@ PlyBuffer::~PlyBuffer()
 		lst_video_buffer_.erase(iter++);
 		delete pkt;
 	}
-	speex_resampler_destroy(state);
+	if (state != NULL) {
+		speex_resampler_destroy(state);
+		state = NULL;
+	}
 }
 
 void PlyBuffer::SetCacheSize(int miliseconds/*ms*/)

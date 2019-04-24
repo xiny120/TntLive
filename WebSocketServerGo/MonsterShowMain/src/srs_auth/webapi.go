@@ -3,12 +3,16 @@ package srs_auth
 import (
 	"encoding/json"
 	"errors"
+	"os"
+	"path/filepath"
+	"time"
 
+	"cfg"
+	"database/sql"
 	"log"
 	"net/http"
-	"ucenter"
-
 	"strings"
+	"ucenter"
 )
 
 func ServeSrs(w http.ResponseWriter, r *http.Request) {
@@ -29,9 +33,10 @@ func ServeSrs(w http.ResponseWriter, r *http.Request) {
 		Stream   string `json:"stream"`
 		Param    string `json:"param"`
 		ClientId int64  `json:"client_id"`
+		Cwd      string `json:"cwd"`
+		File     string `json:"file"`
 	}
 	err := json.NewDecoder(r.Body).Decode(&data)
-	//log.Println(data, err)
 	retstr := "1"
 	if err == nil {
 		switch data.Action {
@@ -42,7 +47,6 @@ func ServeSrs(w http.ResponseWriter, r *http.Request) {
 			pars, err := uri2map(data.Param)
 			if err == nil {
 				ui, _ := sign.SessionsGet(pars["sessionid"])
-				//log.Println(ui)
 				if ui.Token == pars["token"] {
 					retstr = "0"
 				}
@@ -55,18 +59,91 @@ func ServeSrs(w http.ResponseWriter, r *http.Request) {
 			pars, err := uri2map(data.Param)
 			if err == nil {
 				ui, _ := sign.SessionsGet(pars["sessionid"])
-				//log.Println(ui)
 				if ui.Token == pars["token"] {
 					retstr = "0"
 				}
 			}
-			log.Println("用户：", pars["sessionid"], retstr)
+			//log.Println("用户：", pars["sessionid"], retstr)
 		case "on_stop":
 			retstr = "0"
+		case "on_dvr":
+			pars, err := uri2map(data.Param)
+			if err == nil {
+				ui, _ := sign.SessionsGet(pars["sessionid"])
+				if ui.Token == pars["token"] {
+
+					//if TestId, TestOk := pars["TestId"]; !TestOk {
+					//}
+					//log.Println(TestId)
+
+					retstr = "0"
+					RoomId := ""
+					if RoomId0, ok := pars["roomid"]; !ok {
+						RoomId = "{32efce68-c637-4f1c-b915-2a7c5efd7b15}"
+					} else {
+						RoomId = RoomId0
+					}
+					db, err0 := sql.Open("adodb", cfg.Cfg["mssql"])
+					if err0 != nil {
+						log.Println("ServeSrs sql open error")
+					} else {
+						defer db.Close()
+						BasePath := cfg.SrsDvrBasepath
+						FilePath := strings.Replace(data.File, "/media/share/", "", 1)
+						FileName := filepath.Base(FilePath)
+						NickName := FileName
+						FullPath := BasePath + FilePath
+						FileInfo, _ := os.Stat(FullPath)
+						FileSize := FileInfo.Size()
+
+						stmt1, err0 := db.Prepare(`
+							INSERT INTO [hds12204021_db].[dbo].[Web2019_historylist]
+							           ([RoomId]
+							           ,[CreateDate]
+							           ,[App]
+							           ,[Stream]
+							           ,[PublisherId]
+							           ,[FilePath]
+							           ,[FileName]
+							           ,[NickName]
+							           ,[FileSize]
+							           )
+							     VALUES
+							           (?
+							           ,?
+							           ,?
+							           ,?
+							           ,?
+							           ,?
+							           ,?
+							           ,?
+							           ,?
+							           )						
+						`)
+						if err0 != nil {
+							log.Println("ServeSrs sql db.Prepare error")
+						} else {
+							defer stmt1.Close()
+
+							r1, err := stmt1.Exec(RoomId, time.Now().Format("2006-01-02 15:04:05"),
+								data.App, data.Stream, ui.UserUuid, FilePath, FileName, NickName, FileSize)
+
+							log.Println(r1)
+							if err != nil {
+								log.Println("ServeSrs sql stmt.Query error", err.Error())
+							} else {
+
+							}
+						}
+
+					}
+
+				}
+				log.Println("用户：", pars["sessionid"], "on_dvr", data.App, "/", data.Stream, data.File, " ", retstr)
+			}
 		}
 	}
 	w.Write([]byte(retstr))
-	//log.Println("SRS AUTH ", retstr, data.Action, data.ClientId)
 }
 
 func uri2map(uri string) (map[string]string, error) {

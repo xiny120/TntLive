@@ -12,13 +12,28 @@ const store = new Vuex.Store({
         forcedLogin: false,
         hasLogin: -1,
         userName: "",
-		userInfo:{}
+		userInfo:{},
+		roomid:"",
     },
     mutations: {
+		getroomid(state){
+			try {
+				const value = uni.getStorageSync('roomid');
+				if (value) {
+					state.roomid = value;
+				}
+			} catch (e) {
+				// error
+			}				
+		},
+		setroomid(state,roomid_){
+			state.roomid = roomid_;
+			uni.setStorage({key: 'roomid', data: roomid_});	
+		},
         login(state, ui) {
             //state.userName = userName || '新用户';
 			state.userInfo = ui;
-			console.log(JSON.stringify(ui));
+			//console.log(JSON.stringify(ui));
             state.hasLogin = 1;
 			uni.setStorage({key: 'userinfo', data: ui});			
         },

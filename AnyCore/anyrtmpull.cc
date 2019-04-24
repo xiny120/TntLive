@@ -187,7 +187,7 @@ void AnyRtmpPull::DoReadData()
 		}
 		else if (type == SRS_RTMP_TYPE_SCRIPT) {
 			if (!srs_rtmp_is_onMetaData(type, data, size)) {
-				LOG(LS_ERROR) << "No flv";
+				//LOG(LS_ERROR) << "No flv";
 				srs_human_trace("drop message type=%#x, size=%dB", type, size);
 			}
 		}

@@ -78,8 +78,9 @@
 		onReachBottom() {
 			this.getData();
 		},
-		computed: mapState(['forcedLogin','hasLogin','userInfo']),
+		computed: mapState(['forcedLogin','hasLogin','userInfo','roomid']),
 		methods: {
+			...mapMutations(['setroomid',]),
 			getData() {
 				this.loading = true;
 				const data = {
@@ -148,6 +149,7 @@
 					})
 				}else{
 					if(this.hasLogin == 1){
+						this.setroomid(e.id);
 						const data ={
 							cmd:"pulldlg",
 							data:e,

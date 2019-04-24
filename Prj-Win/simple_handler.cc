@@ -18,6 +18,7 @@
 
 #include "xdefines.h"
 
+extern HWND	m_hWndPullDlg;
 extern int gUserId;
 namespace {
 
@@ -174,7 +175,8 @@ bool SimpleHandler::OnJSDialog(CefRefPtr<CefBrowser> browser,
 
 			
 			
-			::PostMessage(m_hWndDlg, WM_PULLDLG, 0, 0);
+			//::PostMessage(m_hWndDlg, WM_PULLDLG, 0, 0);
+			::PostMessage(m_hWndPullDlg, WM_PULLDLG, 0, 0);
 		}
 	}
 

@@ -17,13 +17,16 @@
 * See the GNU LICENSE file for more info.
 */
 #include "stdafx.h"
+#include "include/cef_parser.h"
 #include "LiveWin32.h"
 #include "DlgRtmpPull.h"
 #include "xdefines.h"
-#include "include/cef_parser.h"
+
 // DlgRtmpPull 对话框
 
+HWND	m_hWndPullDlg;
 extern int gUserId;
+extern std::string m_baseurl;
 
 IMPLEMENT_DYNAMIC(DlgRtmpPull, CDialog)
 
@@ -59,7 +62,8 @@ BEGIN_MESSAGE_MAP(DlgRtmpPull, CDialog)
 	//ON_WM_ERASEBKGND()
 	ON_WM_LBUTTONDBLCLK()
 	ON_MESSAGE(WM_MY_PULL_MESSAGE, OnMyMessage)
-	ON_MESSAGE(WM_PULLDLG_RESIZE,OnPullDlgResize)
+	ON_MESSAGE(WM_PULLDLG_RESIZE, OnPullDlgResize)
+	ON_MESSAGE(WM_PULLDLG, OnPullDlg)
 	ON_BN_CLICKED(IDC_BTN_PULL, &DlgRtmpPull::OnBnClickedBtnPull)
 	ON_WM_GETMINMAXINFO()
 	ON_WM_SHOWWINDOW()
@@ -78,19 +82,20 @@ LRESULT DlgRtmpPull::OnPullDlgResize(WPARAM wp, LPARAM lp) {
 	return TRUE;
 }
 
-void DlgRtmpPull::OnOK(){
+void DlgRtmpPull::OnOK() {
 }
 
-void DlgRtmpPull::OnCancel(){
+void DlgRtmpPull::OnCancel() {
 	ShowWindow(SW_HIDE);
 	Stop();
 }
 
-void DlgRtmpPull::OnClose(){
+void DlgRtmpPull::OnClose() {
 	ShowWindow(SW_HIDE);
+	Stop();
 }
 
-BOOL DlgRtmpPull::OnInitDialog(){
+BOOL DlgRtmpPull::OnInitDialog() {
 	CDialog::OnInitDialog();
 	CMenu* pSysMenu = GetSystemMenu(FALSE);
 	if (pSysMenu != NULL)
@@ -100,7 +105,7 @@ BOOL DlgRtmpPull::OnInitDialog(){
 	}
 	m_myStatic.SubclassDlgItem(IDC_STATIC_CAPTRUE, this);
 
-
+	m_hWndPullDlg = GetSafeHwnd();
 
 	srand(time(NULL));
 
@@ -125,7 +130,7 @@ BOOL DlgRtmpPull::OnInitDialog(){
 	CefBrowserSettings browser_settings;
 	std::string url;
 	if (url.empty())
-		url = "http://gpk01.gwgz.com/live/h5client/mainpage/#/pages/chatroom/chatroom";
+		url = m_baseurl + "live/h5client/mainpage/#/pages/chatroom/chatroom";
 
 	CefWindowInfo window_info;
 	RECT rc;
@@ -136,14 +141,14 @@ BOOL DlgRtmpPull::OnInitDialog(){
 	CWnd* pWnd = this->GetDlgItem(IDC_STATIC_CEF3);
 
 	window_info.SetAsChild(pWnd->GetSafeHwnd(), rc);
-	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, browser_settings,NULL);
+	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, browser_settings, NULL);
 
-	url = "http://gpk01.gwgz.com/live/h5client/mainpage/#/pages/medialist/medialist";
+	url = m_baseurl + "live/h5client/mainpage/#/pages/medialist/medialist";
 	pWnd = this->GetDlgItem(IDC_STATIC_LIST);
 	window_info.SetAsChild(pWnd->GetSafeHwnd(), rc);
 	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, browser_settings, NULL);
 
-	PostMessage( WM_SIZE, 0, 0);
+	PostMessage(WM_SIZE, 0, 0);
 
 
 
@@ -226,7 +231,7 @@ void DlgRtmpPull::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 			m_pDlgVideoMain->GetWindowRect(&rc);
 			ScreenToClient(&rc);
 			lpMMI->ptMinTrackSize.x = m_nVideoWidth + m_nChatroomWidth + GetSystemMetrics(SM_CXFRAME) * 2;
-			lpMMI->ptMinTrackSize.y = m_nVideoHeight + m_nListHeight + GetSystemMetrics(SM_CYSIZE) + GetSystemMetrics(SM_CYFRAME)*2;
+			lpMMI->ptMinTrackSize.y = m_nVideoHeight + m_nListHeight + GetSystemMetrics(SM_CYSIZE) + GetSystemMetrics(SM_CYFRAME) * 2;
 		}
 	}
 	__super::OnGetMinMaxInfo(lpMMI);
@@ -236,7 +241,7 @@ void DlgRtmpPull::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 void DlgRtmpPull::Start()
 {
 	Stop();
-	
+	ShowWindow(SW_SHOW);
 	if (m_pAVRtmplayer == NULL) {
 
 		delete[] m_pAudioMarker;
@@ -321,58 +326,18 @@ void DlgRtmpPull::Stop()
 void DlgRtmpPull::OnShowWindow(BOOL bShow, UINT nStatus)
 {
 	__super::OnShowWindow(bShow, nStatus);
-	if (!bShow) {
-		Stop();
-	}else {
-		std::string url = "";
-		CefString str = CPullDlgData::me()->pop();
-		if (!str.empty()) {
 
-			CefRefPtr<CefValue> jsonObject = CefParseJSON(str, JSON_PARSER_ALLOW_TRAILING_COMMAS);
-			if (jsonObject->IsValid())
-			{
-				CefRefPtr<CefDictionaryValue> dict = jsonObject->GetDictionary();
-				CefString token = dict->GetString("cmd");
-				if (token == "pulldlg") {
-					CefRefPtr<CefDictionaryValue> data = dict->GetDictionary("data");
-					CefString roomid = data->GetString("id");
-					CefString pulluri = data->GetString("pulluri");
-					CefString background = data->GetString("background");
-
-					data = dict->GetDictionary("ui");
-					CefString sessionid = data->GetString("SessionId");
-					CefString token = data->GetString("Token");
-
-					url = std::string(pulluri);
-					std::string sid = std::string(sessionid);
-					std::string tkn  = std::string(token);
-
-					m_strUri = url + "?sessionid="+sid + "&token=" + tkn;
-					
-				}
-			}
-		}
-		CWnd* pWnd = this->GetDlgItem(IDC_STATIC_CEF3);
-		if (pWnd != NULL && IsWindow(pWnd->GetSafeHwnd())) {
-			CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
-			if (pb != nullptr) {
-				pb->ReloadIgnoreCache();
-			}
-		}
-
-		Start();
-	}
 }
 
 
 void DlgRtmpPull::OnSize(UINT nType, int cx, int cy)
 {
 	__super::OnSize(nType, cx, cy);
-	CRect rcClient, rcVideo, rcChatroom,rcStatic,rcList;
+	CRect rcClient, rcVideo, rcChatroom, rcStatic, rcList;
 	GetClientRect(rcClient);
 	rcList = rcStatic = rcChatroom = rcClient;
-	rcChatroom.left = rcChatroom.right - m_nChatroomWidth ;
-	
+	rcChatroom.left = rcChatroom.right - m_nChatroomWidth;
+
 	rcVideo.left = 0;
 	rcVideo.top = 0;
 	rcVideo.right = m_nVideoWidth;
@@ -395,19 +360,19 @@ void DlgRtmpPull::OnSize(UINT nType, int cx, int cy)
 		}
 	}
 
-	rcStatic.right = rcChatroom.left -GetSystemMetrics(SM_CYFRAME);
+	rcStatic.right = rcChatroom.left - GetSystemMetrics(SM_CYFRAME);
 	if (rcStatic.right < rcVideo.right) {
 		rcStatic.right = rcVideo.right;
 	}
 
-	int yAdj = (rcStatic.Height() - rcVideo.Height() );
+	int yAdj = (rcStatic.Height() - rcVideo.Height());
 	rcList = rcStatic;
 	rcStatic.bottom = rcStatic.bottom - yAdj;
 	if (rcStatic.bottom < rcVideo.bottom) {
 		rcStatic.bottom = rcVideo.bottom;
 	}
 	rcList.top = rcStatic.bottom;// +GetSystemMetrics(SM_CXFRAME);
-	
+
 
 	if (IsWindow(this->m_myStatic.GetSafeHwnd())) {
 		m_myStatic.SetWindowPos(NULL, 0, 0, rcStatic.Width(), rcStatic.Height(), SWP_NOMOVE | SWP_NOZORDER);
@@ -449,14 +414,14 @@ void DlgRtmpPull::OnSize(UINT nType, int cx, int cy)
 HBRUSH DlgRtmpPull::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
 	HBRUSH hbr = __super::OnCtlColor(pDC, pWnd, nCtlColor);
-	
+
 	if (pWnd->GetDlgCtrlID() == IDC_STATIC_CAPTRUE) {
 		return (HBRUSH)brush.GetSafeHandle();
 	}
 
-	
 
-	
+
+
 	return hbr;
 }
 
@@ -464,23 +429,24 @@ HBRUSH DlgRtmpPull::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 void DlgRtmpPull::OnSysCommand(UINT nID, LPARAM lParam)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
-	CWnd* pWnd = this->GetDlgItem(IDC_STATIC_CEF3);
-	
+	CWnd* pWnd = this->GetDlgItem(IDC_STATIC_LIST);
+
 	if ((nID) == IDR_MENU_SYS_MORE_REFRESH) {
 
-		
+
 		CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
 		if (pb != nullptr) {
 			CefWindowInfo win_info;
 			CefRefPtr<CefClient> client;
 			CefBrowserSettings settings;
 
+			std::string url = pb->GetMainFrame()->GetURL().ToString();
 			pb->ReloadIgnoreCache();
 		}
 
 	}
 	else if ((nID) == IDR_MENU_SYS_MORE_SHOWDEVTOOLS) {
-		
+
 		CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
 		if (pb != nullptr) {
 			CefWindowInfo win_info;
@@ -491,6 +457,58 @@ void DlgRtmpPull::OnSysCommand(UINT nID, LPARAM lParam)
 			pb->GetHost()->ShowDevTools(win_info, theApp.handler, settings, CefPoint());
 		}
 	}
-	
+
 	__super::OnSysCommand(nID, lParam);
+}
+
+LRESULT DlgRtmpPull::OnPullDlg(WPARAM, LPARAM) {
+		std::string url = "";
+		CefString str = CPullDlgData::me()->pop();
+		if (!str.empty()) {
+
+			CefRefPtr<CefValue> jsonObject = CefParseJSON(str, JSON_PARSER_ALLOW_TRAILING_COMMAS);
+			if (jsonObject->IsValid())
+			{
+				CefRefPtr<CefDictionaryValue> dict = jsonObject->GetDictionary();
+				CefString token = dict->GetString("cmd");
+				if (token == "pulldlg") {
+					CefRefPtr<CefDictionaryValue> data = dict->GetDictionary("data");
+					CefString roomid = data->GetString("id");
+					CefString pulluri = data->GetString("pulluri");
+					CefString background = data->GetString("background");
+
+					data = dict->GetDictionary("ui");
+					CefString sessionid = data->GetString("SessionId");
+					CefString token = data->GetString("Token");
+
+					url = std::string(pulluri);
+					std::string sid = std::string(sessionid);
+					std::string tkn = std::string(token);
+					std::string urlmedialist = m_baseurl + "live/h5client/mainpage/#/pages/medialist/medialist?roomid=";// +;
+					urlmedialist += roomid;
+					GetMedialist()->GetMainFrame()->LoadURL(urlmedialist);
+
+					m_strUri = url + "?sessionid=" + sid + "&token=" + tkn;
+
+				}
+			}
+		}
+		CWnd* pWnd = this->GetDlgItem(IDC_STATIC_CEF3);
+		if (pWnd != NULL && IsWindow(pWnd->GetSafeHwnd())) {
+			CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
+			if (pb != nullptr) {
+				pb->ReloadIgnoreCache();
+			}
+		}
+
+		Start();
+		return TRUE;
+}
+
+BOOL DlgRtmpPull::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: 在此添加专用代码和/或调用基类
+
+
+	return __super::PreTranslateMessage(pMsg);
 }

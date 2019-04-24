@@ -15,10 +15,8 @@ import (
 
 var (
 	actions = map[string](func(http.ResponseWriter, *http.Request, *map[string]interface{})){
-		"auth":         f_auth,
-		"modipassword": f_modipassword,
-		"roomlist":     f_roomlist,
-		"authout":      f_authout,
+		"auth":     f_auth,
+		"roomlist": f_roomlist,
 	}
 )
 
@@ -120,12 +118,7 @@ func f_roomlist(w http.ResponseWriter, r *http.Request, v *map[string]interface{
 	res["t"] = "f_roomlist"
 	res["status"] = 1
 	res["msg"] = "未知错误！"
-	ris := []roomitem{
-		//roomitem{"http://gwgz.com/images_man/d1_180.jpg", "45", "唐能通盘中直播房间", "800", "600"},
-		//roomitem{"http://gwgz.com/images_man/d2_180.jpg", "48", "唐能通100天训练", "890", "300"},
-		//roomitem{"http://gwgz.com/images_man/d3_180.jpg", "49", "唐能通光盘课课件", "900", "200"},
-		//roomitem{"http://gwgz.com/images_man/d3_180.jpg", "49", "唐能通短线是银商城", "8000", "6000"},
-	}
+	ris := []roomitem{}
 	result := ""
 	page := int((*v)["page"].(float64)) - 1
 	per_page := int((*v)["per_page"].(float64))
@@ -150,10 +143,6 @@ func f_roomlist(w http.ResponseWriter, r *http.Request, v *map[string]interface{
 				culs, _ := rows.Columns()
 				count := len(culs)
 				vals := make([]interface{}, count)
-				//valuePtrs := make([]interface{}, count)
-				//for i := 0; i < count; i++ {
-				//	valuePtrs[i] = &values[i]
-				//}
 				for rows.Next() {
 					ri := roomitem{}
 					//rows.Scan(&ri.Id, &ri.Title, &ri.Intro, &ri.Icon, &ri.Corver, &ri.Background, &ri.Follow, &ri.Onlines, &ri.Type, &ri.PullUri, &ri.OrderIdx)
