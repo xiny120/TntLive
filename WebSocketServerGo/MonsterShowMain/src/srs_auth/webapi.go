@@ -3,6 +3,7 @@ package srs_auth
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"time"
@@ -69,6 +70,7 @@ func ServeSrs(w http.ResponseWriter, r *http.Request) {
 		case "on_dvr":
 			pars, err := uri2map(data.Param)
 			if err == nil {
+				//log.Println()
 				ui, _ := sign.SessionsGet(pars["sessionid"])
 				if ui.Token == pars["token"] {
 
@@ -88,6 +90,9 @@ func ServeSrs(w http.ResponseWriter, r *http.Request) {
 						log.Println("ServeSrs sql open error")
 					} else {
 						defer db.Close()
+						OOtmp := strings.Replace(data.File, "/media/share/", "E:/mzgp/share/", 1)
+						log.Println(OOtmp)
+						encoderfile(OOtmp)
 						BasePath := cfg.SrsDvrBasepath
 						FilePath := strings.Replace(data.File, "/media/share/", "", 1)
 						FileName := filepath.Base(FilePath)
@@ -162,4 +167,59 @@ func uri2map(uri string) (map[string]string, error) {
 	}
 	//log.Println(m)
 	return m, nil
+}
+
+func encoderfile(filepath string) {
+	Copy(filepath, filepath+".bak")
+	fi, _ := os.Stat(filepath)
+
+	var s byte = (byte)(fi.Size())
+	if s == 0 {
+		s = 1
+	}
+	file, err := os.OpenFile(filepath, os.O_RDWR, 0600)
+	log.Println(filepath, err)
+	if err != nil {
+		log.Println(err)
+	}
+	defer file.Close()
+	// 按字节读取
+	data := make([]byte, 1024)
+	count, err := file.Read(data)
+	log.Println(count, err)
+	if err == nil {
+		if count == len(data) {
+			for i := 0; i < 1024; i++ {
+				data[i] = data[i] ^ s
+			}
+			file.Seek(0, os.SEEK_SET)
+			file.Write(data)
+		}
+	}
+}
+
+func Copy(src, dst string) (int64, error) {
+	sourceFileStat, err := os.Stat(src)
+	if err != nil {
+		return 0, err
+	}
+
+	if !sourceFileStat.Mode().IsRegular() {
+		return 0, err
+	}
+
+	source, err := os.Open(src)
+	if err != nil {
+		return 0, err
+	}
+	defer source.Close()
+
+	destination, err := os.Create(dst)
+	if err != nil {
+		return 0, err
+	}
+
+	defer destination.Close()
+	nBytes, err := io.Copy(destination, source)
+	return nBytes, err
 }

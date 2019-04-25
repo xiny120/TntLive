@@ -4,6 +4,8 @@
         mapMutations
     } from 'vuex'
 	
+	
+		
     export default {
 		data() {
 			return {
@@ -49,7 +51,7 @@
 　　　　　　initWebSocket(){ //初始化weosocket 
 return;
 				//const wsuris = ["ws://localhost:8090/ws","ws://localhost:8091/ws","ws://localhost:8092/ws"]
-				const wsuris = ["ws://localhost:8091/ws"]
+				const wsuris = [this.$wssUrl]
 				this.wsuriidx = this.wsuriidx + 1;
 				if(this.wsuriidx >= wsuris.length){
 					this.wsuriidx = 0;

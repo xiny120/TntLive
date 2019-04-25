@@ -47,11 +47,13 @@ func SessionsGet(token string) (*UserInfo, bool) {
 	found := false
 
 	if ui, found = sessions[token]; found {
+		log.Println("found", token, ui)
 		ret = true
 	} else {
 		ui = &UserInfo{}
 		tfile := "./tokens/" + token
 		f, err3 := os.Open(tfile) //创建文件
+		log.Println("openfile", tfile, err3)
 		if err3 == nil {
 			defer f.Close()
 			fileinfo, err := f.Stat()

@@ -68,7 +68,7 @@ func Public(w http.ResponseWriter, r *http.Request) {
 }
 
 func f_auth(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
-	log.Println("f_auth", *v)
+	//log.Println("f_auth", *v)
 	res := make(map[string]interface{})
 	account := (*v)["account"].(string)
 	password := (*v)["password"].(string)
@@ -78,6 +78,7 @@ func f_auth(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
 	if werr == nil {
 		tfile := "./tokens/" + tt.SessionId
 		f, err3 := os.Create(tfile) //创建文件
+		log.Println("f_auth", tfile, err3)
 		if err3 == nil {
 			defer f.Close()
 			//_, err3 := f.WriteString(string(wbuf)) //写入文件(字节数组)
