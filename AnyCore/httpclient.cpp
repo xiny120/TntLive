@@ -38,15 +38,18 @@ void httpclient::run() {
 					int length = header.length();
 					while (left > 0) {
 						int len = send(sockfd, header.c_str() + length - left, left, 0);
-						left -= len;
-					}
-
-					char buf[1024] = { 0 };
-					while (true) {
-						int len = recv(sockfd, buf, sizeof(buf), 0);
 						if (len <= 0)
 							break;
+						left -= len;
+					}
+					if (left == 0) {
+						char buf[1024] = { 0 };
+						while (true) {
+							int len = recv(sockfd, buf, sizeof(buf), 0);
+							if (len <= 0)
+								break;
 
+						}
 					}
 				}
 				closesocket(sockfd);
