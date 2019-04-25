@@ -20,6 +20,7 @@
 #define __ANY_RTMP_PULL_H__
 #include "webrtc/base/thread.h"
 #include "srs_librtmp/srs_kernel_codec.h"
+#include "AnyRtmpSource.h"
 
 enum RTMPLAYER_STATUS
 {
@@ -68,7 +69,7 @@ public:
 class AnyRtmpPull : public rtc::Thread
 {
 public:
-	AnyRtmpPull(AnyRtmpPullCallback&callback, const std::string&url);
+	AnyRtmpPull(AnyRtmpPullCallback&callback, const std::string&url, AnyBaseSource*);
 	virtual ~AnyRtmpPull(void);
 
 protected:
@@ -94,7 +95,8 @@ private:
     
     rtc::CriticalSection	cs_rtmp_;
 	RTMPLAYER_STATUS	rtmp_status_;
-	void*				rtmp_;
+	//void*				rtmp_;
+	AnyBaseSource*		mrtmp;
 	DemuxData*			audio_payload_;
 	DemuxData*			video_payload_;
 };

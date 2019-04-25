@@ -32,7 +32,7 @@ public:
 	AnyRtmplayerImpl(AnyRtmplayerEvent&callback);
 	virtual ~AnyRtmplayerImpl(void);
 
-	virtual void StartPlay(const char* url);
+	virtual void StartPlay(const char* url, AnyBaseSource*);
 	virtual void SetVideoRender(void* handle);
 	virtual void StopPlay();
 
@@ -54,6 +54,7 @@ private:
 	PlyDecoder			*ply_decoder_;
     int                 cur_bitrate_;
 	std::string			str_url_;
+	AnyBaseSource*		mabs;
 
 	rtc::VideoSinkInterface < cricket::VideoFrame > *video_renderer_;
 };

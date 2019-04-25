@@ -21,6 +21,8 @@
 #include "RtmpGuester.h"
 #include "DlgVideo.h"
 #include "CMyStatic.h"
+//#include "AnyBaseSource.h"
+
 #define WM_MY_PULL_MESSAGE (WM_USER + 102)
 
 // DlgVideo ¶Ô»°¿ò
@@ -127,6 +129,7 @@ public:
 private:
 	DlgVideo		*m_pDlgVideoMain;
 	RTMPGuester		*m_pAVRtmplayer;
+	//AnyBaseSource	*mabs;
 	
 public:
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);

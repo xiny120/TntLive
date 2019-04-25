@@ -17,7 +17,7 @@
 * See the GNU LICENSE file for more info.
 */
 #include "anyrtmpull.h"
-#include "srs_librtmp.h"
+
 #include "webrtc/base/logging.h"
 
 #ifndef _WIN32
@@ -27,19 +27,21 @@
 static u_int8_t fresh_nalu_header[] = { 0x00, 0x00, 0x00, 0x01 };
 static u_int8_t cont_nalu_header[] = { 0x00, 0x00, 0x01 };
 
-AnyRtmpPull::AnyRtmpPull(AnyRtmpPullCallback&callback, const std::string&url)
+AnyRtmpPull::AnyRtmpPull(AnyRtmpPullCallback&callback, const std::string&url, AnyBaseSource* abs)
 	: callback_(callback)
 	, srs_codec_(NULL)
 	, running_(false)
     , connected_(false)
 	, retry_ct_(0)
 	, rtmp_status_(RS_PLY_Init)
-	, rtmp_(NULL)
+	//, rtmp_(NULL)
 	, audio_payload_(NULL)
 	, video_payload_(NULL)
 {
 	str_url_ = url;
-	rtmp_ = srs_rtmp_create(url.c_str());
+	//rtmp_ = srs_rtmp_create(url.c_str());
+	mrtmp = abs;// new AnyRtmpSource();
+	mrtmp->Create(url);
 	srs_codec_ = new SrsAvcAacCodec();
 
 	audio_payload_ = new DemuxData(1024);
@@ -56,15 +58,19 @@ AnyRtmpPull::~AnyRtmpPull(void)
 	rtc::Thread::SleepMs(100);
 	{
 		rtc::CritScope l(&cs_rtmp_);
-		if (rtmp_) {
-			srs_rtmp_disconnect_server(rtmp_);
-		}
+		//if (rtmp_) {
+		//	srs_rtmp_disconnect_server(rtmp_);
+		//}
+		//mrtmp->Disconnect();
 	}
 	rtc::Thread::Stop();
-	if (rtmp_) {
-		srs_rtmp_destroy(rtmp_);
-		rtmp_ = NULL;
-	}
+	//if (rtmp_) {
+	//	srs_rtmp_destroy(rtmp_);
+	//	rtmp_ = NULL;
+	//}
+	//if (mrtmp) {
+	//	mrtmp->Clear();
+	//}
 
 	if (srs_codec_) {
 		delete srs_codec_;
@@ -89,12 +95,14 @@ void AnyRtmpPull::Run()
 			this->ProcessMessages(10);
 		}
 
-		if (rtmp_ != NULL)
+		//if (rtmp_ != NULL)
+		if(mrtmp != NULL)
 		{
 			switch (rtmp_status_) {
 			case RS_PLY_Init:
 			{
-				if (srs_rtmp_handshake(rtmp_) == 0) {
+				//if (srs_rtmp_handshake(rtmp_) == 0) {
+				if(mrtmp->Handshake() == 0){
 					srs_human_trace("SRS: simple handshake ok.");
 					rtmp_status_ = RS_PLY_Handshaked;
 				}
@@ -105,7 +113,8 @@ void AnyRtmpPull::Run()
 				break;
 			case RS_PLY_Handshaked:
 			{
-				if (srs_rtmp_connect_app(rtmp_) == 0) {
+				//if (srs_rtmp_connect_app(rtmp_) == 0) {
+				if(mrtmp->Connectapp() == 0){
 					srs_human_trace("SRS: connect vhost/app ok.");
 					rtmp_status_ = RS_PLY_Connected;
 				}
@@ -116,7 +125,8 @@ void AnyRtmpPull::Run()
 				break;
 			case RS_PLY_Connected:
 			{
-				if (srs_rtmp_play_stream(rtmp_) == 0) {
+				//if (srs_rtmp_play_stream(rtmp_) == 0) {
+				if(mrtmp->Playstream() == 0){
 					srs_human_trace("SRS: play stream ok.");
 					rtmp_status_ = RS_PLY_Played;
 					CallConnect();
@@ -143,7 +153,8 @@ void AnyRtmpPull::DoReadData()
 	char* data;
 	u_int32_t timestamp;
 
-	if (srs_rtmp_read_packet(rtmp_, &type, &timestamp, &data, &size) != 0) {
+	//if (srs_rtmp_read_packet(rtmp_, &type, &timestamp, &data, &size) != 0) {
+	if(mrtmp->Read(&type, &timestamp, &data, &size) != 0){
 		// 读取rtmp失败！网络可能有问题。
 		CallDisconnect();
 	}
@@ -427,16 +438,21 @@ void AnyRtmpPull::CallConnect()
 void AnyRtmpPull::CallDisconnect()
 {
     rtc::CritScope l(&cs_rtmp_);
-    if (rtmp_) {
-        srs_rtmp_destroy(rtmp_);
-        rtmp_ = NULL;
-    }
+    //if (rtmp_) {
+    //     srs_rtmp_destroy(rtmp_);
+    //    rtmp_ = NULL;
+    //}
+	if (mrtmp) {
+		mrtmp->Clear();
+	}
     if(rtmp_status_ != RS_PLY_Closed) {
         rtmp_status_ = RS_PLY_Init;
         retry_ct_ ++;
         if(retry_ct_ <= MAX_RETRY_TIME)
         {
-            rtmp_ = srs_rtmp_create(str_url_.c_str());
+            //rtmp_ = srs_rtmp_create(str_url_.c_str());
+			mrtmp = new AnyRtmpSource();
+			mrtmp->Create(str_url_);
         } else {
             if(connected_)
                 callback_.OnRtmpullDisconnect();

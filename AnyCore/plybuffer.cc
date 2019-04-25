@@ -301,9 +301,9 @@ void PlyBuffer::DoDecode()
 			}
 		}
 
-		LOG(LS_WARNING) << "lst_audio_buffer_.size " << lst_audio_buffer_.size()
-			<< " lst_video_buffer_.size " << lst_video_buffer_.size()
-			<< " media_buf_time " << media_buf_time;
+		//LOG(LS_WARNING) << "lst_audio_buffer_.size " << lst_audio_buffer_.size()
+		//	<< " lst_video_buffer_.size " << lst_video_buffer_.size()
+		//	<< " media_buf_time " << media_buf_time;
 
 		if (media_buf_time <= PLY_RED_TIME) {
 			LOG(LS_WARNING) << "media_buf_time <= PLY_RED_TIME";

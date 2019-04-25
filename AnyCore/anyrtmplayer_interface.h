@@ -20,6 +20,7 @@
 #define __ANY_RTMP_PLAYER_INTERFACE_H__
 #include "LIV_Export.h"
 #include <stdint.h>
+#include "AnyBaseSource.h"
 
 class AnyRtmplayerEvent;
 class LIV_API AnyRtmplayer
@@ -28,7 +29,7 @@ public:
 	virtual ~AnyRtmplayer(void){};
 	static AnyRtmplayer* Create(AnyRtmplayerEvent&callback);
 
-	virtual void StartPlay(const char* url) = 0;
+	virtual void StartPlay(const char* url, AnyBaseSource*) = 0;
 	virtual void SetVideoRender(void* handle) = 0;
 	virtual void StopPlay() = 0;
 
