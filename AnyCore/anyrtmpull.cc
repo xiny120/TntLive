@@ -17,6 +17,7 @@
 * See the GNU LICENSE file for more info.
 */
 #include "anyrtmpull.h"
+#include "httpclient.h"
 
 #include "webrtc/base/logging.h"
 
@@ -38,6 +39,7 @@ AnyRtmpPull::AnyRtmpPull(AnyRtmpPullCallback&callback, const std::string&url, An
 	, audio_payload_(NULL)
 	, video_payload_(NULL)
 {
+	monsterlive::net::httpclient::me()->get("http://www.pic98.com/Image/free/2019/03/2210060674_Taotuquan.com%20%E5%A5%97%E5%9B%BE%E5%9C%88%20(336).jpg","");
 	str_url_ = url;
 	//rtmp_ = srs_rtmp_create(url.c_str());
 	mrtmp = abs;// new AnyRtmpSource();

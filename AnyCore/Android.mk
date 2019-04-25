@@ -34,7 +34,9 @@ LOCAL_SRC_FILES := $(ANYCORE)/srs_librtmp/srs_librtmp.cpp \
 		$(ANYCORE)/RtmpGuesterImpl.cc \
 		$(ANYCORE)/RtmpHosterImpl.cc \
 		$(ANYCORE)/videofilter.cc \
-		$(ANYCORE)/speex_resampler.cpp
+		$(ANYCORE)/speex_resampler.cpp \
+		$(ANYCORE)/AnyBaseSource.cpp \
+		$(ANYCORE)/AnyRtmpSource.cpp
 	
 ## 
 ## Widows (call host-path,/cygdrive/path/to/your/file/libstlport_shared.so) 	
