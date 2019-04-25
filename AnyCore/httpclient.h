@@ -26,6 +26,13 @@ struct urlitem {
 	std::list<std::string> ip;	// dns result for www.pic98.com
 	std::string officalhost;
 	std::list<std::string> aliases;	// dns result for www.pic98.com
+	int64_t totallen;
+	int64_t localen;
+	int64_t pulllen;
+	int failtimes;
+	int lastfail;
+	int firsttry;
+
 
 };
 
