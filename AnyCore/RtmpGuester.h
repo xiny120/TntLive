@@ -21,6 +21,7 @@
 #include <string>
 #include "LIV_Export.h"
 #include "RTMPCommon.h"
+#include "AnyBaseSource.h"
 
 /**
  * 计划支持RTSP播放，接口如何改动?  
@@ -46,7 +47,7 @@ public:
 	static void Destory(RTMPGuester*guester);
 
 	//* Rtmp function for pull rtmp stream 
-	virtual void StartRtmpPlay(const char* url, void* render) = 0;
+	virtual void StartRtmpPlay(const char* url, void* render, const char* sourcetype) = 0;
 	virtual void StopRtmpPlay() = 0;
 
 protected:

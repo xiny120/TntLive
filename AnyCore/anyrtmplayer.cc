@@ -61,9 +61,10 @@ AnyRtmplayerImpl::~AnyRtmplayerImpl(void)
 	}
 }
 
-void AnyRtmplayerImpl::StartPlay(const char* url)
+void AnyRtmplayerImpl::StartPlay(const char* url,AnyBaseSource* abs)
 {
 	str_url_ = url;
+	mabs = abs;
 	rtc::Thread::Post(RTC_FROM_HERE, this, PLY_START);
 
     rtc::Thread::PostDelayed(RTC_FROM_HERE, 1000, this, PLY_TICK);
@@ -79,6 +80,10 @@ void AnyRtmplayerImpl::StopPlay()
     rtc::Thread::Clear(this, PLY_TICK);
 	rtc::Thread::Post(RTC_FROM_HERE, this, PLY_STOP);
     callback_.OnRtmplayerClose(0);
+	//if (mabs) {
+	//	delete mabs;
+	//	mabs = NULL;
+	//}
 }
 
 void AnyRtmplayerImpl::OnMessage(rtc::Message* msg)
@@ -91,7 +96,7 @@ void AnyRtmplayerImpl::OnMessage(rtc::Message* msg)
 				ply_decoder_->SetVideoRender(video_renderer_);
 		}
 		if (rtmp_pull_ == NULL) {
-			rtmp_pull_ = new AnyRtmpPull(*this, str_url_);
+			rtmp_pull_ = new AnyRtmpPull(*this, str_url_,mabs);
 		}
 		
 	}

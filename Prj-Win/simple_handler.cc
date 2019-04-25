@@ -172,10 +172,11 @@ bool SimpleHandler::OnJSDialog(CefRefPtr<CefBrowser> browser,
 			CefString sessionid = data->GetString("SessionId");
 			CefString token = data->GetString("Token");
 			gUserId = data->GetInt("UserId");
-
-			
-			
 			//::PostMessage(m_hWndDlg, WM_PULLDLG, 0, 0);
+			::PostMessage(m_hWndPullDlg, WM_PULLDLG, 0, 0);
+		}
+		else if (token == "pulldlghis") {
+			CPullDlgData::me()->push(str0);
 			::PostMessage(m_hWndPullDlg, WM_PULLDLG, 0, 0);
 		}
 	}

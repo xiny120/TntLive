@@ -31,7 +31,7 @@ public:
 
 public:
 	//* Rtmp function for pull rtmp stream 
-	virtual void StartRtmpPlay(const char* url, void* render);
+	virtual void StartRtmpPlay(const char* url, void* render, const char*);
 	virtual void StopRtmpPlay();
 
 	virtual void* GotSelfPtr() { return this; };
@@ -57,6 +57,7 @@ private:
 	AnyRtmplayer			*av_rtmp_player_;
 
 	webrtc::VideoRenderer	*video_render_;
+	AnyBaseSource	*mabs;
 };
 
 #endif	// __RTMP_GUSTER_IMPL_H__

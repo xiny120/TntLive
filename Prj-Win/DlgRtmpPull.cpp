@@ -21,6 +21,8 @@
 #include "LiveWin32.h"
 #include "DlgRtmpPull.h"
 #include "xdefines.h"
+//#include "AnyRtmpSource.h"
+
 
 // DlgRtmpPull 对话框
 
@@ -40,6 +42,7 @@ DlgRtmpPull::DlgRtmpPull()
 	, m_nChatroomWidth(420)
 	, m_nListHeight(220)
 	, m_pAudioMarker(NULL)
+//	, mabs(NULL)
 {
 }
 
@@ -210,7 +213,10 @@ void DlgRtmpPull::OnBnClickedBtnPull()
 		for (int i = 0; i <= fnlen; i++) {
 			ss[i] = m_strUrl.GetAt(i);
 		}
-		m_pAVRtmplayer->StartRtmpPlay(ss, m_pDlgVideoMain->m_hWnd);
+		//if (mabs != NULL)
+		//	delete mabs;
+		//mabs = new AnyRtmpSource();
+		m_pAVRtmplayer->StartRtmpPlay(ss, m_pDlgVideoMain->m_hWnd,"rtmp");
 		m_btnRtmp.SetWindowTextW(L"结束");
 	}
 	else {
@@ -297,7 +303,10 @@ void DlgRtmpPull::Start()
 		for (int i = 0; i <= fnlen; i++) {
 			ss[i] = m_strUrl.GetAt(i);
 		}
-		m_pAVRtmplayer->StartRtmpPlay(url.c_str(), m_pDlgVideoMain->m_hWnd);
+		//if (mabs != NULL)
+		//	delete mabs;
+		//mabs = new AnyRtmpSource();
+		m_pAVRtmplayer->StartRtmpPlay(url.c_str(), m_pDlgVideoMain->m_hWnd, "rtmp");
 		m_btnRtmp.SetWindowTextW(L"结束");
 
 
@@ -319,6 +328,10 @@ void DlgRtmpPull::Stop()
 		CRect rc;
 		GetClientRect(rc);
 		//m_nVideoWidth = rc.Width() - m_nChatroomWidth;
+		//if (mabs != NULL) {
+		//	delete mabs;
+		//	mabs = NULL;
+		//}
 	}
 }
 
@@ -489,19 +502,22 @@ LRESULT DlgRtmpPull::OnPullDlg(WPARAM, LPARAM) {
 					GetMedialist()->GetMainFrame()->LoadURL(urlmedialist);
 
 					m_strUri = url + "?sessionid=" + sid + "&token=" + tkn;
+					CWnd* pWnd = this->GetDlgItem(IDC_STATIC_CEF3);
+					if (pWnd != NULL && IsWindow(pWnd->GetSafeHwnd())) {
+						CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
+						if (pb != nullptr) {
+							pb->ReloadIgnoreCache();
+						}
+					}
 
+					Start();
+				}
+				else if (token == "pulldlghis") {
+					AfxMessageBox(L"pulldlghis");
 				}
 			}
 		}
-		CWnd* pWnd = this->GetDlgItem(IDC_STATIC_CEF3);
-		if (pWnd != NULL && IsWindow(pWnd->GetSafeHwnd())) {
-			CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
-			if (pb != nullptr) {
-				pb->ReloadIgnoreCache();
-			}
-		}
 
-		Start();
 		return TRUE;
 }
 

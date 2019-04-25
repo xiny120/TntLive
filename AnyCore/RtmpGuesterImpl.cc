@@ -35,6 +35,7 @@ RtmpGuesterImpl::RtmpGuesterImpl(RTMPGuesterEvent&callback)
 	, av_rtmp_started_(NULL)
 	, av_rtmp_player_(NULL)
 	, video_render_(NULL)
+	, mabs(NULL)
 {
 	av_rtmp_player_ = AnyRtmplayer::Create(*this);
 }
@@ -53,17 +54,23 @@ RtmpGuesterImpl::~RtmpGuesterImpl()
 		delete video_render_;
 		video_render_ = NULL;
 	}
+	if (mabs != NULL) {
+		delete mabs;
+	}
 }
 
 //* Rtmp function for pull rtmp stream 
-void RtmpGuesterImpl::StartRtmpPlay(const char* url, void* render)
+void RtmpGuesterImpl::StartRtmpPlay(const char* url, void* render, const char* sourcetype)
 {
 	if (!av_rtmp_started_) {
+		if (strcmp(sourcetype, "rtmp") == 0) {
+			mabs = new AnyRtmpSource();
+		}
 		rtmp_url_ = url;
 		av_rtmp_started_ = true;
 		video_render_ = webrtc::VideoRenderer::Create(render, 512, 512);
 		av_rtmp_player_->SetVideoRender(video_render_);
-		av_rtmp_player_->StartPlay(url);
+		av_rtmp_player_->StartPlay(url,mabs);
 		webrtc::AnyRtmpCore::Inst().StartAudioTrack(this);
 	}
 }
@@ -78,6 +85,10 @@ void RtmpGuesterImpl::StopRtmpPlay()
 		if (video_render_ != NULL) {
 			delete video_render_;
 			video_render_ = NULL;
+		}
+		if (mabs != NULL) {
+			delete mabs;
+			mabs = NULL;
 		}
 	}
 }

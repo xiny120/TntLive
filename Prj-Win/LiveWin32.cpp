@@ -64,7 +64,7 @@ CLiveWin32App::CLiveWin32App()
 // 唯一的一个 CLiveWin32App 对象
 
 CLiveWin32App theApp;
-std::string m_baseurl = "http://localhost:8080/";
+std::string m_baseurl = "http://210.192.107.62:8080/";
 
 
 CString GetModuleDir()
