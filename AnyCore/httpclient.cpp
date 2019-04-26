@@ -131,7 +131,7 @@ void httpclient::run() {
 							for (i = 0; i < httpver.length(); i++) {
 								if (httpver[i] == ' ') {
 									std::string s0 = httpver.substr(lastpos, i - lastpos);
-									
+									s0.erase(std::find(s0.begin(), s0.end(), ' '));
 									if (s0.length() > 0)
 										httpvers.push_back(s0);
 									lastpos = i;
@@ -153,6 +153,10 @@ void httpclient::run() {
 									if (str2time((*iter).second.c_str()) == pi->ui.lastmodify) {
 										samed = true;
 									}
+								}
+								else if (pi->ui.totallen < pi->ui.locallen) {
+									remove(pi->filelocal.c_str());
+									pi->ui.locallen = 0;
 								}
 							}
 

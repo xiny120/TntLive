@@ -22,6 +22,7 @@ public:
 	// size 数据缓冲大小。
 	virtual int Read(char* type, uint32_t* timestamp, char** data, int* size) ;
 	virtual int Clear();
+	virtual bool onMetaData(char type, char* data, int size);
 protected:
 	void* rtmp_;
 };

@@ -17,6 +17,8 @@
 * See the GNU LICENSE file for more info.
 */
 #include "anyrtmpull.h"
+#include "httpclient.h"
+#include "AnyFlvSource.h"
 
 
 #include "webrtc/base/logging.h"
@@ -28,7 +30,7 @@
 static u_int8_t fresh_nalu_header[] = { 0x00, 0x00, 0x00, 0x01 };
 static u_int8_t cont_nalu_header[] = { 0x00, 0x00, 0x01 };
 
-AnyRtmpPull::AnyRtmpPull(AnyRtmpPullCallback&callback, const std::string&url, AnyBaseSource* abs)
+AnyRtmpPull::AnyRtmpPull(AnyRtmpPullCallback&callback, const char* url, const char* type)// AnyBaseSource* abs)
 	: callback_(callback)
 	, srs_codec_(NULL)
 	, running_(false)
@@ -40,8 +42,17 @@ AnyRtmpPull::AnyRtmpPull(AnyRtmpPullCallback&callback, const std::string&url, An
 	, video_payload_(NULL)
 {
 	str_url_ = url;
+	if (strcmp(type, "rtmp") == 0) {
+		mrtmp = new AnyRtmpSource();
+	}
+	else if (strcmp(type, "flv") == 0) {
+		std::string localfile = "";
+		monsterlive::net::httpclient::me()->get(url, localfile, "");
+		mrtmp = new AnyFlvSource(localfile);
+
+	}
+
 	//rtmp_ = srs_rtmp_create(url.c_str());
-	mrtmp = abs;// new AnyRtmpSource();
 	mrtmp->Create(url);
 	srs_codec_ = new SrsAvcAacCodec();
 
@@ -69,10 +80,6 @@ AnyRtmpPull::~AnyRtmpPull(void)
 	//	srs_rtmp_destroy(rtmp_);
 	//	rtmp_ = NULL;
 	//}
-	//if (mrtmp) {
-	//	mrtmp->Clear();
-	//}
-
 	if (srs_codec_) {
 		delete srs_codec_;
 		srs_codec_ = NULL;
@@ -85,6 +92,7 @@ AnyRtmpPull::~AnyRtmpPull(void)
 		delete video_payload_;
 		video_payload_ = NULL;
 	}
+	delete mrtmp;
 }
 
 //* For Thread
@@ -108,7 +116,7 @@ void AnyRtmpPull::Run()
 					rtmp_status_ = RS_PLY_Handshaked;
 				}
                 else {
-                    CallDisconnect();
+                    CallDisconnect(1);
                 }
 			}
 				break;
@@ -120,7 +128,7 @@ void AnyRtmpPull::Run()
 					rtmp_status_ = RS_PLY_Connected;
 				}
                 else {
-                    CallDisconnect();
+                    CallDisconnect(1);
                 }
 			}
 				break;
@@ -133,15 +141,28 @@ void AnyRtmpPull::Run()
 					CallConnect();
 				}
                 else {
-                    CallDisconnect();
+                    CallDisconnect(1);
                 }
 			}
 				break;
 			case RS_PLY_Played:
 			{
+				if (mrtmp->NeedSlowdown()) {
+					if (callback_.OnRtmpullSlowdown()) {
+						rtmp_status_ = RS_PLY_Slowdown;
+					}
+				}
 				DoReadData();
+
 			}
 				break;
+			case RS_PLY_Slowdown:
+			{
+				if (!callback_.OnRtmpullSlowdown()) {
+					rtmp_status_ = RS_PLY_Played;
+				}
+			}
+			break;
 			}
 		}
 	}
@@ -154,10 +175,10 @@ void AnyRtmpPull::DoReadData()
 	char* data;
 	u_int32_t timestamp;
 
-	//if (srs_rtmp_read_packet(rtmp_, &type, &timestamp, &data, &size) != 0) {
-	if(mrtmp->Read(&type, &timestamp, &data, &size) != 0){
+	int code = mrtmp->Read(&type, &timestamp, &data, &size);
+	if(code != 0){
 		// 读取rtmp失败！网络可能有问题。
-		CallDisconnect();
+		CallDisconnect(code);
 	}
 	else {
 
@@ -198,7 +219,8 @@ void AnyRtmpPull::DoReadData()
 			GotAudioSample(timestamp, &sample);
 		}
 		else if (type == SRS_RTMP_TYPE_SCRIPT) {
-			if (!srs_rtmp_is_onMetaData(type, data, size)) {
+			//if (!srs_rtmp_is_onMetaData(type, data, size)) {
+			if (!mrtmp->onMetaData(type, data, size)) {
 				//LOG(LS_ERROR) << "No flv";
 				srs_human_trace("drop message type=%#x, size=%dB", type, size);
 			}
@@ -436,9 +458,11 @@ void AnyRtmpPull::CallConnect()
     callback_.OnRtmpullConnected();
 }
 
-void AnyRtmpPull::CallDisconnect()
+void AnyRtmpPull::CallDisconnect(int code)
 {
     rtc::CritScope l(&cs_rtmp_);
+	if(code==2)
+		rtmp_status_ = RS_PLY_Closed;
     //if (rtmp_) {
     //     srs_rtmp_destroy(rtmp_);
     //    rtmp_ = NULL;
@@ -452,7 +476,7 @@ void AnyRtmpPull::CallDisconnect()
         if(retry_ct_ <= MAX_RETRY_TIME)
         {
             //rtmp_ = srs_rtmp_create(str_url_.c_str());
-			mrtmp = new AnyRtmpSource();
+			//mrtmp = new AnyRtmpSource();
 			mrtmp->Create(str_url_);
         } else {
             if(connected_)

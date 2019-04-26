@@ -14,6 +14,8 @@ public:
 	virtual int Connectapp() = 0;	// 通知数据源连接app。live/livestream部分(rtmp://www.pic98.com/live/livestream)
 	virtual int Playstream() = 0;	// 通知数据源开始获取数据。
 	virtual int Clear() = 0;
+	virtual bool onMetaData(char type, char* data, int size) = 0;
+	virtual bool NeedSlowdown() { return false; }
 	// 获取数据接口。参数全部参照rtmp协议。
 	// type 数据类型。
 	// timestamp 时间戳

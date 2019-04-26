@@ -20,13 +20,17 @@ public:
 	// size 数据缓冲大小。
 	virtual int Read(char* type, uint32_t* timestamp, char** data, int* size);
 	virtual int Clear();
+	virtual bool onMetaData(char type, char* data, int size) { return true; };
+	virtual bool NeedSlowdown() { return true; }
 
 private:
 	std::string mfile;
 	int64_t mreaded;
+	bool mbegin;
 	char* mbuf,*mbufcur;
 	int64_t mbuftotallen;
 	int64_t mbufleftlen;
+	uint32_t dwDataSizeLast;
 	
 };
 

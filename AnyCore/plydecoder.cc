@@ -256,6 +256,10 @@ bool PlyDecoder::IsPlaying()
     if (ply_buffer_->PlayerStatus() == PS_Cache) {
         return false;
     }
+	if (ply_buffer_->PlayerStatus() == PS_Fast) {
+		return false;
+	}
+
     return true;
 }
 
@@ -265,6 +269,13 @@ int  PlyDecoder::CacheTime()
         return ply_buffer_->GetPlayCacheTime();
     }
     return 0;
+}
+
+bool PlyDecoder::Slowdown() {
+	if (ply_buffer_) {
+		return ply_buffer_->NeedSlowdown();
+	}
+	return false;
 }
 
 void PlyDecoder::AddH264Data(const uint8_t*pdata, int len, uint32_t ts)

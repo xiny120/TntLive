@@ -320,7 +320,7 @@ void DlgRtmpPull::Stop()
 {
 	if (m_pAVRtmplayer != NULL) {
 		m_btnRtmp.SetWindowTextW(L"À­Á÷");
-		m_pAVRtmplayer->StopRtmpPlay();
+		//m_pAVRtmplayer->StopRtmpPlay();
 		RTMPGuester::Destory(m_pAVRtmplayer);
 		m_pAVRtmplayer = NULL;
 		//m_nVideoWidth = 0;

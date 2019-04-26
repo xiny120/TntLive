@@ -32,7 +32,7 @@ public:
 	AnyRtmplayerImpl(AnyRtmplayerEvent&callback);
 	virtual ~AnyRtmplayerImpl(void);
 
-	virtual void StartPlay(const char* url, AnyBaseSource*);
+	virtual void StartPlay(const char* url, const char*);// AnyBaseSource*);
 	virtual void SetVideoRender(void* handle);
 	virtual void StopPlay();
 
@@ -48,13 +48,16 @@ protected:
 	virtual void OnRtmpullDisconnect();
 	virtual void OnRtmpullH264Data(const uint8_t*pdata, int len, uint32_t ts);
 	virtual void OnRtmpullAACData(const uint8_t*pdata, int len, uint32_t ts);
+	virtual bool OnRtmpullSlowdown();
+
 
 private:
 	AnyRtmpPull			*rtmp_pull_;
 	PlyDecoder			*ply_decoder_;
     int                 cur_bitrate_;
 	std::string			str_url_;
-	AnyBaseSource*		mabs;
+	std::string	mtype;
+	//AnyBaseSource*		mabs;
 
 	rtc::VideoSinkInterface < cricket::VideoFrame > *video_renderer_;
 };

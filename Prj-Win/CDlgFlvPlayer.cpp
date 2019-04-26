@@ -117,7 +117,7 @@ BOOL CDlgFlvPlayer::OnInitDialog(){
 				CefString sessionid = data->GetString("SessionId");
 				CefString token = data->GetString("Token");
 				m_pPlayer = RTMPGuester::Create(*this);
-				std::string url = "http://gpk01.gwgz.com:8862/live/livestream/2019/04/25165102498.flv";
+				std::string url = "http://gpk01.gwgz.com:8862/live/livestream/2019/04/26203319300.flv";
 				m_pPlayer->StartRtmpPlay(url.c_str(), GetDlgItem(IDC_STATIC_VIDEO)->GetSafeHwnd(), "flv", "");
 			}
 		}

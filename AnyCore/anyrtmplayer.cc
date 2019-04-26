@@ -41,7 +41,7 @@ AnyRtmplayerImpl::AnyRtmplayerImpl(AnyRtmplayerEvent&callback)
 	, ply_decoder_(NULL)
     , cur_bitrate_(0)
 	, video_renderer_(NULL)
-	, mabs(NULL)
+	//, mabs(NULL)
 {
 	rtc::Thread::Start();
 
@@ -63,10 +63,11 @@ AnyRtmplayerImpl::~AnyRtmplayerImpl(void)
 	}
 }
 
-void AnyRtmplayerImpl::StartPlay(const char* url,AnyBaseSource* abs)
+void AnyRtmplayerImpl::StartPlay(const char* url,const char* type)// , AnyBaseSource* abs)
 {
 	str_url_ = url;
-	mabs = abs;
+	//mabs = abs;
+	mtype = type;
 
 	rtc::Thread::Post(RTC_FROM_HERE, this, PLY_START);
 
@@ -80,15 +81,10 @@ void AnyRtmplayerImpl::SetVideoRender(void* handle)
 
 void AnyRtmplayerImpl::StopPlay()
 {
+	//mabs = nullptr;
     rtc::Thread::Clear(this, PLY_TICK);
 	rtc::Thread::Post(RTC_FROM_HERE, this, PLY_STOP);
     callback_.OnRtmplayerClose(0);
-	//mabs->
-	//monsterlive::net::httpclient::me()->pause();
-	//if (mabs) {
-	//	delete mabs;
-	//	mabs = NULL;
-	//}
 }
 
 void AnyRtmplayerImpl::OnMessage(rtc::Message* msg)
@@ -101,7 +97,7 @@ void AnyRtmplayerImpl::OnMessage(rtc::Message* msg)
 				ply_decoder_->SetVideoRender(video_renderer_);
 		}
 		if (rtmp_pull_ == NULL) {
-			rtmp_pull_ = new AnyRtmpPull(*this, str_url_,mabs);
+			rtmp_pull_ = new AnyRtmpPull(*this, str_url_.c_str(), mtype.c_str());// mabs);
 		}
 		
 	}
@@ -171,6 +167,13 @@ int AnyRtmplayerImpl::GetNeedPlayAudio(void* audioSamples, uint32_t& samplesPerS
 		return ply_decoder_->GetPcmData(audioSamples, samplesPerSec, nChannels);
 	}
 	return 0;
+}
+
+bool AnyRtmplayerImpl::OnRtmpullSlowdown() {
+	if (ply_decoder_) {
+		return ply_decoder_->Slowdown();
+	}
+	return false;
 }
 
 }	// namespace webrtc

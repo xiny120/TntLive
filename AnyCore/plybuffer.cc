@@ -183,6 +183,18 @@ int PlyBuffer::GetPlayAudio(void* audioSamples,const int samples,const int chan)
 
 	return ret;
 }
+
+bool PlyBuffer::NeedSlowdown() {
+	int total = 0;
+	{
+		rtc::CritScope cs(&cs_list_video_);
+		total = lst_video_buffer_.size();
+	}
+	if (total >= 25)
+		return true;
+	return false;
+}
+
 void PlyBuffer::CacheH264Data(const uint8_t*pdata, int len, uint32_t ts)
 {
 	PlyPacket* pkt = new PlyPacket(true);
@@ -301,9 +313,9 @@ void PlyBuffer::DoDecode()
 			}
 		}
 
-		//LOG(LS_WARNING) << "lst_audio_buffer_.size " << lst_audio_buffer_.size()
-		//	<< " lst_video_buffer_.size " << lst_video_buffer_.size()
-		//	<< " media_buf_time " << media_buf_time;
+		LOG(LS_WARNING) << "lst_audio_buffer_.size " << lst_audio_buffer_.size()
+			<< " lst_video_buffer_.size " << lst_video_buffer_.size()
+			<< " media_buf_time " << media_buf_time;
 
 		if (media_buf_time <= PLY_RED_TIME) {
 			LOG(LS_WARNING) << "media_buf_time <= PLY_RED_TIME";

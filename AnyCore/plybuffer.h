@@ -57,6 +57,7 @@ enum PlyStuts {
 	PS_Fast = 0,	//	Fast video decode
 	PS_Normal,
 	PS_Cache,
+	PS_Skip,
 };
 
 class PlyBufferCallback {
@@ -82,6 +83,7 @@ public:
     int GetPlayCacheTime(){return buf_cache_time_;};
 	void CacheH264Data(const uint8_t*pdata, int len, uint32_t ts);
 	void CachePcmData(const uint8_t*pdata, int len, uint32_t ts);
+	bool NeedSlowdown();
 
 protected:
 	//* For MessageHandler

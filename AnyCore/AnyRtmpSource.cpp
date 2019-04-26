@@ -60,3 +60,7 @@ int AnyRtmpSource::Read(char* type, uint32_t* timestamp, char** data, int* size)
 		return srs_rtmp_read_packet(rtmp_, type, timestamp, data, size);
 	return 0;
 }
+
+bool AnyRtmpSource::onMetaData(char type, char* data, int size) {
+	return srs_rtmp_is_onMetaData(type, data, size);
+}

@@ -46,6 +46,7 @@ RtmpGuesterImpl::RtmpGuesterImpl(RTMPGuesterEvent&callback)
 RtmpGuesterImpl::~RtmpGuesterImpl()
 {
 	StopRtmpPlay();
+	/*
 	if (av_rtmp_player_ != NULL) {
 		av_rtmp_player_->StopPlay();
 		delete av_rtmp_player_;
@@ -59,26 +60,19 @@ RtmpGuesterImpl::~RtmpGuesterImpl()
 	if (mabs != NULL) {
 		delete mabs;
 	}
+	*/
 }
 
 //* Rtmp function for pull rtmp stream 
 void RtmpGuesterImpl::StartRtmpPlay(const char* url, void* render, const char* sourcetype,const char* dir)
 {
 	if (!av_rtmp_started_) {
-		if (strcmp(sourcetype, "rtmp") == 0) {
-			mabs = new AnyRtmpSource();
-		}
-		else if (strcmp(sourcetype, "flv") == 0) {
-			std::string localfile = "";
-			monsterlive::net::httpclient::me()->get(url, localfile, "");
-			mabs = new AnyFlvSource(localfile);
 
-		}
 		rtmp_url_ = url;
 		av_rtmp_started_ = true;
 		video_render_ = webrtc::VideoRenderer::Create(render, 512, 512);
 		av_rtmp_player_->SetVideoRender(video_render_);
-		av_rtmp_player_->StartPlay(url,mabs);// , mabs);
+		av_rtmp_player_->StartPlay(url,sourcetype);// , mabs);
 		webrtc::AnyRtmpCore::Inst().StartAudioTrack(this);
 	}
 }

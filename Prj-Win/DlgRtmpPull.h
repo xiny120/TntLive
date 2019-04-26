@@ -47,6 +47,7 @@ public:
 		if (IsWindow(pWnd->GetSafeHwnd())) {
 			return theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
 		}
+		return NULL;
 	};
 // 对话框数据
 	enum { IDD = IDD_DIALOG_PULL };
