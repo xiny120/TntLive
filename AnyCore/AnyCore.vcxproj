@@ -170,6 +170,7 @@
     <ClCompile Include="aacdecode.cc" />
     <ClCompile Include="aacencode.cc" />
     <ClCompile Include="AnyBaseSource.cpp" />
+    <ClCompile Include="AnyFlvSource.cpp" />
     <ClCompile Include="AnyRtmpSource.cpp" />
     <ClCompile Include="avcodec.cc" />
     <ClCompile Include="anyrtmpcore.cc" />
@@ -188,6 +189,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AnyBaseSource.h" />
+    <ClInclude Include="AnyFlvSource.h" />
     <ClInclude Include="AnyRtmpSource.h" />
     <ClInclude Include="arch.h" />
     <ClInclude Include="avcodec.h" />

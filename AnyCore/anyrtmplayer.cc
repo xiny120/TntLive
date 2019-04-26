@@ -23,6 +23,7 @@
 #include "webrtc/media/base/videoframe.h"
 #include "webrtc/modules/audio_device/audio_device_impl.h"
 #include "webrtc/voice_engine/voice_engine_defines.h"
+#include "httpclient.h"
 
 #define PLY_START	1001
 #define PLY_STOP	1002
@@ -40,6 +41,7 @@ AnyRtmplayerImpl::AnyRtmplayerImpl(AnyRtmplayerEvent&callback)
 	, ply_decoder_(NULL)
     , cur_bitrate_(0)
 	, video_renderer_(NULL)
+	, mabs(NULL)
 {
 	rtc::Thread::Start();
 
@@ -65,6 +67,7 @@ void AnyRtmplayerImpl::StartPlay(const char* url,AnyBaseSource* abs)
 {
 	str_url_ = url;
 	mabs = abs;
+
 	rtc::Thread::Post(RTC_FROM_HERE, this, PLY_START);
 
     rtc::Thread::PostDelayed(RTC_FROM_HERE, 1000, this, PLY_TICK);
@@ -80,6 +83,8 @@ void AnyRtmplayerImpl::StopPlay()
     rtc::Thread::Clear(this, PLY_TICK);
 	rtc::Thread::Post(RTC_FROM_HERE, this, PLY_STOP);
     callback_.OnRtmplayerClose(0);
+	//mabs->
+	//monsterlive::net::httpclient::me()->pause();
 	//if (mabs) {
 	//	delete mabs;
 	//	mabs = NULL;

@@ -21,6 +21,7 @@
 #include "LiveWin32.h"
 #include "DlgRtmpPull.h"
 #include "xdefines.h"
+#include "CDlgFlvPlayer.h"
 //#include "AnyRtmpSource.h"
 
 
@@ -216,7 +217,7 @@ void DlgRtmpPull::OnBnClickedBtnPull()
 		//if (mabs != NULL)
 		//	delete mabs;
 		//mabs = new AnyRtmpSource();
-		m_pAVRtmplayer->StartRtmpPlay(ss, m_pDlgVideoMain->m_hWnd,"rtmp");
+		m_pAVRtmplayer->StartRtmpPlay(ss, m_pDlgVideoMain->m_hWnd,"rtmp","");
 		m_btnRtmp.SetWindowTextW(L"½áÊø");
 	}
 	else {
@@ -306,7 +307,7 @@ void DlgRtmpPull::Start()
 		//if (mabs != NULL)
 		//	delete mabs;
 		//mabs = new AnyRtmpSource();
-		m_pAVRtmplayer->StartRtmpPlay(url.c_str(), m_pDlgVideoMain->m_hWnd, "rtmp");
+		m_pAVRtmplayer->StartRtmpPlay(url.c_str(), m_pDlgVideoMain->m_hWnd, "rtmp","");
 		m_btnRtmp.SetWindowTextW(L"½áÊø");
 
 
@@ -513,7 +514,11 @@ LRESULT DlgRtmpPull::OnPullDlg(WPARAM, LPARAM) {
 					Start();
 				}
 				else if (token == "pulldlghis") {
-					AfxMessageBox(L"pulldlghis");
+					//AfxMessageBox(L"pulldlghis");
+					Stop();
+					CDlgFlvPlayer dlg(this, str);
+					dlg.DoModal();
+
 				}
 			}
 		}

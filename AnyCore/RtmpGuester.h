@@ -47,7 +47,7 @@ public:
 	static void Destory(RTMPGuester*guester);
 
 	//* Rtmp function for pull rtmp stream 
-	virtual void StartRtmpPlay(const char* url, void* render, const char* sourcetype) = 0;
+	virtual void StartRtmpPlay(const char* url, void* render, const char* sourcetype, const char* datadir) = 0;
 	virtual void StopRtmpPlay() = 0;
 
 protected:
