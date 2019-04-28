@@ -45,8 +45,10 @@ int AnyRtmpSource::Connectapp() {
 }
 
 int AnyRtmpSource::Playstream() {
-	if (rtmp_)
+	if (rtmp_) {
+
 		return srs_rtmp_play_stream(rtmp_);
+	}
 	return 0;
 }
 

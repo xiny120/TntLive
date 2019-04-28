@@ -19,7 +19,7 @@
 // approaching a frame or packet frequency, use LS_VERBOSE if necessary, or
 // preferably, do not log at all.
 
-//   LOG(...) an ostream target that can be used to send formatted
+//   WCLOG(...) an ostream target that can be used to send formatted
 // output to a variety of logging targets, such as debugger console, stderr,
 // file, or any StreamInterface.
 //   The severity level passed as the first argument to the LOGging
@@ -29,12 +29,12 @@
 //   There are several variations on the LOG macro which facilitate logging
 // of common error conditions, detailed below.
 
-// LOG(sev) logs the given stream at severity "sev", which must be a
+// WCLOG(sev) logs the given stream at severity "sev", which must be a
 //     compile-time constant of the LoggingSeverity type, without the namespace
 //     prefix.
-// LOG_V(sev) Like LOG(), but sev is a run-time variable of the LoggingSeverity
+// LOG_V(sev) Like WCLOG(), but sev is a run-time variable of the LoggingSeverity
 //     type (basically, it just doesn't prepend the namespace).
-// LOG_F(sev) Like LOG(), but includes the name of the current function.
+// LOG_F(sev) Like WCLOG(), but includes the name of the current function.
 
 #ifndef WEBRTC_SYSTEM_WRAPPERS_INCLUDE_LOGGING_H_
 #define WEBRTC_SYSTEM_WRAPPERS_INCLUDE_LOGGING_H_
@@ -108,7 +108,7 @@ class LogMessageVoidify {
     ? (void) 0 \
     : webrtc::LogMessageVoidify() &
 
-#define LOG(sev) \
+#define WCLOG(sev) \
   LOG_SEVERITY_PRECONDITION(webrtc::sev) \
     webrtc::LogMessage(__FILE__, __LINE__, webrtc::sev).stream()
 
@@ -120,9 +120,9 @@ class LogMessageVoidify {
 
 // The _F version prefixes the message with the current function name.
 #if (defined(__GNUC__) && !defined(NDEBUG)) || defined(WANT_PRETTY_LOG_F)
-#define LOG_F(sev) LOG(sev) << __PRETTY_FUNCTION__ << ": "
+#define LOG_F(sev) WCLOG(sev) << __PRETTY_FUNCTION__ << ": "
 #else
-#define LOG_F(sev) LOG(sev) << __FUNCTION__ << ": "
+#define LOG_F(sev) WCLOG(sev) << __FUNCTION__ << ": "
 #endif
 
 #endif  // LOG

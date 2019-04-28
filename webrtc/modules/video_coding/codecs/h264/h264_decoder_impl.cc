@@ -117,7 +117,7 @@ int H264DecoderImpl::AVGetBuffer2(
   int ret = av_image_check_size(static_cast<unsigned int>(width),
                                 static_cast<unsigned int>(height), 0, nullptr);
   if (ret < 0) {
-    LOG(LS_ERROR) << "Invalid picture size " << width << "x" << height;
+    WCLOG(LS_ERROR) << "Invalid picture size " << width << "x" << height;
     decoder->ReportError();
     return ret;
   }
@@ -250,14 +250,14 @@ int32_t H264DecoderImpl::InitDecode(const VideoCodec* codec_settings,
   if (!codec) {
     // This is an indication that FFmpeg has not been initialized or it has not
     // been compiled/initialized with the correct set of codecs.
-    LOG(LS_ERROR) << "FFmpeg H.264 decoder not found.";
+    WCLOG(LS_ERROR) << "FFmpeg H.264 decoder not found.";
     Release();
     ReportError();
     return WEBRTC_VIDEO_CODEC_ERROR;
   }
   int res = avcodec_open2(av_context_.get(), codec, nullptr);
   if (res < 0) {
-    LOG(LS_ERROR) << "avcodec_open2 error: " << res;
+    WCLOG(LS_ERROR) << "avcodec_open2 error: " << res;
     Release();
     ReportError();
     return WEBRTC_VIDEO_CODEC_ERROR;
@@ -332,7 +332,7 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
     return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   }
   if (!decoded_image_callback_) {
-    LOG(LS_WARNING) << "InitDecode() has been called, but a callback function "
+    WCLOG(LS_WARNING) << "InitDecode() has been called, but a callback function "
         "has not been set with RegisterDecodeCompleteCallback()";
     ReportError();
     return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
@@ -379,20 +379,20 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
                                      &frame_decoded,
                                      &packet);
   if (result < 0) {
-   // LOG(LS_ERROR) << "avcodec_decode_video2 error: " << result;
+   // WCLOG(LS_ERROR) << "avcodec_decode_video2 error: " << result;
     ReportError();
     return WEBRTC_VIDEO_CODEC_ERROR;
   }
   // |result| is number of bytes used, which should be all of them.
   if (result != packet.size) {
-    LOG(LS_ERROR) << "avcodec_decode_video2 consumed " << result << " bytes "
+    WCLOG(LS_ERROR) << "avcodec_decode_video2 consumed " << result << " bytes "
         "when " << packet.size << " bytes were expected.";
     ReportError();
     return WEBRTC_VIDEO_CODEC_ERROR;
   }
 
   if (!frame_decoded) {
-    LOG(LS_WARNING) << "avcodec_decode_video2 successful but no frame was "
+    WCLOG(LS_WARNING) << "avcodec_decode_video2 successful but no frame was "
         "decoded.";
     return WEBRTC_VIDEO_CODEC_OK;
   }
@@ -445,7 +445,7 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
   // |AVGetBuffer2|'s use of |avcodec_align_dimensions|. This crops the image
   // without copying the underlying buffer.
   rtc::scoped_refptr<VideoFrameBuffer> buf = video_frame->video_frame_buffer();
-	//LOG(LS_WARNING) << "DecodedImageCallback::Decoded width:" << buf->width() << "height:" << buf->height();
+	//WCLOG(LS_WARNING) << "DecodedImageCallback::Decoded width:" << buf->width() << "height:" << buf->height();
   if (av_frame_->width != buf->width() || av_frame_->height != buf->height()) {
     rtc::scoped_refptr<VideoFrameBuffer> cropped_buf(
         new rtc::RefCountedObject<WrappedI420Buffer>(
@@ -469,7 +469,7 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
   video_frame = nullptr;
 
   if (ret) {
-    LOG(LS_WARNING) << "DecodedImageCallback::Decoded returned " << ret;
+    WCLOG(LS_WARNING) << "DecodedImageCallback::Decoded returned " << ret;
     return ret;
   }
   return WEBRTC_VIDEO_CODEC_OK;

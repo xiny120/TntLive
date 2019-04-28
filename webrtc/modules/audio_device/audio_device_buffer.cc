@@ -289,7 +289,7 @@ void AudioDeviceBuffer::SetVQEData(int playDelayMs, int recDelayMs,
   } else {
     if (playDelayMs + recDelayMs > kHighDelayThresholdMs) {
       high_delay_counter_ = 0;
-      LOG(LS_WARNING) << "High audio device delay reported (render="
+      WCLOG(LS_WARNING) << "High audio device delay reported (render="
                       << playDelayMs << " ms, capture=" << recDelayMs << " ms)";
     }
   }

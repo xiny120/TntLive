@@ -115,7 +115,7 @@ StreamResult FileRotatingStream::Read(void* buffer,
   StreamResult result = file_stream_->Read(buffer, buffer_len, read, error);
   if (result == SR_EOS || result == SR_ERROR) {
     if (result == SR_ERROR) {
-      LOG(LS_ERROR) << "Failed to read from: "
+      WCLOG(LS_ERROR) << "Failed to read from: "
                     << file_names_[current_file_index_] << "Error: " << error;
     }
     // Reached the end of the file, read next file. If there is an error return

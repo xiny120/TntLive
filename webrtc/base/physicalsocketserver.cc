@@ -168,7 +168,7 @@ SocketAddress PhysicalSocket::GetLocalAddress() const {
   if (result >= 0) {
     SocketAddressFromSockAddrStorage(addr_storage, &address);
   } else {
-    LOG(LS_WARNING) << "GetLocalAddress: unable to get local addr, socket="
+    WCLOG(LS_WARNING) << "GetLocalAddress: unable to get local addr, socket="
                     << s_;
   }
   return address;
@@ -183,7 +183,7 @@ SocketAddress PhysicalSocket::GetRemoteAddress() const {
   if (result >= 0) {
     SocketAddressFromSockAddrStorage(addr_storage, &address);
   } else {
-    LOG(LS_WARNING) << "GetRemoteAddress: unable to get remote addr, socket="
+    WCLOG(LS_WARNING) << "GetRemoteAddress: unable to get remote addr, socket="
                     << s_;
   }
   return address;
@@ -205,7 +205,7 @@ int PhysicalSocket::Bind(const SocketAddress& bind_addr) {
     int result =
         ss_->network_binder()->BindSocketToNetwork(s_, bind_addr.ipaddr());
     if (result < 0) {
-      LOG(LS_INFO) << "Binding socket to network address "
+      WCLOG(LS_INFO) << "Binding socket to network address "
                    << bind_addr.ipaddr().ToString() << " result " << result;
     }
   }
@@ -220,7 +220,7 @@ int PhysicalSocket::Connect(const SocketAddress& addr) {
     return SOCKET_ERROR;
   }
   if (addr.IsUnresolvedIP()) {
-    LOG(LS_VERBOSE) << "Resolving addr in PhysicalSocket::Connect";
+    WCLOG(LS_VERBOSE) << "Resolving addr in PhysicalSocket::Connect";
     resolver_ = new AsyncResolver();
     resolver_->SignalDone.connect(this, &PhysicalSocket::OnResolveResult);
     resolver_->Start(addr);
@@ -353,7 +353,7 @@ int PhysicalSocket::Recv(void* buffer, size_t length, int64_t* timestamp) {
     // Note: on graceful shutdown, recv can return 0.  In this case, we
     // pretend it is blocking, and then signal close, so that simplifying
     // assumptions can be made about Recv.
-    LOG(LS_WARNING) << "EOF from socket; deferring close event";
+    WCLOG(LS_WARNING) << "EOF from socket; deferring close event";
     // Must turn this back on so that the select() loop will notice the close
     // event.
     enabled_events_ |= DE_READ;
@@ -572,7 +572,7 @@ int PhysicalSocket::TranslateOption(Option opt, int* slevel, int* sopt) {
       *sopt = IP_DONTFRAGMENT;
       break;
 #elif defined(WEBRTC_MAC) || defined(BSD) || defined(__native_client__)
-      LOG(LS_WARNING) << "Socket::OPT_DONTFRAGMENT not supported.";
+      WCLOG(LS_WARNING) << "Socket::OPT_DONTFRAGMENT not supported.";
       return -1;
 #elif defined(WEBRTC_POSIX)
       *slevel = IPPROTO_IP;
@@ -592,7 +592,7 @@ int PhysicalSocket::TranslateOption(Option opt, int* slevel, int* sopt) {
       *sopt = TCP_NODELAY;
       break;
     case OPT_DSCP:
-      LOG(LS_WARNING) << "Socket::OPT_DSCP not supported.";
+      WCLOG(LS_WARNING) << "Socket::OPT_DSCP not supported.";
       return -1;
     case OPT_RTP_SENDTIME_EXTN_ID:
       return -1;  // No logging is necessary as this not a OS socket option.
@@ -749,7 +749,7 @@ void SocketDispatcher::OnEvent(uint32_t ff, int err) {
   // something like a READ followed by a CONNECT, which would be odd.
   if (((ff & DE_CONNECT) != 0) && (id_ == cache_id)) {
     if (ff != DE_CONNECT)
-      LOG(LS_VERBOSE) << "Signalled with DE_CONNECT: " << ff;
+      WCLOG(LS_VERBOSE) << "Signalled with DE_CONNECT: " << ff;
     enabled_events_ &= ~DE_CONNECT;
 #if !defined(NDEBUG)
     dbg_addr_ = "Connected @ ";
@@ -822,7 +822,7 @@ class EventDispatcher : public Dispatcher {
  public:
   EventDispatcher(PhysicalSocketServer* ss) : ss_(ss), fSignaled_(false) {
     if (pipe(afd_) < 0)
-      LOG(LERROR) << "pipe failed";
+      WCLOG(LERROR) << "pipe failed";
     ss_->Add(this);
   }
 
@@ -1004,7 +1004,7 @@ class PosixSignalDispatcher : public Dispatcher {
     if (ret < 0) {
       LOG_ERR(LS_WARNING) << "Error in read()";
     } else if (ret == 0) {
-      LOG(LS_WARNING) << "Should have read at least one byte";
+      WCLOG(LS_WARNING) << "Should have read at least one byte";
     }
   }
 
@@ -1018,7 +1018,7 @@ class PosixSignalDispatcher : public Dispatcher {
           // This can happen if a signal is delivered to our process at around
           // the same time as we unset our handler for it. It is not an error
           // condition, but it's unusual enough to be worth logging.
-          LOG(LS_INFO) << "Received signal with no handler: " << signum;
+          WCLOG(LS_INFO) << "Received signal with no handler: " << signum;
         } else {
           // Otherwise, execute our handler.
           (*i->second)(signum);
@@ -1266,7 +1266,7 @@ void PhysicalSocketServer::Remove(Dispatcher *pdispatcher) {
   // the (expected) symmetric calls to Remove. Note that this may still hide
   // a real issue, so we at least log a warning about it.
   if (pos == dispatchers_.end()) {
-    LOG(LS_WARNING) << "PhysicalSocketServer asked to remove a unknown "
+    WCLOG(LS_WARNING) << "PhysicalSocketServer asked to remove a unknown "
                     << "dispatcher, potentially from a duplicate call to Add.";
     return;
   }
@@ -1587,27 +1587,27 @@ bool PhysicalSocketServer::Wait(int cmsWait, bool process_io) {
             {
               if ((wsaEvents.lNetworkEvents & FD_READ) &&
                   wsaEvents.iErrorCode[FD_READ_BIT] != 0) {
-                LOG(WARNING) << "PhysicalSocketServer got FD_READ_BIT error "
+                WCLOG(WARNING) << "PhysicalSocketServer got FD_READ_BIT error "
                              << wsaEvents.iErrorCode[FD_READ_BIT];
               }
               if ((wsaEvents.lNetworkEvents & FD_WRITE) &&
                   wsaEvents.iErrorCode[FD_WRITE_BIT] != 0) {
-                LOG(WARNING) << "PhysicalSocketServer got FD_WRITE_BIT error "
+                WCLOG(WARNING) << "PhysicalSocketServer got FD_WRITE_BIT error "
                              << wsaEvents.iErrorCode[FD_WRITE_BIT];
               }
               if ((wsaEvents.lNetworkEvents & FD_CONNECT) &&
                   wsaEvents.iErrorCode[FD_CONNECT_BIT] != 0) {
-                LOG(WARNING) << "PhysicalSocketServer got FD_CONNECT_BIT error "
+                WCLOG(WARNING) << "PhysicalSocketServer got FD_CONNECT_BIT error "
                              << wsaEvents.iErrorCode[FD_CONNECT_BIT];
               }
               if ((wsaEvents.lNetworkEvents & FD_ACCEPT) &&
                   wsaEvents.iErrorCode[FD_ACCEPT_BIT] != 0) {
-                LOG(WARNING) << "PhysicalSocketServer got FD_ACCEPT_BIT error "
+                WCLOG(WARNING) << "PhysicalSocketServer got FD_ACCEPT_BIT error "
                              << wsaEvents.iErrorCode[FD_ACCEPT_BIT];
               }
               if ((wsaEvents.lNetworkEvents & FD_CLOSE) &&
                   wsaEvents.iErrorCode[FD_CLOSE_BIT] != 0) {
-                LOG(WARNING) << "PhysicalSocketServer got FD_CLOSE_BIT error "
+                WCLOG(WARNING) << "PhysicalSocketServer got FD_CLOSE_BIT error "
                              << wsaEvents.iErrorCode[FD_CLOSE_BIT];
               }
             }

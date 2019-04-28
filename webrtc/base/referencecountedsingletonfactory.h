@@ -54,14 +54,14 @@ class ReferenceCountedSingletonFactory {
     rtc::CritScope cs(&crit_);
     if (ref_count_ == 0) {
       if (!SetupInstance()) {
-        LOG(LS_VERBOSE) << "Failed to setup instance";
+        WCLOG(LS_VERBOSE) << "Failed to setup instance";
         return NULL;
       }
       ASSERT(instance_.get() != NULL);
     }
     ++ref_count_;
 
-    LOG(LS_VERBOSE) << "Number of references: " << ref_count_;
+    WCLOG(LS_VERBOSE) << "Number of references: " << ref_count_;
     return instance_.get();
   }
 
@@ -70,7 +70,7 @@ class ReferenceCountedSingletonFactory {
     ASSERT(ref_count_ > 0);
     ASSERT(instance_.get() != NULL);
     --ref_count_;
-    LOG(LS_VERBOSE) << "Number of references: " << ref_count_;
+    WCLOG(LS_VERBOSE) << "Number of references: " << ref_count_;
     if (ref_count_ == 0) {
       CleanupInstance();
     }

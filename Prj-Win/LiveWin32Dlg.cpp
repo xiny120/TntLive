@@ -17,6 +17,7 @@
 * See the GNU LICENSE file for more info.
 */
 #include "stdafx.h"
+#include "include/cef_parser.h"
 #include <crtdbg.h>
 #include "LiveWin32.h"
 #include "LiveWin32Dlg.h"
@@ -82,56 +83,94 @@ BEGIN_MESSAGE_MAP(CLiveWin32Dlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BTN_PUSH, &CLiveWin32Dlg::OnBnClickedBtnPush)
-	ON_BN_CLICKED(IDC_BTN_PULL, &CLiveWin32Dlg::OnBnClickedBtnPull)
 	ON_BN_CLICKED(IDC_BTN_RTCP, &CLiveWin32Dlg::OnBnClickedBtnRtcp)
+	ON_MESSAGE(WM_PULLDLG_RESIZE, OnPullDlgResize)
+	ON_MESSAGE(WM_PULLDLG, OnPullDlg)
 	ON_WM_SIZE()
-	//ON_COMMAND(IDR_MENU_SYS_MORE_REFRESH, &CLiveWin32Dlg::OnMenuSysMoreRefresh)
-	//ON_COMMAND(IDR_MENU_SYS_MORE_SHOWDEVTOOLS, &CLiveWin32Dlg::OnMenuSysMoreShowdevtools)
 END_MESSAGE_MAP()
 
 
 // CLiveWin32Dlg 消息处理程序
+LRESULT CLiveWin32Dlg::OnPullDlgResize(WPARAM wp, LPARAM lp) {
+	//m_nVideoWidth = wp;
+	//m_nVideoHeight = lp;
+	//PostMessage(WM_SIZE, 0, 0);
+	return TRUE;
+}
 
-BOOL CLiveWin32Dlg::OnInitDialog()
-{
+
+LRESULT CLiveWin32Dlg::OnPullDlg(WPARAM, LPARAM) {
+	std::string url = "";
+	CefString str = CPullDlgData::me()->pop();
+	if (!str.empty()) {
+		CefRefPtr<CefValue> jsonObject = CefParseJSON(str, JSON_PARSER_ALLOW_TRAILING_COMMAS);
+		if (jsonObject->IsValid()) {
+			CefRefPtr<CefDictionaryValue> dict = jsonObject->GetDictionary();
+			CefString token = dict->GetString("cmd");
+			if (token == "pulldlg") {
+				CefRefPtr<CefDictionaryValue> data = dict->GetDictionary("data");
+				CefString roomid = data->GetString("id");
+				CefString pulluri = data->GetString("pulluri");
+				CefString background = data->GetString("background");
+				data = dict->GetDictionary("ui");
+				CefString sessionid = data->GetString("SessionId");
+				CefString token = data->GetString("Token");
+				url = std::string(pulluri);
+				std::string sid = std::string(sessionid);
+				std::string tkn = std::string(token);
+				std::string urlmedialist = m_baseurl + "live/h5client/mainpage/#/pages/medialist/medialist?roomid=";// +;
+				urlmedialist += roomid;
+				//GetMedialist()->GetMainFrame()->LoadURL(urlmedialist);
+				std::string m_strUri = url + "?sessionid=" + sid + "&token=" + tkn;
+				CWnd* pWnd = this->GetDlgItem(IDC_STATIC_CEF3);
+				if (pWnd != NULL && IsWindow(pWnd->GetSafeHwnd())) {
+					CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
+					if (pb != nullptr) {
+						pb->ReloadIgnoreCache();
+					}
+				}
+				//DlgRtmpPull dlg(m_strUri.c_str(),urlmedialist.c_str());
+				//dlg.DoModal();
+			}
+			else if (token == "pulldlghis") {
+				//Stop();
+				//CDlgFlvPlayer dlg(this, str);
+				//dlg.DoModal();
+			}
+		}
+	}
+	return TRUE;
+}
+
+
+BOOL CLiveWin32Dlg::OnInitDialog(){
 	CDialogEx::OnInitDialog();
-
 	// 将“关于...”菜单项添加到系统菜单中。
-
 	// IDM_ABOUTBOX 必须在系统命令范围内。
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
 	ASSERT(IDM_ABOUTBOX < 0xF000);
 
 	CMenu* pSysMenu = GetSystemMenu(FALSE);
-	if (pSysMenu != NULL)
-	{
-		//CMenu sysMoreMenu;
-		//sysMoreMenu.LoadMenu(IDR_MENU_SYS_MORE);
-		//pSysMenu->AppendMenu(MF_STRING | MF_POPUP | MF_BYCOMMAND, (UINT)sysMoreMenu.GetSubMenu(0)->m_hMenu, L"操作");
+	if (pSysMenu != NULL){
+#ifdef _DEBUG
 		pSysMenu->AppendMenu(MF_STRING, IDR_MENU_SYS_MORE_SHOWDEVTOOLS, L"开发者工具");
 		pSysMenu->AppendMenu(MF_STRING, IDR_MENU_SYS_MORE_REFRESH, L"刷新界面");
+#endif
 
 		BOOL bNameValid;
 		CString strAboutMenu;
 		bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
 		ASSERT(bNameValid);
-		if (!strAboutMenu.IsEmpty())
-		{
+		if (!strAboutMenu.IsEmpty()){
 			pSysMenu->AppendMenu(MF_SEPARATOR);
 			pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
 		}
-		
-
-		//pSysMenu->AppendMenu(MF_STRING, IDR_MENU_SYS_MORE_REFRESH, L"刷新界面");
 	}
 
 	// 设置此对话框的图标。  当应用程序主窗口不是对话框时，框架将自动
 	//  执行此操作
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
-
-	//* ShowWindow(SW_MINIMIZE);
-
 	// TODO:  在此添加额外的初始化代码
 	CStringA path;
 	GetModuleFileNameA(NULL, path.GetBufferSetLength(MAX_PATH + 1), MAX_PATH);
@@ -140,7 +179,7 @@ BOOL CLiveWin32Dlg::OnInitDialog()
 	path = path.Left(pos);
 	// Specify CEF global settings here.
 	CefSettings settings;
-	//settings.log_severity = cef_log_severity_t::LOGSEVERITY_VERBOSE;
+	settings.log_severity = cef_log_severity_t::LOGSEVERITY_DISABLE;// cef_log_severity_t::LOGSEVERITY_VERBOSE;
 	settings.multi_threaded_message_loop = true;
 	settings.remote_debugging_port = 8088;
 	cef_string_from_ascii(path.GetBuffer(), path.GetLength(), &settings.cache_path);
@@ -157,8 +196,6 @@ BOOL CLiveWin32Dlg::OnInitDialog()
 	theApp.handler.get()->m_hWndDlg = GetSafeHwnd();
 	// Initialize CEF.
 	CefInitialize(theApp.main_args, settings, theApp.app.get(), NULL);
-
-
 	// Specify CEF browser settings here.
 	CefBrowserSettings browser_settings;
 
@@ -185,57 +222,38 @@ BOOL CLiveWin32Dlg::OnInitDialog()
 #endif
 
 	// Create the first browser window.
-	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, browser_settings,
-		NULL);
+	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, browser_settings,NULL);
 
-	m_pDlgRtmpPull = new DlgRtmpPull();
+	m_pDlgRtmpPull = new DlgRtmpPull("","");
 	m_pDlgRtmpPull->Create(IDD_DIALOG_PULL);
-	
-	
-
-
-	
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
-BOOL CLiveWin32Dlg::DestroyWindow()
-{
+BOOL CLiveWin32Dlg::DestroyWindow(){
 	CefShutdown();
 	//_CrtDumpMemoryLeaks();
 	return CDialog::DestroyWindow();
 }
 
-void CLiveWin32Dlg::OnSysCommand(UINT nID, LPARAM lParam)
-{
-	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
-	{
+void CLiveWin32Dlg::OnSysCommand(UINT nID, LPARAM lParam){
+	if ((nID & 0xFFF0) == IDM_ABOUTBOX)	{
 		CAboutDlg dlgAbout;
 		dlgAbout.DoModal();
-	}
-	else if ((nID) == IDR_MENU_SYS_MORE_REFRESH) {
+	}else if ((nID) == IDR_MENU_SYS_MORE_REFRESH) {
 		CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser();
 		if (pb != nullptr) {
-			CefWindowInfo win_info;
-			CefRefPtr<CefClient> client;
-			CefBrowserSettings settings;
-
 			pb->ReloadIgnoreCache();
 		}
 
-	}
-	else if ((nID) == IDR_MENU_SYS_MORE_SHOWDEVTOOLS) {
+	}else if ((nID) == IDR_MENU_SYS_MORE_SHOWDEVTOOLS) {
 		CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser();
 		if (pb != nullptr) {
 			CefWindowInfo win_info;
-			CefRefPtr<CefClient> client;
 			CefBrowserSettings settings;
 			win_info.SetAsPopup(GetSafeHwnd(), CefString("DevTools"));
-
 			pb->GetHost()->ShowDevTools(win_info, theApp.handler, settings, CefPoint());
 		}
-	}
-	else
-	{
+	}else{
 		CDialogEx::OnSysCommand(nID, lParam);
 	}
 }
@@ -244,10 +262,8 @@ void CLiveWin32Dlg::OnSysCommand(UINT nID, LPARAM lParam)
 //  来绘制该图标。  对于使用文档/视图模型的 MFC 应用程序，
 //  这将由框架自动完成。
 
-void CLiveWin32Dlg::OnPaint()
-{
-	if (IsIconic())
-	{
+void CLiveWin32Dlg::OnPaint(){
+	if (IsIconic())	{
 		CPaintDC dc(this); // 用于绘制的设备上下文
 
 		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
@@ -262,124 +278,59 @@ void CLiveWin32Dlg::OnPaint()
 
 		// 绘制图标
 		dc.DrawIcon(x, y, m_hIcon);
-	}
-	else
-	{
+	}else{
 		CDialogEx::OnPaint();
-		/*
-		CPaintDC dc(this);
-		CRect rect;
-		GetClientRect(&rect);
-		CDC dcMem;
-		dcMem.CreateCompatibleDC(&dc);
-
-		CBitmap bmpBackground;
-		bmpBackground.LoadBitmap(IDB_BG);
-
-		BITMAP bitmap;
-		bmpBackground.GetBitmap(&bitmap);
-		CBitmap *pbmpOld = dcMem.SelectObject(&bmpBackground);
-		dc.StretchBlt(0, 0, rect.Width(), rect.Height(), &dcMem, 0, 0
-			, bitmap.bmWidth, bitmap.bmHeight, SRCCOPY);
-		*/
 	}
 }
 
 //当用户拖动最小化窗口时系统调用此函数取得光标
 //显示。
-HCURSOR CLiveWin32Dlg::OnQueryDragIcon()
-{
+HCURSOR CLiveWin32Dlg::OnQueryDragIcon(){
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
 
-void CLiveWin32Dlg::OnBnClickedBtnPush()
-{
+void CLiveWin32Dlg::OnBnClickedBtnPush(){
 	// TODO: 在此添加控件通知处理程序代码
 	DlgRtmpPush dlg;
 	dlg.DoModal();
 }
 
-
-void CLiveWin32Dlg::OnBnClickedBtnPull()
-{
-	// TODO: 在此添加控件通知处理程序代码
-	//DlgRtmpPull dlg;
-	//dlg.DoModal();
-
-}
-
-
-void CLiveWin32Dlg::OnBnClickedBtnRtcp()
-{
+void CLiveWin32Dlg::OnBnClickedBtnRtcp(){
 	// TODO: 在此添加控件通知处理程序代码
 }
-
-
-void CLiveWin32Dlg::OnCancel()
-{
+void CLiveWin32Dlg::OnCancel(){
 	// TODO: 在此添加专用代码和/或调用基类
 	if (AfxMessageBox(_T("退出码？"), MB_YESNO) == IDYES) {
-
 		CDialogEx::OnCancel();
 	}
 }
-
-
-BOOL CLiveWin32Dlg::PreTranslateMessage(MSG* pMsg)
-{
+BOOL CLiveWin32Dlg::PreTranslateMessage(MSG* pMsg){
 	// TODO: 在此添加专用代码和/或调用基类
-	//if (pMsg->message == WM_PULLDLG) {
-		//DlgRtmpPull dlg;
-		//dlg.DoModal();
-	//	m_pDlgRtmpPull->ShowWindow(SW_SHOWNORMAL);
-//	}
-
 	return CDialogEx::PreTranslateMessage(pMsg);
 }
 
 
-LRESULT CLiveWin32Dlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
-{
+LRESULT CLiveWin32Dlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam){
 	// TODO: 在此添加专用代码和/或调用基类
-
 	return CDialogEx::WindowProc(message, wParam, lParam);
 }
 
 
-void CLiveWin32Dlg::OnSize(UINT nType, int cx, int cy)
-{
+void CLiveWin32Dlg::OnSize(UINT nType, int cx, int cy){
 	CDialogEx::OnSize(nType, cx, cy);
 	CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser();
 	if (pb != nullptr) {
 		auto hwnd = pb->GetHost()->GetWindowHandle();
 		auto rect = RECT{ 0 };
 		GetClientRect(&rect);
-
 		::SetWindowPos(hwnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOZORDER|SWP_NOMOVE);
-
 	}
-
 	// TODO: 在此处添加消息处理程序代码
 }
 
-
-void CLiveWin32Dlg::OnMenuSysMoreRefresh()
-{
-	// TODO: 在此添加命令处理程序代码
-}
-
-
-void CLiveWin32Dlg::OnMenuSysMoreShowdevtools()
-{
-	// TODO: 在此添加命令处理程序代码
-}
-
-
-LRESULT CLiveWin32Dlg::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam)
-{
+LRESULT CLiveWin32Dlg::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam){
 	// TODO: 在此添加专用代码和/或调用基类
 	//TRACE("DefWindowProc...\r\n");
-
 	return CDialogEx::DefWindowProc(message, wParam, lParam);
 }

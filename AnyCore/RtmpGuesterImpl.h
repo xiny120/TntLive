@@ -42,7 +42,11 @@ protected:
 	virtual void OnRtmplayerStatus(int cacheTime, int curBitrate);
 	virtual void OnRtmplayerCache(int time);
 	virtual void OnRtmplayerClose(int errcode);
-
+	virtual void OnRtmplayerPlayStart();
+	virtual void OnRtmplayerPlayStop();
+	virtual void OnRtmplayer1stVideo();
+	virtual void OnRtmplayer1stAudio();
+	virtual void OnRtmplayerConnectionFailed(int a);
 	virtual void OnGetPcmData(const void * p, const int len, const int type,const int);
 
 	//* For webrtc::AVAudioTrackCallback
@@ -52,12 +56,13 @@ private:
 	RTMPGuesterEvent	&callback_;
 	rtc::Thread         *worker_thread_;
 	std::string			rtmp_url_;
+	int64_t threadid;
 
 	bool				av_rtmp_started_;
 	AnyRtmplayer			*av_rtmp_player_;
 
 	webrtc::VideoRenderer	*video_render_;
-	AnyBaseSource	*mabs;
+	//AnyBaseSource	*mabs;
 };
 
 #endif	// __RTMP_GUSTER_IMPL_H__

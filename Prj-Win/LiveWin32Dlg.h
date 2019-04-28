@@ -50,13 +50,12 @@ public:
 	virtual BOOL DestroyWindow();
 	
 	afx_msg void OnBnClickedBtnPush();
-	afx_msg void OnBnClickedBtnPull();
 	afx_msg void OnBnClickedBtnRtcp();
 	virtual void OnCancel();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnMenuSysMoreRefresh();
-	afx_msg void OnMenuSysMoreShowdevtools();
 	virtual LRESULT DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnPullDlgResize(WPARAM, LPARAM);
+	afx_msg LRESULT OnPullDlg(WPARAM, LPARAM);
 };

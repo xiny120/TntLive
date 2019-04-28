@@ -248,7 +248,7 @@ void StartInternalCaptureToFile(FILE* file) {
 bool StartInternalCapture(const char* filename) {
   FILE* file = fopen(filename, "w");
   if (!file) {
-    LOG(LS_ERROR) << "Failed to open trace file '" << filename
+    WCLOG(LS_ERROR) << "Failed to open trace file '" << filename
                   << "' for writing.";
     return false;
   }

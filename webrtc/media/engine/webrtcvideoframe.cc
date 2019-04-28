@@ -141,7 +141,7 @@ bool WebRtcVideoFrame::Reset(uint32_t format,
           apply_rotation ? rotation : webrtc::kVideoRotation_0),
       format);
   if (r) {
-    LOG(LS_ERROR) << "Error parsing format: " << GetFourccName(format)
+    WCLOG(LS_ERROR) << "Error parsing format: " << GetFourccName(format)
                   << " return code : " << r;
     return false;
   }

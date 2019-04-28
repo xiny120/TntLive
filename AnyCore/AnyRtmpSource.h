@@ -23,6 +23,7 @@ public:
 	virtual int Read(char* type, uint32_t* timestamp, char** data, int* size) ;
 	virtual int Clear();
 	virtual bool onMetaData(char type, char* data, int size);
+	virtual double GetPropDouble(const char* key) { return 0.0f; };
 protected:
 	void* rtmp_;
 };

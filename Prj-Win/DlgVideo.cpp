@@ -19,6 +19,7 @@
 #include "stdafx.h"
 #include "DlgVideo.h"
 
+extern int gLiving;
 // DlgVideo 对话框
 
 IMPLEMENT_DYNAMIC(DlgVideo, CDialog)
@@ -43,6 +44,7 @@ BEGIN_MESSAGE_MAP(DlgVideo, CDialog)
 	ON_WM_ERASEBKGND()
 	ON_WM_LBUTTONDBLCLK()
 	ON_WM_SIZE()
+	ON_WM_SHOWWINDOW()
 END_MESSAGE_MAP()
 
 
@@ -95,5 +97,16 @@ void DlgVideo::OnSize(UINT nType, int cx, int cy)
 {
 	CDialog::OnSize(nType, cx, cy);
 
+	// TODO: 在此处添加消息处理程序代码
+}
+
+
+void DlgVideo::OnShowWindow(BOOL bShow, UINT nStatus)
+{
+	CDialog::OnShowWindow(bShow, nStatus);
+	if (bShow)
+		gLiving = 1;
+	else
+		gLiving = 0;
 	// TODO: 在此处添加消息处理程序代码
 }

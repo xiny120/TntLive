@@ -29,29 +29,24 @@
 #define PLY_STOP	1002
 #define PLY_TICK    1003
 
-AnyRtmplayer* AnyRtmplayer::Create(AnyRtmplayerEvent&callback)
-{
+AnyRtmplayer* AnyRtmplayer::Create(AnyRtmplayerEvent&callback){
 	return new webrtc::AnyRtmplayerImpl(callback);
 }
 namespace webrtc {
 
-AnyRtmplayerImpl::AnyRtmplayerImpl(AnyRtmplayerEvent&callback)
-	: AnyRtmplayer(callback)
+AnyRtmplayerImpl::AnyRtmplayerImpl(AnyRtmplayerEvent&callback)	: AnyRtmplayer(callback)
+	,m1stAudio(false)
+	,m1stVideo(false)
 	, rtmp_pull_(NULL)
 	, ply_decoder_(NULL)
     , cur_bitrate_(0)
-	, video_renderer_(NULL)
-	//, mabs(NULL)
-{
+	, video_renderer_(NULL){
 	rtc::Thread::Start();
-
 	AnyRtmpCore::Inst();
 }
 
-AnyRtmplayerImpl::~AnyRtmplayerImpl(void)
-{
+AnyRtmplayerImpl::~AnyRtmplayerImpl(void){
 	rtc::Thread::Stop();
-
 	if (rtmp_pull_) {
 		delete rtmp_pull_;
 		rtmp_pull_ = NULL;
@@ -63,34 +58,30 @@ AnyRtmplayerImpl::~AnyRtmplayerImpl(void)
 	}
 }
 
-void AnyRtmplayerImpl::StartPlay(const char* url,const char* type)// , AnyBaseSource* abs)
-{
+void AnyRtmplayerImpl::StartPlay(const char* url,const char* type){
+	m1stAudio = true;
+	m1stVideo = true;
 	str_url_ = url;
-	//mabs = abs;
 	mtype = type;
-
 	rtc::Thread::Post(RTC_FROM_HERE, this, PLY_START);
-
     rtc::Thread::PostDelayed(RTC_FROM_HERE, 1000, this, PLY_TICK);
 }
 
-void AnyRtmplayerImpl::SetVideoRender(void* handle)
-{
+void AnyRtmplayerImpl::SetVideoRender(void* handle){
 	video_renderer_ = (rtc::VideoSinkInterface < cricket::VideoFrame >	*) handle;
 }
 
-void AnyRtmplayerImpl::StopPlay()
-{
-	//mabs = nullptr;
+void AnyRtmplayerImpl::StopPlay(){
     rtc::Thread::Clear(this, PLY_TICK);
 	rtc::Thread::Post(RTC_FROM_HERE, this, PLY_STOP);
     callback_.OnRtmplayerClose(0);
 }
 
-void AnyRtmplayerImpl::OnMessage(rtc::Message* msg)
-{
+void AnyRtmplayerImpl::OnMessage(rtc::Message* msg){
 	switch (msg->message_id) {
 	case PLY_START: {
+		m1stAudio = true;
+		m1stVideo = true;
 		if (ply_decoder_ == NULL) {
 			ply_decoder_ = new PlyDecoder();
 			if (video_renderer_)
@@ -99,10 +90,13 @@ void AnyRtmplayerImpl::OnMessage(rtc::Message* msg)
 		if (rtmp_pull_ == NULL) {
 			rtmp_pull_ = new AnyRtmpPull(*this, str_url_.c_str(), mtype.c_str());// mabs);
 		}
-		
+		callback_.OnRtmplayerPlayStart();
 	}
 		break;
 	case PLY_STOP: {
+		//m1stAudio = true;
+		//m1stVideo = true;
+		callback_.OnRtmplayerPlayStop();
 		if (rtmp_pull_) {
 			delete rtmp_pull_;
 			rtmp_pull_ = NULL;
@@ -128,41 +122,46 @@ void AnyRtmplayerImpl::OnMessage(rtc::Message* msg)
 	}
 }
 
-void AnyRtmplayerImpl::OnRtmpullConnected()
-{
+void AnyRtmplayerImpl::OnRtmpullConnected(){
+	m1stVideo = true;
+	m1stAudio = true;
 	callback_.OnRtmplayerOK();
 }
 
-void AnyRtmplayerImpl::OnRtmpullFailed()
-{
+void AnyRtmplayerImpl::OnRtmpullFailed(){
 	StopPlay();
 	callback_.OnRtmplayerClose(-1);
 }
 
-void AnyRtmplayerImpl::OnRtmpullDisconnect()
-{
+void AnyRtmplayerImpl::OnRtmpullDisconnect(){
 	StopPlay();
 	callback_.OnRtmplayerClose(-2);
 }
 
-void AnyRtmplayerImpl::OnRtmpullH264Data(const uint8_t*pdata, int len, uint32_t ts)
-{
+void AnyRtmplayerImpl::OnRtmpullH264Data(const uint8_t*pdata, int len, uint32_t ts){
+
 	if (ply_decoder_) {
 		ply_decoder_->AddH264Data(pdata, len, ts);
+		if (m1stVideo) {
+			m1stVideo = false;
+			callback_.OnRtmplayer1stVideo();
+		}
 	}
     cur_bitrate_ += len;
 }
 
-void AnyRtmplayerImpl::OnRtmpullAACData(const uint8_t*pdata, int len, uint32_t ts)
-{
+void AnyRtmplayerImpl::OnRtmpullAACData(const uint8_t*pdata, int len, uint32_t ts){
 	if (ply_decoder_) {
 		ply_decoder_->AddAACData(pdata, len, ts);
+		if (m1stAudio) {
+			m1stAudio = false;
+			callback_.OnRtmplayer1stAudio();
+		}
 	}
     cur_bitrate_ += len;
 }
 
-int AnyRtmplayerImpl::GetNeedPlayAudio(void* audioSamples, uint32_t& samplesPerSec, size_t& nChannels)
-{
+int AnyRtmplayerImpl::GetNeedPlayAudio(void* audioSamples, uint32_t& samplesPerSec, size_t& nChannels){
 	if (ply_decoder_) {
 		return ply_decoder_->GetPcmData(audioSamples, samplesPerSec, nChannels);
 	}
@@ -174,6 +173,10 @@ bool AnyRtmplayerImpl::OnRtmpullSlowdown() {
 		return ply_decoder_->Slowdown();
 	}
 	return false;
+}
+
+void AnyRtmplayerImpl::OnRtmpullConnectionFailed(int sta) {
+	callback_.OnRtmplayerConnectionFailed(sta);
 }
 
 }	// namespace webrtc

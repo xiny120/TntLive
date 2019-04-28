@@ -50,6 +50,12 @@ public:
 		TRACE("OnRtmplayerClosed");
 	};
 
+	virtual void OnRtmplayerPlayStart();
+	virtual void OnRtmplayerPlayStop();
+	virtual void OnRtmplayer1stVideo();
+	virtual void OnRtmplayer1stAudio();
+	virtual void OnRtmplayerConnectionFailed(int a);
+
 	virtual void OnGetPcmData(const void * pcm, const int len, const int rate, const int channels) {
 		short* p = (short*)pcm;
 		//return;

@@ -37,7 +37,6 @@ AnyRtmpPull::AnyRtmpPull(AnyRtmpPullCallback&callback, const char* url, const ch
     , connected_(false)
 	, retry_ct_(0)
 	, rtmp_status_(RS_PLY_Init)
-	//, rtmp_(NULL)
 	, audio_payload_(NULL)
 	, video_payload_(NULL)
 {
@@ -51,35 +50,24 @@ AnyRtmpPull::AnyRtmpPull(AnyRtmpPullCallback&callback, const char* url, const ch
 		mrtmp = new AnyFlvSource(localfile);
 
 	}
-
-	//rtmp_ = srs_rtmp_create(url.c_str());
 	mrtmp->Create(url);
 	srs_codec_ = new SrsAvcAacCodec();
-
 	audio_payload_ = new DemuxData(1024);
 	video_payload_ = new DemuxData(384 * 1024);
-
 	running_ = true;
 	rtc::Thread::Start();
 }
 
-AnyRtmpPull::~AnyRtmpPull(void)
-{
+AnyRtmpPull::~AnyRtmpPull(void){
 	running_ = false;
 	rtmp_status_ = RS_PLY_Closed;
 	rtc::Thread::SleepMs(100);
 	{
 		rtc::CritScope l(&cs_rtmp_);
-		//if (rtmp_) {
-		//	srs_rtmp_disconnect_server(rtmp_);
-		//}
-		//mrtmp->Disconnect();
+		mrtmp->Disconnect(); // 这里必须先断开。不然会死锁。
 	}
 	rtc::Thread::Stop();
-	//if (rtmp_) {
-	//	srs_rtmp_destroy(rtmp_);
-	//	rtmp_ = NULL;
-	//}
+	delete mrtmp;
 	if (srs_codec_) {
 		delete srs_codec_;
 		srs_codec_ = NULL;
@@ -92,72 +80,52 @@ AnyRtmpPull::~AnyRtmpPull(void)
 		delete video_payload_;
 		video_payload_ = NULL;
 	}
-	delete mrtmp;
 }
 
 //* For Thread
-void AnyRtmpPull::Run()
-{
-	while (running_)
-	{
-		{// ProcessMessages
-			this->ProcessMessages(10);
-		}
-
-		//if (rtmp_ != NULL)
-		if(mrtmp != NULL)
-		{
+void AnyRtmpPull::Run(){
+	while (running_){
+		this->ProcessMessages(10);
+		if(mrtmp != NULL){
 			switch (rtmp_status_) {
-			case RS_PLY_Init:
-			{
-				//if (srs_rtmp_handshake(rtmp_) == 0) {
+			case RS_PLY_Init:{
 				if(mrtmp->Handshake() == 0){
 					srs_human_trace("SRS: simple handshake ok.");
 					rtmp_status_ = RS_PLY_Handshaked;
-				}
-                else {
-                    CallDisconnect(1);
+				}else {
+                    CallDisconnect(RS_PLY_Init);
                 }
 			}
 				break;
-			case RS_PLY_Handshaked:
-			{
-				//if (srs_rtmp_connect_app(rtmp_) == 0) {
+			case RS_PLY_Handshaked:{
 				if(mrtmp->Connectapp() == 0){
 					srs_human_trace("SRS: connect vhost/app ok.");
 					rtmp_status_ = RS_PLY_Connected;
-				}
-                else {
-                    CallDisconnect(1);
+				} else {
+                    CallDisconnect(RS_PLY_Handshaked);
                 }
 			}
 				break;
-			case RS_PLY_Connected:
-			{
-				//if (srs_rtmp_play_stream(rtmp_) == 0) {
+			case RS_PLY_Connected:{
 				if(mrtmp->Playstream() == 0){
 					srs_human_trace("SRS: play stream ok.");
 					rtmp_status_ = RS_PLY_Played;
 					CallConnect();
-				}
-                else {
-                    CallDisconnect(1);
+				} else {
+                    CallDisconnect(RS_PLY_Connected);
                 }
 			}
 				break;
-			case RS_PLY_Played:
-			{
+			case RS_PLY_Played:{
 				if (mrtmp->NeedSlowdown()) {
 					if (callback_.OnRtmpullSlowdown()) {
 						rtmp_status_ = RS_PLY_Slowdown;
 					}
 				}
 				DoReadData();
-
 			}
 				break;
-			case RS_PLY_Slowdown:
-			{
+			case RS_PLY_Slowdown:{
 				if (!callback_.OnRtmpullSlowdown()) {
 					rtmp_status_ = RS_PLY_Played;
 				}
@@ -168,32 +136,25 @@ void AnyRtmpPull::Run()
 	}
 }
 
-void AnyRtmpPull::DoReadData()
-{
+void AnyRtmpPull::DoReadData(){
 	int size;
 	char type;
 	char* data;
 	u_int32_t timestamp;
-
 	int code = mrtmp->Read(&type, &timestamp, &data, &size);
-	if(code != 0){
-		// 读取rtmp失败！网络可能有问题。
+	if(code != 0){// 读取rtmp失败！网络可能有问题。 #define ERROR_SOCKET_TIMEOUT                1011
 		CallDisconnect(code);
-	}
-	else {
-
+	}else {
 		if (type == SRS_RTMP_TYPE_VIDEO) {
 			SrsCodecSample sample;
 			if (srs_codec_->video_avc_demux(data, size, &sample) == ERROR_SUCCESS) {
 				if (srs_codec_->video_codec_id == SrsCodecVideoAVC) {	// Jus support H264
 					GotVideoSample(timestamp, &sample);
-				}
-				else {
-					LOG(LS_ERROR) << "Don't support video format!";
+				}else {
+					WCLOG(LS_ERROR) << "Don't support video format!";
 				}
 			}
-		}
-		else if (type == SRS_RTMP_TYPE_AUDIO) {
+		}else if (type == SRS_RTMP_TYPE_AUDIO) {
 			SrsCodecSample sample;
 			if (srs_codec_->audio_aac_demux(data, size, &sample) != ERROR_SUCCESS) {
 				if (sample.acodec == SrsCodecAudioMP3 && srs_codec_->audio_mp3_demux(data, size, &sample) != ERROR_SUCCESS) {
@@ -204,7 +165,6 @@ void AnyRtmpPull::DoReadData()
 				return;	// Just support AAC.
 			}
 			SrsCodecAudio acodec = (SrsCodecAudio)srs_codec_->audio_codec_id;
-
 			// ts support audio codec: aac/mp3
 			if (acodec != SrsCodecAudioAAC && acodec != SrsCodecAudioMP3) {
 				free(data);
@@ -217,11 +177,9 @@ void AnyRtmpPull::DoReadData()
 				return;
 			}
 			GotAudioSample(timestamp, &sample);
-		}
-		else if (type == SRS_RTMP_TYPE_SCRIPT) {
-			//if (!srs_rtmp_is_onMetaData(type, data, size)) {
+		}else if (type == SRS_RTMP_TYPE_SCRIPT) {
 			if (!mrtmp->onMetaData(type, data, size)) {
-				//LOG(LS_ERROR) << "No flv";
+				//WCLOG(LS_ERROR) << "No flv";
 				srs_human_trace("drop message type=%#x, size=%dB", type, size);
 			}
 		}
@@ -231,21 +189,18 @@ void AnyRtmpPull::DoReadData()
 	free(data);
 }
 
-int AnyRtmpPull::GotVideoSample(u_int32_t timestamp, SrsCodecSample *sample)
-{
+int AnyRtmpPull::GotVideoSample(u_int32_t timestamp, SrsCodecSample *sample){
 	int ret = ERROR_SUCCESS;
 	// ignore info frame,
 	// @see https://github.com/simple-rtmp-server/srs/issues/288#issuecomment-69863909
 	if (sample->frame_type == SrsCodecVideoAVCFrameVideoInfoFrame) {
 		return ret;
 	}
-
 	// ignore sequence header
 	if (sample->frame_type == SrsCodecVideoAVCFrameKeyFrame
 		&& sample->avc_packet_type == SrsCodecVideoAVCTypeSequenceHeader) {
 		return ret;
 	}
-
 	// when ts message(samples) contains IDR, insert sps+pps.
 	if (sample->has_idr) {
 		// fresh nalu header before sps.
@@ -266,17 +221,13 @@ int AnyRtmpPull::GotVideoSample(u_int32_t timestamp, SrsCodecSample *sample)
 	for (int i = 0; i < sample->nb_sample_units; i++) {
 		SrsCodecSampleUnit* sample_unit = &sample->sample_units[i];
 		int32_t size = sample_unit->size;
-
 		if (!sample_unit->bytes || size <= 0) {
 			ret = -1;
 			return ret;
 		}
-        
-
 		// 5bits, 7.3.1 NAL unit syntax,
 		// H.264-AVC-ISO_IEC_14496-10-2012.pdf, page 83.
 		SrsAvcNaluType nal_unit_type = (SrsAvcNaluType)(sample_unit->bytes[0] & 0x1f);
-
 		// ignore SPS/PPS/AUD
 		switch (nal_unit_type) {
 		case SrsAvcNaluTypeSPS:
@@ -315,8 +266,7 @@ int AnyRtmpPull::GotVideoSample(u_int32_t timestamp, SrsCodecSample *sample)
 
 	return ret;
 }
-int AnyRtmpPull::GotAudioSample(u_int32_t timestamp, SrsCodecSample *sample)
-{
+int AnyRtmpPull::GotAudioSample(u_int32_t timestamp, SrsCodecSample *sample){
 	int ret = ERROR_SUCCESS;
 	for (int i = 0; i < sample->nb_sample_units; i++) {
 		SrsCodecSampleUnit* sample_unit = &sample->sample_units[i];
@@ -384,12 +334,10 @@ int AnyRtmpPull::GotAudioSample(u_int32_t timestamp, SrsCodecSample *sample)
 	return ret;
 }
 
-void AnyRtmpPull::RescanVideoframe(const char*pdata, int len, uint32_t timestamp)
-{
+void AnyRtmpPull::RescanVideoframe(const char*pdata, int len, uint32_t timestamp){
     int nal_type = pdata[4] & 0x1f;
     const char *p = pdata;
-    if (nal_type == 7)
-    {// keyframe
+    if (nal_type == 7){// keyframe
         int find7 = 0;
         const char* ptr7 = NULL;
         int size7 = 0;
@@ -399,36 +347,28 @@ void AnyRtmpPull::RescanVideoframe(const char*pdata, int len, uint32_t timestamp
         const char* ptr5 = NULL;
         int size5 = 0;
         int head01 = 4;
-        for (int i = 4; i < len - 4; i++)
-        {
-            if ((p[i] == 0x0 && p[i + 1] == 0x0 && p[i + 2] == 0x0 && p[i + 3] == 0x1) || (p[i] == 0x0 && p[i + 1] == 0x0 && p[i + 2] == 0x1))
-            {
+        for (int i = 4; i < len - 4; i++){
+            if ((p[i] == 0x0 && p[i + 1] == 0x0 && p[i + 2] == 0x0 && p[i + 3] == 0x1) || (p[i] == 0x0 && p[i + 1] == 0x0 && p[i + 2] == 0x1)){
                 if (p[i + 2] == 0x01)
                     head01 = 3;
                 else
                     head01 = 4;
-                if (find7 == 0)
-                {
+                if (find7 == 0){
                     find7 = i;
                     ptr7 = p;
                     size7 = find7;
                     i++;
-                }
-                else if (find8 == 0)
-                {
+                }else if (find8 == 0){
                     find8 = i;
                     ptr8 = p + find7 ;
                     size8 = find8 - find7;
                     const char* ptr = p + i;
-                    if ((ptr[head01] & 0x1f) == 5)
-                    {
+                    if ((ptr[head01] & 0x1f) == 5){
                         ptr5 = p + find8 + head01;
                         size5 = len - find8 - head01;
                         break;
                     }
-                }
-                else
-                {
+                }else{
                     ptr5 = p + i + head01;
                     size5 = len - i - head01;
                     break;
@@ -441,42 +381,31 @@ void AnyRtmpPull::RescanVideoframe(const char*pdata, int len, uint32_t timestamp
         video_payload_->append(ptr5, size5);
         callback_.OnRtmpullH264Data((uint8_t*)video_payload_->_data, video_payload_->_data_len, timestamp);
         video_payload_->reset();
-    }
-    else 
-    {
+    }else {
         video_payload_->append(pdata, len);
         callback_.OnRtmpullH264Data((uint8_t*)video_payload_->_data, video_payload_->_data_len, timestamp);
         video_payload_->reset();
     }
-
 }
 
-void AnyRtmpPull::CallConnect()
-{
-	retry_ct_ = 0;
+void AnyRtmpPull::CallConnect(){
+	retry_ct_ = 0; // 如果是网络问题，就永远不停尝试重连。
     connected_ = true;
     callback_.OnRtmpullConnected();
 }
 
-void AnyRtmpPull::CallDisconnect(int code)
-{
+void AnyRtmpPull::CallDisconnect(int code){
     rtc::CritScope l(&cs_rtmp_);
-	if(code==2)
+	if(code== RS_PLY_FlvfileFinished)
 		rtmp_status_ = RS_PLY_Closed;
-    //if (rtmp_) {
-    //     srs_rtmp_destroy(rtmp_);
-    //    rtmp_ = NULL;
-    //}
 	if (mrtmp) {
 		mrtmp->Clear();
 	}
+	callback_.OnRtmpullConnectionFailed(code);
     if(rtmp_status_ != RS_PLY_Closed) {
         rtmp_status_ = RS_PLY_Init;
         retry_ct_ ++;
-        if(retry_ct_ <= MAX_RETRY_TIME)
-        {
-            //rtmp_ = srs_rtmp_create(str_url_.c_str());
-			//mrtmp = new AnyRtmpSource();
+        if(retry_ct_ <= MAX_RETRY_TIME){
 			mrtmp->Create(str_url_);
         } else {
             if(connected_)

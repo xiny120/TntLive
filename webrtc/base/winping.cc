@@ -152,7 +152,7 @@ WinPing::WinPing()
 
   dll_ = LoadLibraryA(ICMP_DLL_NAME);
   if (!dll_) {
-    LOG(LERROR) << "LoadLibrary: " << GetLastError();
+    WCLOG(LERROR) << "LoadLibrary: " << GetLastError();
     return;
   }
 
@@ -160,12 +160,12 @@ WinPing::WinPing()
   close_ = (PIcmpCloseHandle) GetProcAddress(dll_, ICMP_CLOSE_FUNC);
   send_ = (PIcmpSendEcho) GetProcAddress(dll_, ICMP_SEND_FUNC);
   if (!create_ || !close_ || !send_) {
-    LOG(LERROR) << "GetProcAddress(ICMP_*): " << GetLastError();
+    WCLOG(LERROR) << "GetProcAddress(ICMP_*): " << GetLastError();
     return;
   }
   hping_ = create_();
   if (hping_ == INVALID_HANDLE_VALUE) {
-    LOG(LERROR) << "IcmpCreateFile: " << GetLastError();
+    WCLOG(LERROR) << "IcmpCreateFile: " << GetLastError();
     return;
   }
 
@@ -173,12 +173,12 @@ WinPing::WinPing()
     create6_ = (PIcmp6CreateFile) GetProcAddress(dll_, ICMP6_CREATE_FUNC);
     send6_ = (PIcmp6SendEcho2) GetProcAddress(dll_, ICMP6_SEND_FUNC);
     if (!create6_ || !send6_) {
-      LOG(LERROR) << "GetProcAddress(ICMP6_*): " << GetLastError();
+      WCLOG(LERROR) << "GetProcAddress(ICMP6_*): " << GetLastError();
       return;
     }
     hping6_ = create6_();
     if (hping6_ == INVALID_HANDLE_VALUE) {
-      LOG(LERROR) << "Icmp6CreateFile: " << GetLastError();
+      WCLOG(LERROR) << "Icmp6CreateFile: " << GetLastError();
     }
   }
 
@@ -193,11 +193,11 @@ WinPing::WinPing()
 WinPing::~WinPing() {
   if ((hping_ != INVALID_HANDLE_VALUE) && close_) {
     if (!close_(hping_))
-      LOG(WARNING) << "IcmpCloseHandle: " << GetLastError();
+      WCLOG(WARNING) << "IcmpCloseHandle: " << GetLastError();
   }
   if ((hping6_ != INVALID_HANDLE_VALUE) && close_) {
     if (!close_(hping6_)) {
-      LOG(WARNING) << "Icmp6CloseHandle: " << GetLastError();
+      WCLOG(WARNING) << "Icmp6CloseHandle: " << GetLastError();
     }
   }
 
@@ -214,7 +214,7 @@ WinPing::PingResult WinPing::Ping(IPAddress ip,
                                   uint8_t ttl,
                                   bool allow_fragments) {
   if (data_size == 0 || timeout == 0 || ttl == 0) {
-    LOG(LERROR) << "IcmpSendEcho: data_size/timeout/ttl is 0.";
+    WCLOG(LERROR) << "IcmpSendEcho: data_size/timeout/ttl is 0.";
     return PING_INVALID_PARAMS;
   }
 
@@ -259,7 +259,7 @@ WinPing::PingResult WinPing::Ping(IPAddress ip,
       return PING_TOO_LARGE;
     if (error == IP_REQ_TIMED_OUT)
       return PING_TIMEOUT;
-    LOG(LERROR) << "IcmpSendEcho(" << ip.ToSensitiveString()
+    WCLOG(LERROR) << "IcmpSendEcho(" << ip.ToSensitiveString()
                 << ", " << data_size << "): " << error;
     return PING_FAIL;
   }

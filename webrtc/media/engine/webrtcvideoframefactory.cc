@@ -20,7 +20,7 @@ VideoFrame* WebRtcVideoFrameFactory::CreateAliasedFrame(
     const CapturedFrame* aliased_frame, int width, int height) const {
   std::unique_ptr<WebRtcVideoFrame> frame(new WebRtcVideoFrame());
   if (!frame->Init(aliased_frame, width, height, apply_rotation_)) {
-    LOG(LS_ERROR) <<
+    WCLOG(LS_ERROR) <<
         "Failed to create WebRtcVideoFrame in CreateAliasedFrame.";
     return NULL;
   }

@@ -64,13 +64,13 @@ H264Encoder* H264Encoder::Create() {
   RTC_DCHECK(H264Encoder::IsSupported());
 #if defined(WEBRTC_IOS) && defined(WEBRTC_VIDEO_TOOLBOX_SUPPORTED)
   if (IsH264CodecSupportedObjC()) {
-    LOG(LS_INFO) << "Creating H264VideoToolboxEncoder.";
+    WCLOG(LS_INFO) << "Creating H264VideoToolboxEncoder.";
     return new H264VideoToolboxEncoder();
   }
 #endif
 #if defined(WEBRTC_USE_H264)
   RTC_CHECK(g_rtc_use_h264);
-  LOG(LS_INFO) << "Creating H264EncoderImpl.";
+  WCLOG(LS_INFO) << "Creating H264EncoderImpl.";
   return new H264EncoderImpl();
 #else
   RTC_NOTREACHED();
@@ -86,13 +86,13 @@ H264Decoder* H264Decoder::Create() {
   RTC_DCHECK(H264Decoder::IsSupported());
 #if defined(WEBRTC_IOS) && defined(WEBRTC_VIDEO_TOOLBOX_SUPPORTED)
   if (IsH264CodecSupportedObjC()) {
-    LOG(LS_INFO) << "Creating H264VideoToolboxDecoder.";
+    WCLOG(LS_INFO) << "Creating H264VideoToolboxDecoder.";
     return new H264VideoToolboxDecoder();
   }
 #endif
 #if defined(WEBRTC_USE_H264)
   RTC_CHECK(g_rtc_use_h264);
-  LOG(LS_INFO) << "Creating H264DecoderImpl.";
+  WCLOG(LS_INFO) << "Creating H264DecoderImpl.";
   return new H264DecoderImpl();
 #else
   RTC_NOTREACHED();

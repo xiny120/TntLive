@@ -23,7 +23,6 @@
 #include "CMyStatic.h"
 //#include "AnyBaseSource.h"
 
-#define WM_MY_PULL_MESSAGE (WM_USER + 102)
 
 // DlgVideo 对话框
 class CLiveWin32Dlg;
@@ -32,7 +31,7 @@ class DlgRtmpPull : public CDialog, public RTMPGuesterEvent
 	DECLARE_DYNAMIC(DlgRtmpPull)
 
 public:
-	DlgRtmpPull();   // 标准构造函数
+	DlgRtmpPull(const char*,const char*);   // 标准构造函数
 	virtual ~DlgRtmpPull();
 
 	CefRefPtr<CefBrowser> GetChartroom() {
@@ -55,16 +54,15 @@ public:
 
 public:
 	//* For RTMPCGuesterEvent
-	virtual void OnRtmplayerOK() {
-		//TRACE("OnRtmplayerOK");
-	};
-	virtual void OnRtmplayerStatus(int cacheTime, int curBitrate) {
-	};
-	virtual void OnRtmplayerCache(int time) {
-	};
-	virtual void OnRtmplayerClosed(int errcode) {
-		TRACE("OnRtmplayerClosed");
-	};
+	virtual void OnRtmplayerOK();
+	virtual void OnRtmplayerStatus(int cacheTime, int curBitrate);
+	virtual void OnRtmplayerCache(int time);
+	virtual void OnRtmplayerClosed(int errcode);
+	virtual void OnRtmplayerPlayStart();
+	virtual void OnRtmplayerPlayStop();
+	virtual void OnRtmplayer1stVideo();
+	virtual void OnRtmplayer1stAudio();
+	virtual void OnRtmplayerConnectionFailed(int a);
 
 	virtual void OnGetPcmData(const void * pcm, const int len,const int rate, const int channels) {
 		short* p = (short*)pcm;
@@ -102,7 +100,6 @@ public:
 	virtual BOOL DestroyWindow();
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
-	afx_msg LRESULT OnMyMessage(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnPullDlgResize(WPARAM, LPARAM);
 	afx_msg LRESULT OnPullDlg(WPARAM, LPARAM);
 
@@ -125,18 +122,18 @@ public:
 	volatile int		m_iAudioMarketIdNew;
 	volatile time_t		m_iAudioMarketLast;
 
-	afx_msg void OnBnClickedBtnPull();
 
 private:
 	DlgVideo		*m_pDlgVideoMain;
 	RTMPGuester		*m_pAVRtmplayer;
+	std::string mrtmpurl;
+	std::string mmedialisturl;
 	//AnyBaseSource	*mabs;
 	
 public:
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
 	void Start();
 	void Stop();
-	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);

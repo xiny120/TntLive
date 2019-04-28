@@ -20,7 +20,7 @@ AsyncUDPSocket* AsyncUDPSocket::Create(
     const SocketAddress& bind_address) {
   std::unique_ptr<AsyncSocket> owned_socket(socket);
   if (socket->Bind(bind_address) < 0) {
-    LOG(LS_ERROR) << "Bind() failed with error " << socket->GetError();
+    WCLOG(LS_ERROR) << "Bind() failed with error " << socket->GetError();
     return NULL;
   }
   return new AsyncUDPSocket(owned_socket.release());
@@ -110,7 +110,7 @@ void AsyncUDPSocket::OnReadEvent(AsyncSocket* socket) {
     // When doing ICE, this kind of thing will often happen.
     // TODO: Do something better like forwarding the error to the user.
     SocketAddress local_addr = socket_->GetLocalAddress();
-    LOG(LS_INFO) << "AsyncUDPSocket[" << local_addr.ToSensitiveString() << "] "
+    WCLOG(LS_INFO) << "AsyncUDPSocket[" << local_addr.ToSensitiveString() << "] "
                  << "receive failed with error " << socket_->GetError();
     return;
   }

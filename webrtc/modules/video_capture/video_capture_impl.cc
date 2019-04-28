@@ -251,7 +251,7 @@ int32_t VideoCaptureImpl::IncomingFrame(
             CalcBufferSize(commonVideoType, width,
                            abs(height)) != videoFrameLength)
         {
-            LOG(LS_ERROR) << "Wrong incoming frame length.";
+            WCLOG(LS_ERROR) << "Wrong incoming frame length.";
             return -1;
         }
 
@@ -285,7 +285,7 @@ int32_t VideoCaptureImpl::IncomingFrame(
             apply_rotation ? _rotateFrame : kVideoRotation_0, &_captureFrame);
         if (conversionResult < 0)
         {
-          LOG(LS_ERROR) << "Failed to convert capture frame from type "
+          WCLOG(LS_ERROR) << "Failed to convert capture frame from type "
                         << frameInfo.rawType << "to I420.";
             return -1;
         }

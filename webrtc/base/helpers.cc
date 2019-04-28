@@ -207,7 +207,7 @@ bool InitRandom(int seed) {
 
 bool InitRandom(const char* seed, size_t len) {
   if (!Rng().Init(seed, len)) {
-    LOG(LS_ERROR) << "Failed to init random generator!";
+    WCLOG(LS_ERROR) << "Failed to init random generator!";
     return false;
   }
   return true;
@@ -225,7 +225,7 @@ bool CreateRandomString(size_t len,
   str->clear();
   std::unique_ptr<uint8_t[]> bytes(new uint8_t[len]);
   if (!Rng().Generate(bytes.get(), len)) {
-    LOG(LS_ERROR) << "Failed to generate random string!";
+    WCLOG(LS_ERROR) << "Failed to generate random string!";
     return false;
   }
   str->reserve(len);
@@ -252,7 +252,7 @@ std::string CreateRandomUuid() {
   std::string str;
   std::unique_ptr<uint8_t[]> bytes(new uint8_t[31]);
   if (!Rng().Generate(bytes.get(), 31)) {
-    LOG(LS_ERROR) << "Failed to generate random string!";
+    WCLOG(LS_ERROR) << "Failed to generate random string!";
     return str;
   }
   str.reserve(36);
@@ -283,7 +283,7 @@ std::string CreateRandomUuid() {
 uint32_t CreateRandomId() {
   uint32_t id;
   if (!Rng().Generate(&id, sizeof(id))) {
-    LOG(LS_ERROR) << "Failed to generate random id!";
+    WCLOG(LS_ERROR) << "Failed to generate random id!";
   }
   return id;
 }

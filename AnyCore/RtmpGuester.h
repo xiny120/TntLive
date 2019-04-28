@@ -38,6 +38,11 @@ public:
 	virtual void OnRtmplayerCache(int time) = 0;
 	virtual void OnRtmplayerClosed(int errcode/*0:OK */) = 0;
 	virtual void OnGetPcmData(const void * p, const int len,const int rate, const int channels) = 0;
+	virtual void OnRtmplayerPlayStart() = 0;
+	virtual void OnRtmplayerPlayStop() = 0;
+	virtual void OnRtmplayer1stVideo() = 0;
+	virtual void OnRtmplayer1stAudio() = 0;
+	virtual void OnRtmplayerConnectionFailed(int a) = 0;
 };
 
 class LIV_API RTMPGuester

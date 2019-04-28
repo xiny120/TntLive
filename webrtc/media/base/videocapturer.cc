@@ -115,7 +115,7 @@ bool VideoCapturer::GetBestCaptureFormat(const VideoFormat& format,
   if (supported_formats->empty()) {
     return false;
   }
-  LOG(LS_INFO) << " Capture Requested " << format.ToString();
+  WCLOG(LS_INFO) << " Capture Requested " << format.ToString();
   int64_t best_distance = kMaxDistance;
   std::vector<VideoFormat>::const_iterator best = supported_formats->end();
   std::vector<VideoFormat>::const_iterator i;
@@ -123,14 +123,14 @@ bool VideoCapturer::GetBestCaptureFormat(const VideoFormat& format,
     int64_t distance = GetFormatDistance(format, *i);
     // TODO(fbarchard): Reduce to LS_VERBOSE if/when camera capture is
     // relatively bug free.
-    LOG(LS_INFO) << " Supported " << i->ToString() << " distance " << distance;
+    WCLOG(LS_INFO) << " Supported " << i->ToString() << " distance " << distance;
     if (distance < best_distance) {
       best_distance = distance;
       best = i;
     }
   }
   if (supported_formats->end() == best) {
-    LOG(LS_ERROR) << " No acceptable camera format found";
+    WCLOG(LS_ERROR) << " No acceptable camera format found";
     return false;
   }
 
@@ -139,7 +139,7 @@ bool VideoCapturer::GetBestCaptureFormat(const VideoFormat& format,
     best_format->height = best->height;
     best_format->fourcc = best->fourcc;
     best_format->interval = best->interval;
-    LOG(LS_INFO) << " Best " << best_format->ToString() << " Interval "
+    WCLOG(LS_INFO) << " Best " << best_format->ToString() << " Interval "
                  << best_format->interval << " distance " << best_distance;
   }
   return true;
@@ -148,7 +148,7 @@ bool VideoCapturer::GetBestCaptureFormat(const VideoFormat& format,
 void VideoCapturer::ConstrainSupportedFormats(const VideoFormat& max_format) {
   RTC_DCHECK(thread_checker_.CalledOnValidThread());
   max_format_.reset(new VideoFormat(max_format));
-  LOG(LS_VERBOSE) << " ConstrainSupportedFormats " << max_format.ToString();
+  WCLOG(LS_VERBOSE) << " ConstrainSupportedFormats " << max_format.ToString();
   UpdateFilteredSupportedFormats();
 }
 
@@ -283,7 +283,7 @@ void VideoCapturer::OnFrameCaptured(VideoCapturer*,
   }
 
   if (!frame_factory_) {
-    LOG(LS_ERROR) << "No video frame factory.";
+    WCLOG(LS_ERROR) << "No video frame factory.";
     return;
   }
 
@@ -294,7 +294,7 @@ void VideoCapturer::OnFrameCaptured(VideoCapturer*,
 
   if (!adapted_frame) {
     // TODO(fbarchard): LOG more information about captured frame attributes.
-    LOG(LS_ERROR) << "Couldn't convert to I420! "
+    WCLOG(LS_ERROR) << "Couldn't convert to I420! "
                   << "From " << ToString(captured_frame) << " To "
                   << out_width << " x " << out_height;
     return;

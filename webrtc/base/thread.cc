@@ -241,7 +241,7 @@ bool Thread::Start(Runnable* runnable) {
 
   int error_code = pthread_create(&thread_, &attr, PreRun, init);
   if (0 != error_code) {
-    LOG(LS_ERROR) << "Unable to create pthread, error " << error_code;
+    WCLOG(LS_ERROR) << "Unable to create pthread, error " << error_code;
     return false;
   }
   running_.Set();
@@ -275,7 +275,7 @@ void Thread::Join() {
   if (running()) {
     ASSERT(!IsCurrent());
     if (Current() && !Current()->blocking_calls_allowed_) {
-      LOG(LS_WARNING) << "Waiting for the thread to join, "
+      WCLOG(LS_WARNING) << "Waiting for the thread to join, "
                       << "but blocking calls have been disallowed";
     }
 
@@ -560,7 +560,7 @@ void ComThread::Run() {
     Thread::Run();
     CoUninitialize();
   } else {
-    LOG(LS_ERROR) << "CoInitialize failed, hr=" << hr;
+    WCLOG(LS_ERROR) << "CoInitialize failed, hr=" << hr;
   }
 }
 #endif

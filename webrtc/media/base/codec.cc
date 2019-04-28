@@ -269,7 +269,7 @@ VideoCodec::CodecType VideoCodec::GetCodecType() const {
 
 bool VideoCodec::ValidateCodecFormat() const {
   if (id < 0 || id > 127) {
-    LOG(LS_ERROR) << "Codec with invalid payload type: " << ToString();
+    WCLOG(LS_ERROR) << "Codec with invalid payload type: " << ToString();
     return false;
   }
   if (GetCodecType() != CODEC_VIDEO) {
@@ -279,7 +279,7 @@ bool VideoCodec::ValidateCodecFormat() const {
   // Video validation from here on.
 
   if (width <= 0 || height <= 0) {
-    LOG(LS_ERROR) << "Codec with invalid dimensions: " << ToString();
+    WCLOG(LS_ERROR) << "Codec with invalid dimensions: " << ToString();
     return false;
   }
   int min_bitrate = -1;
@@ -287,7 +287,7 @@ bool VideoCodec::ValidateCodecFormat() const {
   if (GetParam(kCodecParamMinBitrate, &min_bitrate) &&
       GetParam(kCodecParamMaxBitrate, &max_bitrate)) {
     if (max_bitrate < min_bitrate) {
-      LOG(LS_ERROR) << "Codec with max < min bitrate: " << ToString();
+      WCLOG(LS_ERROR) << "Codec with max < min bitrate: " << ToString();
       return false;
     }
   }

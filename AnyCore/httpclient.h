@@ -35,6 +35,7 @@ public:
 	std::list<std::string> ip;	// dns result for www.pic98.com
 	std::string officalhost;
 	std::list<std::string> aliases;	// dns result for www.pic98.com
+	int64_t contentlength;
 	int64_t totallen;
 	int64_t locallen;
 	int64_t pulllen;
@@ -56,7 +57,7 @@ struct pullitem {
 	urlitem ui;
 };
 
-typedef std::queue<pullitem*> queuepull;
+typedef std::list<pullitem*> listpull;
 
 class httpclient
 {
@@ -77,7 +78,7 @@ private:
 	//int sockfd;
 	std::recursive_mutex sockmt;
 	std::thread sockthr;
-	queuepull	_qpull;
+	listpull	_qpull;
 	bool urlparse(std::string urlin,urlitem & out);
 	std::string prepareheader(const urlitem*);
 	bool isfileexists(const char*path);

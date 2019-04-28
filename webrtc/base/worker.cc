@@ -36,7 +36,7 @@ bool Worker::StartWork() {
       // Already working on this thread, so nothing to do.
       return true;
     } else {
-      LOG(LS_ERROR) << "Automatically switching threads is not supported";
+      WCLOG(LS_ERROR) << "Automatically switching threads is not supported";
       ASSERT(false);
       return false;
     }
@@ -51,7 +51,7 @@ bool Worker::StopWork() {
     // Already not working, so nothing to do.
     return true;
   } else if (worker_thread_ != rtc::Thread::Current()) {
-    LOG(LS_ERROR) << "Stopping from a different thread is not supported";
+    WCLOG(LS_ERROR) << "Stopping from a different thread is not supported";
     ASSERT(false);
     return false;
   }

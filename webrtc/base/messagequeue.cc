@@ -504,7 +504,7 @@ void MessageQueue::Dispatch(Message *pmsg) {
   int64_t end_time = TimeMillis();
   int64_t diff = TimeDiff(end_time, start_time);
   if (diff >= kSlowDispatchLoggingThreshold) {
-    LOG(LS_INFO) << "Message took " << diff << "ms to dispatch. Posted from: "
+    WCLOG(LS_INFO) << "Message took " << diff << "ms to dispatch. Posted from: "
                  << pmsg->posted_from.ToString();
   }
 }

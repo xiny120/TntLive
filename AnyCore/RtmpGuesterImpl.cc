@@ -20,12 +20,10 @@
 #include "httpclient.h"
 #include "AnyFlvSource.h"
 
-RTMPGuester* RTMPGuester::Create(RTMPGuesterEvent&callback)
-{
+RTMPGuester* RTMPGuester::Create(RTMPGuesterEvent&callback){
 	return new RtmpGuesterImpl(callback);
 }
-void RTMPGuester::Destory(RTMPGuester*guester)
-{
+void RTMPGuester::Destory(RTMPGuester*guester){
 	RtmpGuesterImpl* impl = (RtmpGuesterImpl*)guester->GotSelfPtr();
 	delete impl;
 	guester = NULL;
@@ -36,49 +34,41 @@ RtmpGuesterImpl::RtmpGuesterImpl(RTMPGuesterEvent&callback)
 	, worker_thread_(&webrtc::AnyRtmpCore::Inst())
 	, av_rtmp_started_(NULL)
 	, av_rtmp_player_(NULL)
-	, video_render_(NULL)
-	, mabs(NULL)
-{
+	, video_render_(NULL){
 	av_rtmp_player_ = AnyRtmplayer::Create(*this);
+	threadid = GetCurrentThreadId();
 }
 
 
-RtmpGuesterImpl::~RtmpGuesterImpl()
-{
+RtmpGuesterImpl::~RtmpGuesterImpl(){
+	assert(threadid == GetCurrentThreadId());
 	StopRtmpPlay();
-	/*
 	if (av_rtmp_player_ != NULL) {
-		av_rtmp_player_->StopPlay();
+		//av_rtmp_player_->StopPlay();
 		delete av_rtmp_player_;
 		av_rtmp_player_ = NULL;
 	}
-
 	if (video_render_ != NULL) {
 		delete video_render_;
 		video_render_ = NULL;
 	}
-	if (mabs != NULL) {
-		delete mabs;
-	}
-	*/
 }
 
 //* Rtmp function for pull rtmp stream 
-void RtmpGuesterImpl::StartRtmpPlay(const char* url, void* render, const char* sourcetype,const char* dir)
-{
+void RtmpGuesterImpl::StartRtmpPlay(const char* url, void* render, const char* sourcetype,const char* dir){
+	assert(threadid == GetCurrentThreadId());
 	if (!av_rtmp_started_) {
-
-		rtmp_url_ = url;
 		av_rtmp_started_ = true;
-		video_render_ = webrtc::VideoRenderer::Create(render, 512, 512);
+		rtmp_url_ = url;
+		video_render_ = webrtc::VideoRenderer::Create(render, 720, 80);
 		av_rtmp_player_->SetVideoRender(video_render_);
 		av_rtmp_player_->StartPlay(url,sourcetype);// , mabs);
 		webrtc::AnyRtmpCore::Inst().StartAudioTrack(this);
 	}
 }
 
-void RtmpGuesterImpl::StopRtmpPlay()
-{
+void RtmpGuesterImpl::StopRtmpPlay(){
+	assert(threadid == GetCurrentThreadId());
 	if (av_rtmp_started_) {
 		av_rtmp_started_ = false;
 		rtmp_url_ = "";
@@ -87,10 +77,6 @@ void RtmpGuesterImpl::StopRtmpPlay()
 		if (video_render_ != NULL) {
 			delete video_render_;
 			video_render_ = NULL;
-		}
-		if (mabs != NULL) {
-			delete mabs;
-			mabs = NULL;
 		}
 	}
 }
@@ -117,7 +103,22 @@ void RtmpGuesterImpl::OnGetPcmData(const void* p, const int len,const int type,c
 {
 	callback_.OnGetPcmData(p, len, type,0);
 }
+void RtmpGuesterImpl::OnRtmplayerPlayStart() {
+	callback_.OnRtmplayerPlayStart();
+}
+void RtmpGuesterImpl::OnRtmplayerPlayStop() {
+	callback_.OnRtmplayerPlayStop();
+}
+void RtmpGuesterImpl::OnRtmplayer1stVideo() {
+	callback_.OnRtmplayer1stVideo();
+}
+void RtmpGuesterImpl::OnRtmplayer1stAudio() {
+	callback_.OnRtmplayer1stAudio();
+}
 
+void RtmpGuesterImpl::OnRtmplayerConnectionFailed(int a) {
+	callback_.OnRtmplayerConnectionFailed(a);
+}
 //* For webrtc::AVAudioTrackCallback
 int RtmpGuesterImpl::OnNeedPlayAudio(void* audioSamples, uint32_t& samplesPerSec, size_t& nChannels)
 {

@@ -181,7 +181,7 @@ bool Win32Filesystem::CreatePrivateFile(const Pathname &filename) {
 }
 
 bool Win32Filesystem::DeleteFile(const Pathname &filename) {
-  LOG(LS_INFO) << "Deleting file " << filename.pathname();
+  WCLOG(LS_INFO) << "Deleting file " << filename.pathname();
   if (!IsFile(filename)) {
     ASSERT(IsFile(filename));
     return false;
@@ -190,7 +190,7 @@ bool Win32Filesystem::DeleteFile(const Pathname &filename) {
 }
 
 bool Win32Filesystem::DeleteEmptyFolder(const Pathname &folder) {
-  LOG(LS_INFO) << "Deleting folder " << folder.pathname();
+  WCLOG(LS_INFO) << "Deleting folder " << folder.pathname();
 
   std::string no_slash(folder.pathname(), 0, folder.pathname().length()-1);
   return ::RemoveDirectory(ToUtf16(no_slash).c_str()) != 0;
@@ -235,7 +235,7 @@ bool Win32Filesystem::MoveFile(const Pathname &old_path,
     ASSERT(IsFile(old_path));
     return false;
   }
-  LOG(LS_INFO) << "Moving " << old_path.pathname()
+  WCLOG(LS_INFO) << "Moving " << old_path.pathname()
                << " to " << new_path.pathname();
   return ::MoveFile(ToUtf16(old_path.pathname()).c_str(),
                     ToUtf16(new_path.pathname()).c_str()) != 0;
@@ -247,7 +247,7 @@ bool Win32Filesystem::MoveFolder(const Pathname &old_path,
     ASSERT(IsFolder(old_path));
     return false;
   }
-  LOG(LS_INFO) << "Moving " << old_path.pathname()
+  WCLOG(LS_INFO) << "Moving " << old_path.pathname()
                << " to " << new_path.pathname();
   if (::MoveFile(ToUtf16(old_path.pathname()).c_str(),
                ToUtf16(new_path.pathname()).c_str()) == 0) {
@@ -403,7 +403,7 @@ bool Win32Filesystem::GetDiskFreeSpace(const Pathname& path,
   }
   UINT drive_type = ::GetDriveType(target_drive);
   if ((drive_type == DRIVE_REMOTE) || (drive_type == DRIVE_UNKNOWN)) {
-    LOG(LS_VERBOSE) << "Remote or unknown drive: " << drive;
+    WCLOG(LS_VERBOSE) << "Remote or unknown drive: " << drive;
     return false;
   }
 
@@ -418,7 +418,7 @@ bool Win32Filesystem::GetDiskFreeSpace(const Pathname& path,
                            (PULARGE_INTEGER)&total_number_of_free_bytes)) {
     return true;
   } else {
-    LOG(LS_VERBOSE) << "GetDiskFreeSpaceEx returns error.";
+    WCLOG(LS_VERBOSE) << "GetDiskFreeSpaceEx returns error.";
     return false;
   }
 }

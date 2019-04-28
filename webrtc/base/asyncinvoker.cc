@@ -59,7 +59,7 @@ void AsyncInvoker::DoInvoke(const Location& posted_from,
                             const scoped_refptr<AsyncClosure>& closure,
                             uint32_t id) {
   if (destroying_) {
-    LOG(LS_WARNING) << "Tried to invoke while destroying the invoker.";
+    WCLOG(LS_WARNING) << "Tried to invoke while destroying the invoker.";
     return;
   }
   thread->Post(posted_from, this, id,
@@ -72,7 +72,7 @@ void AsyncInvoker::DoInvokeDelayed(const Location& posted_from,
                                    uint32_t delay_ms,
                                    uint32_t id) {
   if (destroying_) {
-    LOG(LS_WARNING) << "Tried to invoke while destroying the invoker.";
+    WCLOG(LS_WARNING) << "Tried to invoke while destroying the invoker.";
     return;
   }
   thread->PostDelayed(posted_from, delay_ms, this, id,

@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-//   LOG(...) an ostream target that can be used to send formatted
+//   WCLOG(...) an ostream target that can be used to send formatted
 // output to a variety of logging targets, such as debugger console, stderr,
 // or any LogSink.
 //   The severity level passed as the first argument to the LOGging
@@ -18,13 +18,13 @@
 //   There are several variations on the LOG macro which facilitate logging
 // of common error conditions, detailed below.
 
-// LOG(sev) logs the given stream at severity "sev", which must be a
+// WCLOG(sev) logs the given stream at severity "sev", which must be a
 //     compile-time constant of the LoggingSeverity type, without the namespace
 //     prefix.
-// LOG_V(sev) Like LOG(), but sev is a run-time variable of the LoggingSeverity
+// LOG_V(sev) Like WCLOG(), but sev is a run-time variable of the LoggingSeverity
 //     type (basically, it just doesn't prepend the namespace).
-// LOG_F(sev) Like LOG(), but includes the name of the current function.
-// LOG_T(sev) Like LOG(), but includes the this pointer.
+// LOG_F(sev) Like WCLOG(), but includes the name of the current function.
+// LOG_T(sev) Like WCLOG(), but includes the this pointer.
 // LOG_T_F(sev) Like LOG_F(), but includes the this pointer.
 // LOG_GLE(M)(sev [, mod]) attempt to add a string description of the
 //     HRESULT returned by GetLastError.  The "M" variant allows searching of a
@@ -75,7 +75,7 @@ namespace rtc {
 //   }
 //
 //   int err = LibraryFunc();
-//   LOG(LS_ERROR) << "LibraryFunc returned: "
+//   WCLOG(LS_ERROR) << "LibraryFunc returned: "
 //                 << ErrorName(err, LIBRARY_ERRORS);
 
 struct ConstantLabel { int value; const char * label; };
@@ -281,7 +281,7 @@ class LogMessageVoidify {
     ? (void) 0 \
     : rtc::LogMessageVoidify() &
 
-#define LOG(sev) \
+#define WCLOG(sev) \
   LOG_SEVERITY_PRECONDITION(rtc::sev) \
     rtc::LogMessage(__FILE__, __LINE__, rtc::sev).stream()
 
@@ -293,11 +293,11 @@ class LogMessageVoidify {
 
 // The _F version prefixes the message with the current function name.
 #if (defined(__GNUC__) && !defined(NDEBUG)) || defined(WANT_PRETTY_LOG_F)
-#define LOG_F(sev) LOG(sev) << __PRETTY_FUNCTION__ << ": "
-#define LOG_T_F(sev) LOG(sev) << this << ": " << __PRETTY_FUNCTION__ << ": "
+#define LOG_F(sev) WCLOG(sev) << __PRETTY_FUNCTION__ << ": "
+#define LOG_T_F(sev) WCLOG(sev) << this << ": " << __PRETTY_FUNCTION__ << ": "
 #else
-#define LOG_F(sev) LOG(sev) << __FUNCTION__ << ": "
-#define LOG_T_F(sev) LOG(sev) << this << ": " << __FUNCTION__ << ": "
+#define LOG_F(sev) WCLOG(sev) << __FUNCTION__ << ": "
+#define LOG_T_F(sev) WCLOG(sev) << this << ": " << __FUNCTION__ << ": "
 #endif
 
 #define LOG_CHECK_LEVEL(sev) \
@@ -315,7 +315,7 @@ inline bool LogCheckLevel(LoggingSeverity sev) {
                           rtc::ERRCTX_ ## ctx, err , ##__VA_ARGS__) \
         .stream()
 
-#define LOG_T(sev) LOG(sev) << this << ": "
+#define LOG_T(sev) WCLOG(sev) << this << ": "
 
 #define LOG_ERRNO_EX(sev, err) \
   LOG_E(sev, ERRNO, err)
@@ -337,9 +337,9 @@ inline bool LogCheckLevel(LoggingSeverity sev) {
   (::GetLastError())
 #elif __native_client__
 #define LOG_ERR_EX(sev, err) \
-  LOG(sev)
+  WCLOG(sev)
 #define LOG_ERR(sev) \
-  LOG(sev)
+  WCLOG(sev)
 #define LAST_SYSTEM_ERROR \
   (0)
 #elif defined(WEBRTC_POSIX)

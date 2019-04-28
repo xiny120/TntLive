@@ -101,34 +101,19 @@ void PlyBuffer::SetCacheSize(int miliseconds/*ms*/)
 	}
 }
 
-int gcd(int x, int y)
-
-{
-
-	while (x != y)
-
-	{
-
-		if (x > y) x = x - y;
-
+int gcd(int x, int y){
+	while (x != y){
+		if (x > y) 
+			x = x - y;
 		else
-
 			y = y - x;
-
 	}
-
 	return x;
-
 }
-int PlyBuffer::GetPlayAudio(void* audioSamples,const int samples,const int chan)
-{
+int PlyBuffer::GetPlayAudio(void* audioSamples,const int samples,const int chan){
 	int ret = 0;
 	rtc::CritScope cs(&cs_list_audio_);
 	if (lst_audio_buffer_.size() > 0) {
-		//if (lst_audio_buffer_.size() < 50) {
-	//		gofast = false;
-	//		gofast0 = true;
-	//	}
 		if (gofast) {
 			// 2秒声音用1秒播放，说话速度快一倍。3秒声音用2秒播放，说话速度快0.5倍？
 			// 4秒声音用3秒播放，速度快0.25倍？5变4
@@ -146,7 +131,6 @@ int PlyBuffer::GetPlayAudio(void* audioSamples,const int samples,const int chan)
 				delete[] fastbuf;
 				fastbufcur = fastbuf = new char[fastbuflen];
 			}
-			//char* pcur = (char*)fastbuf;
 			len = fastbufcur - fastbuf ;
 			for (i = 0; i < total; i++) {
 				PlyPacket* pkt_front = lst_audio_buffer_.front();
@@ -160,16 +144,12 @@ int PlyBuffer::GetPlayAudio(void* audioSamples,const int samples,const int chan)
 				if (len >= samp_s * 4)
 					break;
 			}
-
-			//len = len / 2;
 			unsigned int pLen = samp_s,inlen = samp_s ;
 			ret = speex_resampler_process_interleaved_int(state, (short*)fastbuf, &inlen, (short*)audioSamples, &pLen);
-			//LOG(LS_WARNING) << "speex_resampler ret:" << ret << " len:" << inlen << " - outlen:" << pLen;
+			//WCLOG(LS_WARNING) << "speex_resampler ret:" << ret << " len:" << inlen << " - outlen:" << pLen;
 			ret = pLen*4;
 			memmove(fastbuf, &fastbuf[samp_s * 4], len - samp_s * 4);
 			fastbufcur = &fastbuf[(len - samp_s * 4)];
-			//fwrite(outBuffer, 4, pLen, out);
-			
 		}
 		else {
 			PlyPacket* pkt_front = lst_audio_buffer_.front();
@@ -195,23 +175,20 @@ bool PlyBuffer::NeedSlowdown() {
 	return false;
 }
 
-void PlyBuffer::CacheH264Data(const uint8_t*pdata, int len, uint32_t ts)
-{
+void PlyBuffer::CacheH264Data(const uint8_t*pdata, int len, uint32_t ts){
 	PlyPacket* pkt = new PlyPacket(true);
 	pkt->SetData(pdata, len, ts);
-	if (sys_fast_video_time_ == 0)
-	{
+	if (sys_fast_video_time_ == 0){
 		sys_fast_video_time_ = rtc::Time();
 		rtmp_fast_video_time_ = ts;
 	}
 	rtc::CritScope cs(&cs_list_video_);
 	lst_video_buffer_.push_back(pkt);
-	//LOG(LS_WARNING) << " CacheH264Data" << len << " - " << ts;
+	//WCLOG(LS_WARNING) << " CacheH264Data" << len << " - " << ts;
 }
 
-void PlyBuffer::CachePcmData(const uint8_t*pdata, int len, uint32_t ts)
-{
-	//LOG(LS_WARNING) << " CachePcmData " << len << " - " << ts;
+void PlyBuffer::CachePcmData(const uint8_t*pdata, int len, uint32_t ts){
+	//WCLOG(LS_WARNING) << " CachePcmData " << len << " - " << ts;
 	PlyPacket* pkt = new PlyPacket(false);
 	pkt->SetData(pdata, len, ts);
 	rtc::CritScope cs(&cs_list_audio_);
@@ -227,21 +204,18 @@ void PlyBuffer::CachePcmData(const uint8_t*pdata, int len, uint32_t ts)
 	}
 }
 
-void PlyBuffer::OnMessage(rtc::Message* msg)
-{
+void PlyBuffer::OnMessage(rtc::Message* msg){
 	if (msg->message_id == PB_TICK) {
 		DoDecode();
 		worker_thread_->PostDelayed(RTC_FROM_HERE, 5, this, PB_TICK);
 	}
 }
 
-int	PlyBuffer::GetCacheTime()
-{
+int	PlyBuffer::GetCacheTime(){
 	return cache_time_;
 }
 
-void PlyBuffer::DoDecode()
-{
+void PlyBuffer::DoDecode(){
 	uint32_t curTime = rtc::Time();
 	if (sys_fast_video_time_ == 0)
 		return;
@@ -313,12 +287,12 @@ void PlyBuffer::DoDecode()
 			}
 		}
 
-		LOG(LS_WARNING) << "lst_audio_buffer_.size " << lst_audio_buffer_.size()
-			<< " lst_video_buffer_.size " << lst_video_buffer_.size()
-			<< " media_buf_time " << media_buf_time;
+		//WCLOG(LS_WARNING) << "lst_audio_buffer_.size " << lst_audio_buffer_.size()
+		//	<< " lst_video_buffer_.size " << lst_video_buffer_.size()
+		//	<< " media_buf_time " << media_buf_time;
 
 		if (media_buf_time <= PLY_RED_TIME) {
-			LOG(LS_WARNING) << "media_buf_time <= PLY_RED_TIME";
+			WCLOG(LS_WARNING) << "media_buf_time <= PLY_RED_TIME";
 			// Play buffer is so small, then we need buffer it?
 			callback_.OnPause();
 			ply_status_ = PS_Cache;
@@ -352,7 +326,7 @@ void PlyBuffer::DoDecode()
 				rtc::CritScope cs(&cs_list_audio_);
 				if (lst_audio_buffer_.size() > 0) {
 					media_buf_time = lst_audio_buffer_.back()->_dts - lst_audio_buffer_.front()->_dts;
-					//LOG(LS_WARNING) << "media_buf_time " << media_buf_time;
+					//WCLOG(LS_WARNING) << "media_buf_time " << media_buf_time;
 				}
 			}
 			if (media_buf_time == 0 && !got_audio_) {

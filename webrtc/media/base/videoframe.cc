@@ -28,7 +28,7 @@ size_t VideoFrame::ConvertToRgbBuffer(uint32_t to_fourcc,
                                       int stride_rgb) const {
   const size_t needed = std::abs(stride_rgb) * static_cast<size_t>(height());
   if (size < needed) {
-    LOG(LS_WARNING) << "RGB buffer is not large enough";
+    WCLOG(LS_WARNING) << "RGB buffer is not large enough";
     return needed;
   }
 
@@ -37,7 +37,7 @@ size_t VideoFrame::ConvertToRgbBuffer(uint32_t to_fourcc,
           video_frame_buffer()->DataU(), video_frame_buffer()->StrideU(),
           video_frame_buffer()->DataV(), video_frame_buffer()->StrideV(),
           buffer, stride_rgb, width(), height(), to_fourcc)) {
-    LOG(LS_ERROR) << "RGB type not supported: " << to_fourcc;
+    WCLOG(LS_ERROR) << "RGB type not supported: " << to_fourcc;
     return 0;  // 0 indicates error
   }
   return needed;
@@ -55,7 +55,7 @@ bool VideoFrame::Validate(uint32_t fourcc,
   }
   // 16384 is maximum resolution for VP8 codec.
   if (w < 1 || w > 16384 || h < 1 || h > 16384) {
-    LOG(LS_ERROR) << "Invalid dimensions: " << w << "x" << h;
+    WCLOG(LS_ERROR) << "Invalid dimensions: " << w << "x" << h;
     return false;
   }
   uint32_t format = CanonicalFourCC(fourcc);
@@ -114,7 +114,7 @@ bool VideoFrame::Validate(uint32_t fourcc,
     expected_size = ((w + 15) / 16) * ((h + 15) / 16) * 4 / 8;
   }
   if (sample == NULL) {
-    LOG(LS_ERROR) << "NULL sample pointer."
+    WCLOG(LS_ERROR) << "NULL sample pointer."
                   << " format: " << GetFourccName(format)
                   << " bpp: " << expected_bpp
                   << " size: " << w << "x" << h
@@ -128,7 +128,7 @@ bool VideoFrame::Validate(uint32_t fourcc,
     four_samples[i] = sample[i];
   }
   if (sample_size < expected_size) {
-    LOG(LS_ERROR) << "Size field is too small."
+    WCLOG(LS_ERROR) << "Size field is too small."
                   << " format: " << GetFourccName(format)
                   << " bpp: " << expected_bpp
                   << " size: " << w << "x" << h
@@ -141,7 +141,7 @@ bool VideoFrame::Validate(uint32_t fourcc,
     return false;
   }
   if (sample_size > kMaxSampleSize) {
-    LOG(LS_WARNING) << "Size field is invalid."
+    WCLOG(LS_WARNING) << "Size field is invalid."
                     << " format: " << GetFourccName(format)
                     << " bpp: " << expected_bpp
                     << " size: " << w << "x" << h
@@ -161,7 +161,7 @@ bool VideoFrame::Validate(uint32_t fourcc,
       (sample_size > large_expected_size || sample_size > kMaxSampleSize) &&
       large_warn100 % 100 == 0) {
     ++large_warn100;
-    LOG(LS_WARNING) << "Size field is too large."
+    WCLOG(LS_WARNING) << "Size field is too large."
                     << " format: " << GetFourccName(format)
                     << " bpp: " << expected_bpp
                     << " size: " << w << "x" << h
@@ -178,7 +178,7 @@ bool VideoFrame::Validate(uint32_t fourcc,
   static bool valid_once = true;
   if (valid_once) {
     valid_once = false;
-    LOG(LS_INFO) << "Validate frame passed."
+    WCLOG(LS_INFO) << "Validate frame passed."
                  << " format: " << GetFourccName(format)
                  << " bpp: " << expected_bpp
                  << " size: " << w << "x" << h

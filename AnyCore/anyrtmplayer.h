@@ -49,16 +49,17 @@ protected:
 	virtual void OnRtmpullH264Data(const uint8_t*pdata, int len, uint32_t ts);
 	virtual void OnRtmpullAACData(const uint8_t*pdata, int len, uint32_t ts);
 	virtual bool OnRtmpullSlowdown();
+	virtual void OnRtmpullConnectionFailed(int);
 
 
 private:
 	AnyRtmpPull			*rtmp_pull_;
 	PlyDecoder			*ply_decoder_;
+	bool	m1stVideo;
+	bool	m1stAudio;
     int                 cur_bitrate_;
 	std::string			str_url_;
 	std::string	mtype;
-	//AnyBaseSource*		mabs;
-
 	rtc::VideoSinkInterface < cricket::VideoFrame > *video_renderer_;
 };
 

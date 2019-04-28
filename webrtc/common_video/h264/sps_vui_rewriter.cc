@@ -110,7 +110,7 @@ SpsVuiRewriter::ParseResult SpsVuiRewriter::ParseAndRewriteSps(
   ParseResult vui_updated;
   if (!CopyAndRewriteVui(*sps_state, &source_buffer, &sps_writer,
                          &vui_updated)) {
-    LOG(LS_ERROR) << "Failed to parse/copy SPS VUI.";
+    WCLOG(LS_ERROR) << "Failed to parse/copy SPS VUI.";
     return ParseResult::kFailure;
   }
 
@@ -120,7 +120,7 @@ SpsVuiRewriter::ParseResult SpsVuiRewriter::ParseAndRewriteSps(
   }
 
   if (!CopyRemainingBits(&source_buffer, &sps_writer)) {
-    LOG(LS_ERROR) << "Failed to parse/copy SPS VUI.";
+    WCLOG(LS_ERROR) << "Failed to parse/copy SPS VUI.";
     return ParseResult::kFailure;
   }
 
@@ -266,7 +266,7 @@ bool CopyAndRewriteVui(Sps sps,
           source->ReadExponentialGolomb(&max_dec_frame_buffering));
       if (max_num_reorder_frames == 0 &&
           max_dec_frame_buffering <= sps.max_num_ref_frames) {
-        LOG(LS_INFO) << "VUI bitstream already contains an optimal VUI.";
+        WCLOG(LS_INFO) << "VUI bitstream already contains an optimal VUI.";
         *out_vui_rewritten = SpsVuiRewriter::ParseResult::kVuiOk;
         return true;
       }

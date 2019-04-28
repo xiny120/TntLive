@@ -30,6 +30,7 @@ enum RTMPLAYER_STATUS
 	RS_PLY_Played,		// 开始播放
 	RS_PLY_Closed,		// 播放停止
 	RS_PLY_Slowdown,	// 通知数据源减速数据供应
+	RS_PLY_FlvfileFinished // FLV文件读取完毕。
 };
 
 typedef struct DemuxData
@@ -66,6 +67,7 @@ public:
 	virtual void OnRtmpullH264Data(const uint8_t*pdata, int len, uint32_t ts) = 0;
 	virtual void OnRtmpullAACData(const uint8_t*pdata, int len, uint32_t ts) = 0;
 	virtual bool OnRtmpullSlowdown() = 0;
+	virtual void OnRtmpullConnectionFailed(int) = 0;
 };
 
 class AnyRtmpPull : public rtc::Thread

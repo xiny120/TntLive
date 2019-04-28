@@ -22,18 +22,16 @@
 #include "DlgRtmpPull.h"
 #include "xdefines.h"
 #include "CDlgFlvPlayer.h"
-//#include "AnyRtmpSource.h"
-
 
 // DlgRtmpPull 对话框
-
 HWND	m_hWndPullDlg;
 extern int gUserId;
+extern int gLiving;
 extern std::string m_baseurl;
 
 IMPLEMENT_DYNAMIC(DlgRtmpPull, CDialog)
 
-DlgRtmpPull::DlgRtmpPull()
+DlgRtmpPull::DlgRtmpPull(const char* rtmpurl,const char* medialisturl)
 	: CDialog(DlgRtmpPull::IDD)
 	, m_strUrl(_T("rtmp://www.pic98.com/live/livestream"))
 	, m_pAVRtmplayer(NULL)
@@ -42,17 +40,15 @@ DlgRtmpPull::DlgRtmpPull()
 	, m_nVideoHeight(576)
 	, m_nChatroomWidth(420)
 	, m_nListHeight(220)
-	, m_pAudioMarker(NULL)
-//	, mabs(NULL)
-{
+	, mrtmpurl(rtmpurl)
+	, mmedialisturl(medialisturl)
+	, m_pAudioMarker(NULL){
 }
 
-DlgRtmpPull::~DlgRtmpPull()
-{
+DlgRtmpPull::~DlgRtmpPull(){
 }
 
-void DlgRtmpPull::DoDataExchange(CDataExchange* pDX)
-{
+void DlgRtmpPull::DoDataExchange(CDataExchange* pDX){
 	CDialog::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_EDIT_URL, m_editUrl);
 	DDX_Control(pDX, IDC_BTN_PULL, m_btnRtmp);
@@ -65,10 +61,8 @@ BEGIN_MESSAGE_MAP(DlgRtmpPull, CDialog)
 	ON_WM_CLOSE()
 	//ON_WM_ERASEBKGND()
 	ON_WM_LBUTTONDBLCLK()
-	ON_MESSAGE(WM_MY_PULL_MESSAGE, OnMyMessage)
 	ON_MESSAGE(WM_PULLDLG_RESIZE, OnPullDlgResize)
 	ON_MESSAGE(WM_PULLDLG, OnPullDlg)
-	ON_BN_CLICKED(IDC_BTN_PULL, &DlgRtmpPull::OnBnClickedBtnPull)
 	ON_WM_GETMINMAXINFO()
 	ON_WM_SHOWWINDOW()
 	ON_WM_SIZE()
@@ -102,68 +96,58 @@ void DlgRtmpPull::OnClose() {
 BOOL DlgRtmpPull::OnInitDialog() {
 	CDialog::OnInitDialog();
 	CMenu* pSysMenu = GetSystemMenu(FALSE);
-	if (pSysMenu != NULL)
-	{
+	if (pSysMenu != NULL){
+#ifdef _DEBUG
 		pSysMenu->AppendMenu(MF_STRING, IDR_MENU_SYS_MORE_SHOWDEVTOOLS, L"开发者工具");
 		pSysMenu->AppendMenu(MF_STRING, IDR_MENU_SYS_MORE_REFRESH, L"刷新界面");
+#endif
 	}
 	m_myStatic.SubclassDlgItem(IDC_STATIC_CAPTRUE, this);
-
 	m_hWndPullDlg = GetSafeHwnd();
-
 	srand(time(NULL));
-
-
-
 	brush.CreateSolidBrush(RGB(0, 0, 0));
 
-	{// Video player
-		m_pDlgVideoMain = new DlgVideo(this);
-		m_pDlgVideoMain->Create(DlgVideo::IDD, this);
-		CRect rc;
-		m_myStatic.GetWindowRect(rc);
-		//m_staticCaptrue.ShowWindow(SW_HIDE);
-		ScreenToClient(rc);
-		m_pDlgVideoMain->SetWindowPos(NULL, rc.left, rc.top, rc.Width(), rc.Height(), SWP_SHOWWINDOW);
-	}
+	m_pDlgVideoMain = new DlgVideo(this);
+	m_pDlgVideoMain->Create(DlgVideo::IDD, this);
+	m_pDlgVideoMain->ShowWindow(SW_HIDE);
+	CRect rc;
+	m_myStatic.GetWindowRect(rc);
+	//m_staticCaptrue.ShowWindow(SW_HIDE);
+	ScreenToClient(rc);
+	m_pDlgVideoMain->SetWindowPos(NULL, rc.left, rc.top, rc.Width(), rc.Height(), SWP_SHOWWINDOW);
 
 	CRect rc1;
 	GetClientRect(rc1);
 	m_nVideoWidth = rc1.Width() - m_nChatroomWidth;
 
-	CefBrowserSettings browser_settings;
+	CefBrowserSettings settings;
+	
+	
 	std::string url;
 	if (url.empty())
 		url = m_baseurl + "live/h5client/mainpage/#/pages/chatroom/chatroom";
 
 	CefWindowInfo window_info;
-	RECT rc;
 	rc.left = 0;
 	rc.top = 0;
 	rc.bottom = 1000;
 	rc.right = 500;
 	CWnd* pWnd = this->GetDlgItem(IDC_STATIC_CEF3);
-
 	window_info.SetAsChild(pWnd->GetSafeHwnd(), rc);
-	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, browser_settings, NULL);
+	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, settings, NULL);
 
-	url = m_baseurl + "live/h5client/mainpage/#/pages/medialist/medialist";
+	url = mmedialisturl;// m_baseurl + "live/h5client/mainpage/#/pages/medialist/medialist";
 	pWnd = this->GetDlgItem(IDC_STATIC_LIST);
 	window_info.SetAsChild(pWnd->GetSafeHwnd(), rc);
-	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, browser_settings, NULL);
+	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, settings, NULL);
 
 	PostMessage(WM_SIZE, 0, 0);
-
-
-
-
-
+	PostMessage(WM_PULLDLG, 0, 0);
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 异常: OCX 属性页应返回 FALSE
 }
 
-BOOL DlgRtmpPull::DestroyWindow()
-{
+BOOL DlgRtmpPull::DestroyWindow(){
 	if (m_pAVRtmplayer) {
 		m_pAVRtmplayer->StopRtmpPlay();
 		RTMPGuester::Destory(m_pAVRtmplayer);
@@ -178,59 +162,15 @@ BOOL DlgRtmpPull::DestroyWindow()
 	return CDialog::DestroyWindow();
 }
 
-BOOL DlgRtmpPull::OnEraseBkgnd(CDC* pDC)
-{
+BOOL DlgRtmpPull::OnEraseBkgnd(CDC* pDC){
 	return TRUE;
 }
 
-LRESULT DlgRtmpPull::OnMyMessage(WPARAM wParam, LPARAM lParam)
-{
-	CString *pstrGet = (CString *)lParam;
-	char ss[128];
-	memset(ss, 0, 128);
-	int fnlen = pstrGet->GetLength();
-	for (int i = 0; i <= fnlen; i++) {
-		ss[i] = pstrGet->GetAt(i);
-	}
-	DlgVideo* ptrDlg = NULL;
-	delete pstrGet;
-	return 0;
-}
-
-void DlgRtmpPull::OnLButtonDblClk(UINT nFlags, CPoint point)
-{
+void DlgRtmpPull::OnLButtonDblClk(UINT nFlags, CPoint point){
 	CDialog::OnLButtonDblClk(nFlags, point);
 }
 
-void DlgRtmpPull::OnBnClickedBtnPull()
-{
-	// TODO:  在此添加控件通知处理程序代码
-	if (m_pAVRtmplayer == NULL) {
-		m_pAVRtmplayer = RTMPGuester::Create(*this);
-		UpdateData(TRUE);
-		char ss[128];
-		memset(ss, 0, 128);
-		int fnlen = m_strUrl.GetLength();
-		for (int i = 0; i <= fnlen; i++) {
-			ss[i] = m_strUrl.GetAt(i);
-		}
-		//if (mabs != NULL)
-		//	delete mabs;
-		//mabs = new AnyRtmpSource();
-		m_pAVRtmplayer->StartRtmpPlay(ss, m_pDlgVideoMain->m_hWnd,"rtmp","");
-		m_btnRtmp.SetWindowTextW(L"结束");
-	}
-	else {
-		m_btnRtmp.SetWindowTextW(L"拉流");
-		m_pAVRtmplayer->StopRtmpPlay();
-		RTMPGuester::Destory(m_pAVRtmplayer);
-		m_pAVRtmplayer = NULL;
-	}
-}
-
-
-void DlgRtmpPull::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
-{
+void DlgRtmpPull::OnGetMinMaxInfo(MINMAXINFO* lpMMI){
 	//设置对话框最小宽度与高度
 	RECT rc;
 	if (m_pDlgVideoMain != NULL) {
@@ -245,12 +185,10 @@ void DlgRtmpPull::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 }
 
 
-void DlgRtmpPull::Start()
-{
+void DlgRtmpPull::Start(){
 	Stop();
 	ShowWindow(SW_SHOW);
 	if (m_pAVRtmplayer == NULL) {
-
 		delete[] m_pAudioMarker;
 		CString strId;
 		int id = 0;
@@ -258,8 +196,7 @@ void DlgRtmpPull::Start()
 		strId.Format(_T("%d"), gUserId);
 		TRACE(strId);
 		TRACE("\r\n");
-		for (int i = 0; i < strId.GetLength(); i++)
-		{
+		for (int i = 0; i < strId.GetLength(); i++)	{
 			id = _tstoi(strId.Mid(i, 1));
 			m_iAudioMarker += theApp.m_iSoundMarker[id] + 12000;
 		}
@@ -274,8 +211,7 @@ void DlgRtmpPull::Start()
 		m_iAudioMarketStart[0] -= 200;
 		if (m_iAudioMarketStart[0] <= 20)
 			m_iAudioMarketStart[0] = 20;
-		for (int i = 1; i < _countof(m_iAudioMarketStart); i++)
-		{
+		for (int i = 1; i < _countof(m_iAudioMarketStart); i++)	{
 			m_iAudioMarketStart[i] = m_iAudioMarketStart[i - 1] + m_iAudioMarketStart[i - 1] + (((double)rand() / (double)RAND_MAX) * RANGE_MAX + RANGE_MIN);
 		}
 
@@ -283,69 +219,31 @@ void DlgRtmpPull::Start()
 		m_pAudioMarketOut = (short*)m_pAudioMarker;
 		memset(m_pAudioMarker, 0, m_iAudioMarker);
 		char* pCur = m_pAudioMarker;
-		for (int i = 0; i < strId.GetLength(); i++)
-		{
+		for (int i = 0; i < strId.GetLength(); i++)	{
 			id = _tstoi(strId.Mid(i, 1));
 			memcpy(pCur, theApp.m_soundMarker[id], theApp.m_iSoundMarker[id]);
 			pCur += theApp.m_iSoundMarker[id] + 12000;
 		}
-
-
-
 		std::string url;
 		if (url.empty())
-			url = m_strUri;
-
+			url =  m_strUri;//mrtmpurl;//
 		m_pAVRtmplayer = RTMPGuester::Create(*this);
 		UpdateData(TRUE);
-		char ss[128];
-		memset(ss, 0, 128);
-		int fnlen = m_strUrl.GetLength();
-		for (int i = 0; i <= fnlen; i++) {
-			ss[i] = m_strUrl.GetAt(i);
-		}
-		//if (mabs != NULL)
-		//	delete mabs;
-		//mabs = new AnyRtmpSource();
-		m_pAVRtmplayer->StartRtmpPlay(url.c_str(), m_pDlgVideoMain->m_hWnd, "rtmp","");
+		m_pAVRtmplayer->StartRtmpPlay(url.c_str(),m_myStatic.GetSafeHwnd() /*m_pDlgVideoMain->m_hWnd*/, "rtmp","");
 		m_btnRtmp.SetWindowTextW(L"结束");
-
-
-
 	}
 }
 
 
-void DlgRtmpPull::Stop()
-{
+void DlgRtmpPull::Stop(){
 	if (m_pAVRtmplayer != NULL) {
-		m_btnRtmp.SetWindowTextW(L"拉流");
-		//m_pAVRtmplayer->StopRtmpPlay();
+		//m_btnRtmp.SetWindowTextW(L"拉流");
 		RTMPGuester::Destory(m_pAVRtmplayer);
 		m_pAVRtmplayer = NULL;
-		//m_nVideoWidth = 0;
-		//m_nVideoHeight = 160;
-		PostMessage(WM_SIZE, 0, 0);
-		CRect rc;
-		GetClientRect(rc);
-		//m_nVideoWidth = rc.Width() - m_nChatroomWidth;
-		//if (mabs != NULL) {
-		//	delete mabs;
-		//	mabs = NULL;
-		//}
 	}
 }
 
-
-void DlgRtmpPull::OnShowWindow(BOOL bShow, UINT nStatus)
-{
-	__super::OnShowWindow(bShow, nStatus);
-
-}
-
-
-void DlgRtmpPull::OnSize(UINT nType, int cx, int cy)
-{
+void DlgRtmpPull::OnSize(UINT nType, int cx, int cy){
 	__super::OnSize(nType, cx, cy);
 	CRect rcClient, rcVideo, rcChatroom, rcStatic, rcList;
 	GetClientRect(rcClient);
@@ -357,11 +255,10 @@ void DlgRtmpPull::OnSize(UINT nType, int cx, int cy)
 	rcVideo.right = m_nVideoWidth;
 	rcVideo.bottom = m_nVideoHeight;
 
-
+	// 聊天窗口webview大小。
 	if (rcChatroom.left < rcVideo.right) {
 		rcChatroom.left = rcVideo.right;// +GetSystemMetrics(SM_CYFRAME);
 	}
-
 	if (IsWindow(this->GetSafeHwnd())) {
 		CWnd* pWnd = GetDlgItem(IDC_STATIC_CEF3);
 		if (IsWindow(pWnd->GetSafeHwnd())) {
@@ -374,11 +271,11 @@ void DlgRtmpPull::OnSize(UINT nType, int cx, int cy)
 		}
 	}
 
+	// 播放主窗口黑色背景大小。
 	rcStatic.right = rcChatroom.left - GetSystemMetrics(SM_CYFRAME);
 	if (rcStatic.right < rcVideo.right) {
 		rcStatic.right = rcVideo.right;
 	}
-
 	int yAdj = (rcStatic.Height() - rcVideo.Height());
 	rcList = rcStatic;
 	rcStatic.bottom = rcStatic.bottom - yAdj;
@@ -386,12 +283,10 @@ void DlgRtmpPull::OnSize(UINT nType, int cx, int cy)
 		rcStatic.bottom = rcVideo.bottom;
 	}
 	rcList.top = rcStatic.bottom;// +GetSystemMetrics(SM_CXFRAME);
-
-
 	if (IsWindow(this->m_myStatic.GetSafeHwnd())) {
 		m_myStatic.SetWindowPos(NULL, 0, 0, rcStatic.Width(), rcStatic.Height(), SWP_NOMOVE | SWP_NOZORDER);
 	}
-
+	// 历史录像列表webview位置和大小。
 	CWnd* pList = this->GetDlgItem(IDC_STATIC_LIST);
 	if (pList != NULL) {
 		pList->SetWindowPos(NULL, rcList.left, rcList.top, rcList.Width(), rcList.Height(), SWP_NOZORDER);
@@ -403,7 +298,7 @@ void DlgRtmpPull::OnSize(UINT nType, int cx, int cy)
 			}
 		}
 	}
-
+	// 播放主窗口大小。
 	if (m_pDlgVideoMain != NULL) {
 		int x = 0;
 		int y = 0;
@@ -413,123 +308,121 @@ void DlgRtmpPull::OnSize(UINT nType, int cx, int cy)
 		if (rcStatic.Width() > rcVideo.Width()) {
 			x = (rcStatic.Width() - rcVideo.Width()) / 2;
 		}
-
 		if (IsWindow(m_pDlgVideoMain->GetSafeHwnd())) {
 			m_pDlgVideoMain->SetWindowPos(NULL, x, y, rcVideo.Width(), rcVideo.Height(), SWP_NOZORDER);
 		}
 	}
-
-
 	return;
-
 }
 
-
-HBRUSH DlgRtmpPull::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
-{
+HBRUSH DlgRtmpPull::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor){
 	HBRUSH hbr = __super::OnCtlColor(pDC, pWnd, nCtlColor);
-
+	/*
 	if (pWnd->GetDlgCtrlID() == IDC_STATIC_CAPTRUE) {
 		return (HBRUSH)brush.GetSafeHandle();
 	}
-
-
-
-
+	*/
 	return hbr;
 }
 
-
-void DlgRtmpPull::OnSysCommand(UINT nID, LPARAM lParam)
-{
+void DlgRtmpPull::OnSysCommand(UINT nID, LPARAM lParam){
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	CWnd* pWnd = this->GetDlgItem(IDC_STATIC_LIST);
-
 	if ((nID) == IDR_MENU_SYS_MORE_REFRESH) {
-
-
 		CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
 		if (pb != nullptr) {
-			CefWindowInfo win_info;
-			CefRefPtr<CefClient> client;
-			CefBrowserSettings settings;
-
 			std::string url = pb->GetMainFrame()->GetURL().ToString();
 			pb->ReloadIgnoreCache();
 		}
-
 	}
 	else if ((nID) == IDR_MENU_SYS_MORE_SHOWDEVTOOLS) {
-
 		CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
 		if (pb != nullptr) {
 			CefWindowInfo win_info;
 			CefRefPtr<CefClient> client;
 			CefBrowserSettings settings;
 			win_info.SetAsPopup(GetSafeHwnd(), CefString("DevTools"));
-
 			pb->GetHost()->ShowDevTools(win_info, theApp.handler, settings, CefPoint());
 		}
 	}
-
 	__super::OnSysCommand(nID, lParam);
 }
 
 LRESULT DlgRtmpPull::OnPullDlg(WPARAM, LPARAM) {
-		std::string url = "";
-		CefString str = CPullDlgData::me()->pop();
-		if (!str.empty()) {
-
-			CefRefPtr<CefValue> jsonObject = CefParseJSON(str, JSON_PARSER_ALLOW_TRAILING_COMMAS);
-			if (jsonObject->IsValid())
-			{
-				CefRefPtr<CefDictionaryValue> dict = jsonObject->GetDictionary();
-				CefString token = dict->GetString("cmd");
-				if (token == "pulldlg") {
-					CefRefPtr<CefDictionaryValue> data = dict->GetDictionary("data");
-					CefString roomid = data->GetString("id");
-					CefString pulluri = data->GetString("pulluri");
-					CefString background = data->GetString("background");
-
-					data = dict->GetDictionary("ui");
-					CefString sessionid = data->GetString("SessionId");
-					CefString token = data->GetString("Token");
-
-					url = std::string(pulluri);
-					std::string sid = std::string(sessionid);
-					std::string tkn = std::string(token);
-					std::string urlmedialist = m_baseurl + "live/h5client/mainpage/#/pages/medialist/medialist?roomid=";// +;
-					urlmedialist += roomid;
-					GetMedialist()->GetMainFrame()->LoadURL(urlmedialist);
-
-					m_strUri = url + "?sessionid=" + sid + "&token=" + tkn;
-					CWnd* pWnd = this->GetDlgItem(IDC_STATIC_CEF3);
-					if (pWnd != NULL && IsWindow(pWnd->GetSafeHwnd())) {
-						CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
-						if (pb != nullptr) {
-							pb->ReloadIgnoreCache();
-						}
+	//Start();
+	//return TRUE;
+	std::string url = "";
+	CefString str = CPullDlgData::me()->pop();
+	if (!str.empty()) {
+		CefRefPtr<CefValue> jsonObject = CefParseJSON(str, JSON_PARSER_ALLOW_TRAILING_COMMAS);
+		if (jsonObject->IsValid()){
+			CefRefPtr<CefDictionaryValue> dict = jsonObject->GetDictionary();
+			CefString token = dict->GetString("cmd");
+			if (token == "pulldlg") {
+				CefRefPtr<CefDictionaryValue> data = dict->GetDictionary("data");
+				CefString roomid = data->GetString("id");
+				CefString pulluri = data->GetString("pulluri");
+				CefString background = data->GetString("background");
+				data = dict->GetDictionary("ui");
+				CefString sessionid = data->GetString("SessionId");
+				CefString token = data->GetString("Token");
+				url = std::string(pulluri);
+				std::string sid = std::string(sessionid);
+				std::string tkn = std::string(token);
+				std::string urlmedialist = m_baseurl + "live/h5client/mainpage/#/pages/medialist/medialist?roomid=";// +;
+				urlmedialist += roomid;
+				GetMedialist()->GetMainFrame()->LoadURL(urlmedialist);
+				m_strUri = url + "?sessionid=" + sid + "&token=" + tkn;
+				CWnd* pWnd = this->GetDlgItem(IDC_STATIC_CEF3);
+				if (pWnd != NULL && IsWindow(pWnd->GetSafeHwnd())) {
+					CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
+					if (pb != nullptr) {
+						pb->ReloadIgnoreCache();
 					}
-
-					Start();
 				}
-				else if (token == "pulldlghis") {
-					//AfxMessageBox(L"pulldlghis");
-					Stop();
-					CDlgFlvPlayer dlg(this, str);
-					dlg.DoModal();
-
-				}
+				Start();
+			}else if (token == "pulldlghis") {
+				Stop();
+				CDlgFlvPlayer dlg(this, str);
+				dlg.DoModal();
 			}
 		}
-
-		return TRUE;
+	}
+	return TRUE;
 }
 
-BOOL DlgRtmpPull::PreTranslateMessage(MSG* pMsg)
-{
+BOOL DlgRtmpPull::PreTranslateMessage(MSG* pMsg){
 	// TODO: 在此添加专用代码和/或调用基类
-
-
 	return __super::PreTranslateMessage(pMsg);
+}
+
+void DlgRtmpPull::OnRtmplayerPlayStart() {
+	TRACE("DlgRtmpPull::OnRtmplayerPlayStart\r\n");
+}
+void DlgRtmpPull::OnRtmplayerPlayStop() {
+	TRACE("DlgRtmpPull::OnRtmplayerPlayStop\r\n");
+	//m_pDlgVideoMain->ShowWindow(SW_HIDE);
+}
+void DlgRtmpPull::OnRtmplayer1stVideo() {
+	TRACE("DlgRtmpPull::OnRtmplayer1stVideo\r\n");
+	//m_pDlgVideoMain->ShowWindow(SW_SHOW);
+}
+void DlgRtmpPull::OnRtmplayer1stAudio() {
+	TRACE("DlgRtmpPull::OnRtmplayer1stAudio\r\n");
+}
+
+void DlgRtmpPull::OnRtmplayerOK() {
+	TRACE("OnRtmplayerOK\r\n");
+};
+void DlgRtmpPull::OnRtmplayerStatus(int cacheTime, int curBitrate) {
+};
+void DlgRtmpPull::OnRtmplayerCache(int time) {
+};
+void DlgRtmpPull::OnRtmplayerClosed(int errcode) {
+	TRACE("OnRtmplayerClosed\r\n");
+	m_pDlgVideoMain->ShowWindow(SW_HIDE);
+};
+
+void DlgRtmpPull::OnRtmplayerConnectionFailed(int a) {
+	TRACE("DlgRtmpPull::OnRtmplayerConnectionFailed: %d\r\n",a);
 }

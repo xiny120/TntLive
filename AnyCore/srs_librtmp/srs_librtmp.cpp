@@ -23196,6 +23196,7 @@ int SrsRtmpClient::create_stream(int& stream_id)
     // CreateStream
     if (true) {
         SrsCreateStreamPacket* pkt = new SrsCreateStreamPacket();
+		
         if ((ret = protocol->send_and_free_packet(pkt, 0)) != ERROR_SUCCESS) {
             return ret;
         }

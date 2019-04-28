@@ -72,14 +72,14 @@ static int DetectNumberOfCores() {
   int name[] = {CTL_HW, HW_AVAILCPU};
   size_t size = sizeof(number_of_cores);
   if (0 != sysctl(name, 2, &number_of_cores, &size, NULL, 0)) {
-    LOG(LS_ERROR) << "Failed to get number of cores";
+    WCLOG(LS_ERROR) << "Failed to get number of cores";
     number_of_cores = 1;
   }
 #else
-  LOG(LS_ERROR) << "No function to get number of cores";
+  WCLOG(LS_ERROR) << "No function to get number of cores";
 #endif
 
-  LOG(LS_INFO) << "Available number of cores: " << number_of_cores;
+  WCLOG(LS_INFO) << "Available number of cores: " << number_of_cores;
 
   return number_of_cores;
 }
@@ -183,7 +183,7 @@ int64_t SystemInfo::GetMemorySize() {
   memory = static_cast<int64_t>(sysconf(_SC_PHYS_PAGES)) *
            static_cast<int64_t>(sysconf(_SC_PAGESIZE));
   if (memory < 0) {
-    LOG(LS_WARNING) << "sysconf(_SC_PHYS_PAGES) failed."
+    WCLOG(LS_WARNING) << "sysconf(_SC_PHYS_PAGES) failed."
                     << "sysconf(_SC_PHYS_PAGES) " << sysconf(_SC_PHYS_PAGES)
                     << "sysconf(_SC_PAGESIZE) " << sysconf(_SC_PAGESIZE);
     memory = -1;

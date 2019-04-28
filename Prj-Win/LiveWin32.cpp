@@ -48,6 +48,7 @@ BEGIN_MESSAGE_MAP(CLiveWin32App, CWinApp)
 END_MESSAGE_MAP()
 
 int gUserId = 0;
+int gLiving = 0;
 
 // CLiveWin32App 构造
 
@@ -109,36 +110,26 @@ BOOL CLiveWin32App::InitInstance()
 	InitCommonControlsEx(&InitCtrls);
 	if (CPullDlgData::me() == NULL)
 		AfxMessageBox(L"错误0");
-
-
 	CString work = GetModuleDir();
-
 	CString work1 = GetWorkDir();
-
-
 	int resid[] = { IDR_BIN1, IDR_BIN2, IDR_BIN3, IDR_BIN4, IDR_BIN5,
 	IDR_BIN6, IDR_BIN7, IDR_BIN8, IDR_BIN9, IDR_BIN10 };
 
-	for (int i = 0; i < 10; i++)
-	{
+	for (int i = 0; i < 10; i++){
 		//定位我们的自定义资源，这里因为我们是从本模块定位资源，所以将句柄简单地置为NULL即可
 		HRSRC hRsrc = FindResource(NULL, MAKEINTRESOURCE(resid[i]), TEXT("BIN"));
-		if (NULL != hRsrc)
-		{
+		if (NULL != hRsrc){
 			//获取资源的大小
 			m_iSoundMarker[i] = SizeofResource(NULL, hRsrc) * 3;
-			if (0 != m_iSoundMarker[i])
-			{
+			if (0 != m_iSoundMarker[i]){
 				//加载资源
 				HGLOBAL hGlobal = LoadResource(NULL, hRsrc);
-				if (NULL != hGlobal)
-				{
+				if (NULL != hGlobal){
 					//锁定资源
 					short* pRes = (short*)LockResource(hGlobal);
 					m_soundMarker[i] = (short*)new char[m_iSoundMarker[i]];
 					int z = 0;
-					for (int j = 0; j < m_iSoundMarker[i] / 3 / 2; j++)
-					{
+					for (int j = 0; j < m_iSoundMarker[i] / 3 / 2; j++){
 						m_soundMarker[i][z] = pRes[j] * 0.39f;
 						z++;
 						m_soundMarker[i][z] = pRes[j] * 0.39f;
@@ -152,15 +143,8 @@ BOOL CLiveWin32App::InitInstance()
 			}
 		}
 	}
-	OutputDebugString(_T("m_iSoundMarker"));
-
-
-
-	//AfxMessageBox(work + "\r\n" + work1);
-
 	// Enable High-DPI support on Windows 7 or newer.
 	CefEnableHighDPISupport();
-
 	void* sandbox_info = NULL;
 	/*
 #if defined(CEF_USE_SANDBOX)
@@ -185,24 +169,14 @@ BOOL CLiveWin32App::InitInstance()
 		// The sub-process has completed so return here.
 		return exit_code;
 	}
-	
-
 	CWinApp::InitInstance();
-
-
 	AfxEnableControlContainer();
-
 	// 创建 shell 管理器，以防对话框包含
 	// 任何 shell 树视图控件或 shell 列表视图控件。
 	CShellManager *pShellManager = new CShellManager;
 
 	// 激活“Windows Native”视觉管理器，以便在 MFC 控件中启用主题
 	CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows));
-
-
-
-
-
 	// 标准初始化
 	// 如果未使用这些功能并希望减小
 	// 最终可执行文件的大小，则应移除下列

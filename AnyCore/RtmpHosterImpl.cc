@@ -233,7 +233,7 @@ void RtmpHosterImpl::AddVideoCapturer_w(void* handle)
 			cricket::VideoFormat capture_format;
 			if (!video_capturer_->GetBestCaptureFormat(highest_asked_format,
 				&capture_format)) {
-				LOG(LS_WARNING) << "Unsupported format:"
+				WCLOG(LS_WARNING) << "Unsupported format:"
 					<< " width=" << highest_asked_format.width
 					<< " height=" << highest_asked_format.height
 					<< ". Supported formats are:";
@@ -243,7 +243,7 @@ void RtmpHosterImpl::AddVideoCapturer_w(void* handle)
 				for (std::vector<cricket::VideoFormat>::const_iterator i = formats->begin();
 					i != formats->end(); ++i) {
 					const cricket::VideoFormat& format = *i;
-					LOG(LS_WARNING) << "  " << cricket::GetFourccName(format.fourcc)
+					WCLOG(LS_WARNING) << "  " << cricket::GetFourccName(format.fourcc)
 						<< ":" << format.width << "x" << format.height << "x"
 						<< format.framerate();
 				}

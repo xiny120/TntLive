@@ -201,24 +201,21 @@ PlyDecoder::PlyDecoder()
 	, a_cache_len_(0)
 	, aac_sample_hz_(44100)
 	, aac_channels_(2)
-	, aac_frame_per10ms_size_(0)
-{
-	{
-		h264_decoder_ = webrtc::H264Decoder::Create();
-		webrtc::VideoCodec codecSetting;
-		codecSetting.codecType = webrtc::kVideoCodecH264;
-		codecSetting.width = 640;
-		codecSetting.height = 480;
-		h264_decoder_->InitDecode(&codecSetting, 1);
-		h264_decoder_->RegisterDecodeCompleteCallback(this);
-		webrtc::VideoCodec setting;
-		setting.width = 640;
-		setting.height = 480;
-		setting.codecType = webrtc::kVideoCodecH264;
-		setting.maxFramerate = 30;
-		if (h264_decoder_->InitDecode(&setting, 1) != 0) {
-			//@AnyRTC - Error
-		}
+	, aac_frame_per10ms_size_(0){
+	h264_decoder_ = webrtc::H264Decoder::Create();
+	webrtc::VideoCodec codecSetting;
+	codecSetting.codecType = webrtc::kVideoCodecH264;
+	codecSetting.width = 640;
+	codecSetting.height = 480;
+	h264_decoder_->InitDecode(&codecSetting, 1);
+	h264_decoder_->RegisterDecodeCompleteCallback(this);
+	webrtc::VideoCodec setting;
+	setting.width = 640;
+	setting.height = 480;
+	setting.codecType = webrtc::kVideoCodecH264;
+	setting.maxFramerate = 30;
+	if (h264_decoder_->InitDecode(&setting, 1) != 0) {
+		//@AnyRTC - Error
 	}
 
 	aac_frame_per10ms_size_ = (aac_sample_hz_ / 100) * sizeof(int16_t) * aac_channels_;
@@ -228,9 +225,7 @@ PlyDecoder::PlyDecoder()
 	ply_buffer_ = new PlyBuffer(*this, this);
 }
 
-
-PlyDecoder::~PlyDecoder()
-{
+PlyDecoder::~PlyDecoder(){
 	running_ = false;
 	rtc::Thread::Stop();
 
@@ -248,8 +243,7 @@ PlyDecoder::~PlyDecoder()
 	}
 }
 
-bool PlyDecoder::IsPlaying()
-{
+bool PlyDecoder::IsPlaying(){
     if (ply_buffer_ == NULL) {
         return false;
     }
@@ -259,12 +253,10 @@ bool PlyDecoder::IsPlaying()
 	if (ply_buffer_->PlayerStatus() == PS_Fast) {
 		return false;
 	}
-
     return true;
 }
 
-int  PlyDecoder::CacheTime()
-{
+int  PlyDecoder::CacheTime(){
     if (ply_buffer_ != NULL) {
         return ply_buffer_->GetPlayCacheTime();
     }
@@ -278,14 +270,12 @@ bool PlyDecoder::Slowdown() {
 	return false;
 }
 
-void PlyDecoder::AddH264Data(const uint8_t*pdata, int len, uint32_t ts)
-{
+void PlyDecoder::AddH264Data(const uint8_t*pdata, int len, uint32_t ts){
 	if (ply_buffer_) {
 		ply_buffer_->CacheH264Data(pdata, len, ts);
 	}
 }
-void PlyDecoder::AddAACData(const uint8_t*pdata, int len, uint32_t ts)
-{
+void PlyDecoder::AddAACData(const uint8_t*pdata, int len, uint32_t ts){
 	if (ply_buffer_) {
 		if (aac_decoder_ == NULL) {
 			aac_decoder_ = aac_decoder_open((unsigned char*)pdata, len, &aac_channels_, &aac_sample_hz_);
@@ -293,11 +283,9 @@ void PlyDecoder::AddAACData(const uint8_t*pdata, int len, uint32_t ts)
 				aac_channels_ = 1;
 			aac_frame_per10ms_size_ = (aac_sample_hz_ / 100) * sizeof(int16_t) * aac_channels_;
 			ply_buffer_->InitAudio(aac_sample_hz_, aac_channels_);
-		}
-		else {
+		}else {
 			unsigned int outlen = 0;
 			if (aac_decoder_decode_frame(aac_decoder_, (unsigned char*)pdata, len, audio_cache_ + a_cache_len_, &outlen) > 0) {
-				//printf("");
 				a_cache_len_ += outlen;
 				int ct = 0;
 				int fsize = aac_frame_per10ms_size_;
@@ -306,15 +294,13 @@ void PlyDecoder::AddAACData(const uint8_t*pdata, int len, uint32_t ts)
 					a_cache_len_ -= fsize;
 					ct++;
 				}
-
 				memmove(audio_cache_, audio_cache_ + ct * fsize, a_cache_len_);
 			}
 		}
 	}
 }
 
-int PlyDecoder::GetPcmData(void* audioSamples, uint32_t& samplesPerSec, size_t& nChannels)
-{
+int PlyDecoder::GetPcmData(void* audioSamples, uint32_t& samplesPerSec, size_t& nChannels){
 	if (!playing_) {
 		return 0;
 	}
@@ -323,25 +309,21 @@ int PlyDecoder::GetPcmData(void* audioSamples, uint32_t& samplesPerSec, size_t& 
 	return ply_buffer_->GetPlayAudio(audioSamples, aac_sample_hz_, aac_channels_);
 }
 
-void PlyDecoder::Run()
-{
-	while (running_)
-	{
-		{// ProcessMessages
+void PlyDecoder::Run(){
+	while (running_){
+		{
 			this->ProcessMessages(1);
 		}
 		PlyPacket* pkt = NULL;
 		{
 			rtc::CritScope cs(&cs_list_h264_);
-			if (lst_h264_buffer_.size() > 0)
-			{
+			if (lst_h264_buffer_.size() > 0){
 				pkt = lst_h264_buffer_.front();
 				lst_h264_buffer_.pop_front();
 			}
 		}
 		if (pkt != NULL) {
-			if (h264_decoder_)
-			{
+			if (h264_decoder_){
 				int frameType = pkt->_data[4] & 0x1f;
 				webrtc::EncodedImage encoded_image;
 				encoded_image._buffer = (uint8_t*)pkt->_data;
@@ -349,15 +331,13 @@ void PlyDecoder::Run()
 				encoded_image._size = pkt->_data_len + 8;
 				if (frameType == 7) {
 					encoded_image._frameType = webrtc::kVideoFrameKey;
-				}
-				else {
+				}else {
 					encoded_image._frameType = webrtc::kVideoFrameDelta;
 				}
 				encoded_image._completeFrame = true;
                 webrtc::RTPFragmentationHeader frag_info;
                 int ret = h264_decoder_->Decode(encoded_image, false, &frag_info);
-				if (ret != 0)
-				{
+				if (ret != 0){
 				}
 			}
 			delete pkt;
@@ -365,16 +345,13 @@ void PlyDecoder::Run()
 	}
 }
 
-void PlyDecoder::OnPlay()
-{
+void PlyDecoder::OnPlay(){
 	playing_ = true;
 }
-void PlyDecoder::OnPause()
-{
+void PlyDecoder::OnPause(){
 	playing_ = false;
 }
-bool PlyDecoder::OnNeedDecodeData(PlyPacket* pkt)
-{
+bool PlyDecoder::OnNeedDecodeData(PlyPacket* pkt){
 	const uint8_t*pdata = pkt->_data;
 	if (pkt->_b_video) {
 #ifndef WEBRTC_WIN
@@ -423,12 +400,10 @@ bool PlyDecoder::OnNeedDecodeData(PlyPacket* pkt)
         }
 		lst_h264_buffer_.push_back(pkt);
 	}
-
 	return true;
 }
 
-int32_t PlyDecoder::Decoded(webrtc::VideoFrame& decodedImage)
-{
+int32_t PlyDecoder::Decoded(webrtc::VideoFrame& decodedImage){
 	const cricket::WebRtcVideoFrame render_frame(
 		decodedImage.video_frame_buffer(),
 		decodedImage.render_time_ms() * rtc::kNumNanosecsPerMillisec, decodedImage.rotation());

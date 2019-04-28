@@ -177,6 +177,7 @@ bool SimpleHandler::OnJSDialog(CefRefPtr<CefBrowser> browser,
 		}
 		else if (token == "pulldlghis") {
 			CPullDlgData::me()->push(str0);
+			//::PostMessage(m_hWndDlg, WM_PULLDLG, 0, 0);
 			::PostMessage(m_hWndPullDlg, WM_PULLDLG, 0, 0);
 		}
 	}

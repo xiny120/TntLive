@@ -339,7 +339,7 @@ void NetworkManagerBase::MergeNetworkList(const NetworkList& new_networks,
       if (pref > 0) {
         --pref;
       } else {
-        LOG(LS_ERROR) << "Too many network interfaces to handle!";
+        WCLOG(LS_ERROR) << "Too many network interfaces to handle!";
         break;
       }
     }
@@ -399,7 +399,7 @@ BasicNetworkManager::~BasicNetworkManager() {
 }
 
 void BasicNetworkManager::OnNetworksChanged() {
-  LOG(LS_INFO) << "Network change was observed";
+  WCLOG(LS_INFO) << "Network change was observed";
   UpdateNetworksOnce();
 }
 
@@ -408,7 +408,7 @@ void BasicNetworkManager::OnNetworksChanged() {
 bool BasicNetworkManager::CreateNetworks(bool include_ignored,
                                          NetworkList* networks) const {
   ASSERT(false);
-  LOG(LS_WARNING) << "BasicNetworkManager doesn't work on NaCl yet";
+  WCLOG(LS_WARNING) << "BasicNetworkManager doesn't work on NaCl yet";
   return false;
 }
 
@@ -660,7 +660,7 @@ bool BasicNetworkManager::CreateNetworks(bool include_ignored,
 bool IsDefaultRoute(const std::string& network_name) {
   FileStream fs;
   if (!fs.Open("/proc/net/route", "r", NULL)) {
-    LOG(LS_WARNING) << "Couldn't read /proc/net/route, skipping default "
+    WCLOG(LS_WARNING) << "Couldn't read /proc/net/route, skipping default "
                     << "route check (assuming everything is a default route).";
     return true;
   } else {
@@ -842,7 +842,7 @@ IPAddress BasicNetworkManager::QueryDefaultLocalAddress(int family) const {
   if (socket->Connect(SocketAddress(
           family == AF_INET ? kPublicIPv4Host : kPublicIPv6Host, kPublicPort)) <
       0) {
-    LOG(LS_INFO) << "Connect failed with " << socket->GetError();
+    WCLOG(LS_INFO) << "Connect failed with " << socket->GetError();
     return IPAddress();
   }
   return socket->GetLocalAddress().ipaddr();
@@ -879,9 +879,9 @@ void BasicNetworkManager::UpdateNetworksContinually() {
 void BasicNetworkManager::DumpNetworks() {
   NetworkList list;
   GetNetworks(&list);
-  LOG(LS_INFO) << "NetworkManager detected " << list.size() << " networks:";
+  WCLOG(LS_INFO) << "NetworkManager detected " << list.size() << " networks:";
   for (const Network* network : list) {
-    LOG(LS_INFO) << network->ToString() << ": " << network->description()
+    WCLOG(LS_INFO) << network->ToString() << ": " << network->description()
                  << ", active ? " << network->active()
                  << ((network->ignored()) ? ", Ignored" : "");
   }

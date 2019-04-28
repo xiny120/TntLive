@@ -47,11 +47,11 @@ AsyncSocket* AsyncTCPSocketBase::ConnectSocket(
     const rtc::SocketAddress& remote_address) {
   std::unique_ptr<rtc::AsyncSocket> owned_socket(socket);
   if (socket->Bind(bind_address) < 0) {
-    LOG(LS_ERROR) << "Bind() failed with error " << socket->GetError();
+    WCLOG(LS_ERROR) << "Bind() failed with error " << socket->GetError();
     return NULL;
   }
   if (socket->Connect(remote_address) < 0) {
-    LOG(LS_ERROR) << "Connect() failed with error " << socket->GetError();
+    WCLOG(LS_ERROR) << "Connect() failed with error " << socket->GetError();
     return NULL;
   }
   return owned_socket.release();
@@ -77,7 +77,7 @@ AsyncTCPSocketBase::AsyncTCPSocketBase(AsyncSocket* socket, bool listen,
 
   if (listen_) {
     if (socket_->Listen(kListenBacklog) < 0) {
-      LOG(LS_ERROR) << "Listen() failed with error " << socket_->GetError();
+      WCLOG(LS_ERROR) << "Listen() failed with error " << socket_->GetError();
     }
   }
 }
@@ -191,7 +191,7 @@ void AsyncTCPSocketBase::OnReadEvent(AsyncSocket* socket) {
     if (!new_socket) {
       // TODO(stefan): Do something better like forwarding the error
       // to the user.
-      LOG(LS_ERROR) << "TCP accept failed with error " << socket_->GetError();
+      WCLOG(LS_ERROR) << "TCP accept failed with error " << socket_->GetError();
       return;
     }
 
@@ -214,7 +214,7 @@ void AsyncTCPSocketBase::OnReadEvent(AsyncSocket* socket) {
         // TODO(stefan): Do something better like forwarding the error to the
         // user.
         if (!socket_->IsBlocking()) {
-          LOG(LS_ERROR) << "Recv() returned error: " << socket_->GetError();
+          WCLOG(LS_ERROR) << "Recv() returned error: " << socket_->GetError();
         }
         break;
       }
@@ -234,7 +234,7 @@ void AsyncTCPSocketBase::OnReadEvent(AsyncSocket* socket) {
     ProcessInput(inbuf_.data<char>(), &size);
 
     if (size > inbuf_.size()) {
-      LOG(LS_ERROR) << "input buffer overflow";
+      WCLOG(LS_ERROR) << "input buffer overflow";
       RTC_NOTREACHED();
       inbuf_.Clear();
     } else {

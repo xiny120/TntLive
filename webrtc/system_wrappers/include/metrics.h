@@ -142,7 +142,7 @@
                                    factory_get_invocation) \
   do { \
     if (log) { \
-      LOG(LS_INFO) << constant_name << " " << sample; \
+      WCLOG(LS_INFO) << constant_name << " " << sample; \
     } \
     static webrtc::metrics::Histogram* atomic_histogram_pointer = nullptr; \
     webrtc::metrics::Histogram* histogram_pointer = \

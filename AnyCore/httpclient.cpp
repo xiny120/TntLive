@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <winsock.h>
 #include <share.h>
+#include "webrtc/base/logging.h"
 //#include <utime.h>
 
 NS_MONSTERLIVE_NET_BEGIN
@@ -20,23 +21,40 @@ httpclient::~httpclient()
 
 void httpclient::run() {
 	mpause = false;
+	struct sockaddr_in stSockAddr;
+	std::vector<char> vbuf;
+	char buf[2048] = { 0 };
 	while (mrun) {
-		pullitem* pi = nullptr;
-		{
-			std::lock_guard<std::recursive_mutex> gs(this->sockmt);
-			if (!_qpull.empty()) {
-				pi = _qpull.front();
-				if (pi->ui.firsttry == 0)
-					pi->ui.firsttry = time(nullptr);
-				if ((time(nullptr) - pi->ui.lastactive) < 5) {
-					pi = nullptr; // 重试的时候，间隔小于5秒。
+		do {
+			pullitem* pi = nullptr;
+			{
+				std::lock_guard<std::recursive_mutex> gs(this->sockmt);
+				if (!_qpull.empty()) {
+					pi = _qpull.front();
+					if (pi->ui.firsttry == 0)
+						pi->ui.firsttry = time(nullptr);
+					int delay = (time(nullptr) - pi->ui.lastactive);
+					if (delay < 5) {
+						WCLOG(LS_ERROR) << "retry delay:" << pi->filepeer << " delay:" << delay;
+						
+						pi = nullptr; // 重试的时候，间隔小于5秒。
+					}
 				}
-				//_qpull.pop();
 			}
-		}
-		if (pi != nullptr && pi->ui.ip.size() > 0) {
-			struct sockaddr_in stSockAddr;
-
+			if (pi == nullptr) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(10));
+				break;
+			}
+			if (pi->ui.ip.size() <= 0) {
+				WCLOG(LS_ERROR) << "dns error:" << pi->filepeer << " host:" << pi->ui.host << "no ip address";
+				break;
+			}
+			if (mpause) {
+				_qpull.pop_front();
+				WCLOG(LS_ERROR) << "pause cmd clear queue:" << pi->filepeer;
+				delete pi;
+				break;
+			}
 			std::string localfile = pi->filelocal;
 			if (localfile.empty()) {
 				localfile = pi->ui.file;
@@ -45,162 +63,215 @@ void httpclient::run() {
 			if (!pi->pathlocal.empty()) {
 				path = pi->pathlocal + "/" + localfile;
 			}
-			std::string pathlock = path;// +".downloading";
 			std::string pathinfo = path + ".info";
 			pi->ui.locallen = 0;
 			pi->ui.lastmodify = getfiletime(pathinfo.c_str());
 			struct stat sta;
-			if (stat(pathlock.c_str(), &sta) >= 0) {
-				pi->ui.locallen = sta.st_size;
-			}else if(stat(path.c_str(),&sta) >=0) {
+			if (stat(path.c_str(), &sta) >= 0) {
 				pi->ui.locallen = sta.st_size;
 			}
-
 			int sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 			pi->ui.active();
-			if (-1 != sockfd) {
-				memset(&stSockAddr, 0, sizeof(struct sockaddr_in));
-				stSockAddr.sin_family = AF_INET;
-				stSockAddr.sin_port = htons(pi->ui.port);
-				stSockAddr.sin_addr.S_un.S_addr = inet_addr(pi->ui.ip.front().c_str());
-				do{
-					if (-1 != connect(sockfd, (const struct sockaddr *)&stSockAddr, sizeof(struct sockaddr_in)))
-					{
-						pi->ui.active();
-						std::string header = prepareheader(&pi->ui);
-						int left = header.length();
-						int length = header.length();
-						int len, i, j;
-						while (left > 0) {
-							len = send(sockfd, header.c_str() + length - left, left, 0);
-							pi->ui.active();
-							if (len <= 0)
+			if (-1 == sockfd) {
+				WCLOG(LS_ERROR) << "socket create error:" << errno;
+				break;
+			}
+			int recvTimeout = 30 * 1000;  //30s
+			int sendTimeout = 60 * 1000;  //30s
+			setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&recvTimeout, sizeof(int));
+			setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&sendTimeout, sizeof(int));
+			memset(&stSockAddr, 0, sizeof(struct sockaddr_in));
+			stSockAddr.sin_family = AF_INET;
+			stSockAddr.sin_port = htons(pi->ui.port);
+			stSockAddr.sin_addr.S_un.S_addr = inet_addr(pi->ui.ip.front().c_str());
+			do {
+				if (-1 == connect(sockfd, (const struct sockaddr *)&stSockAddr, sizeof(struct sockaddr_in))) {
+					WCLOG(LS_ERROR) << "socket connect error:" << errno;
+					break;
+				}
+				pi->ui.active();
+				std::string post = prepareheader(&pi->ui);
+				int left = post.length();
+				int length = post.length();
+				int len, i, j;
+				while (left > 0) {
+					len = send(sockfd, post.c_str() + length - left, left, 0);
+					pi->ui.active();
+					if (len <= 0) {
+						WCLOG(LS_ERROR) << "socket send error:" << errno;
+						break;
+					}
+					left -= len;
+				}
+				if (len <= 0) // 网络遇到错误。
+					break;
+				std::string header;
+				i = 0;
+				while (true) {
+					len = recv(sockfd, buf, sizeof(buf), 0);
+					pi->ui.active();
+					if (len <= 0) {
+						WCLOG(LS_ERROR) << "socket recv error:" << errno;
+						break;
+					}
+					vbuf.insert(vbuf.end(), buf, buf + len);
+					if (vbuf.size() >= 4) {
+						for (; i < vbuf.size() - 3; i++) {
+							if (vbuf[i] == '\r' && vbuf[i + 1] == '\n' && vbuf[i + 2] == '\r' && vbuf[i + 3] == '\n') {
+								header.append(&vbuf[0], i);
+								WCLOG(LS_ERROR) << "http header:" << header;
+								vbuf.erase(vbuf.begin(), vbuf.begin() + i + 4);
 								break;
-							left -= len;
-						}
-						if (left == 0) {
-							char buf[1024] = { 0 };
-							char bufleft[1024] = { 0 };
-							int bufleftlen = 0;
-							int headerlen = 0;
-							bool headerdone = false;
-							std::string header;
-							while (true) {
-								len = recv(sockfd, buf, sizeof(buf), 0);
-								pi->ui.active();
-								if (len <= 0)
-									break;
-								for (i = 0; i < len - 3; i++) {
-									if (buf[i] == '\r' && buf[i + 1] == '\n' && buf[i + 2] == '\r' && buf[i + 3] == '\n') {
-										headerlen += i;
-										bufleftlen = len - (i + 4);
-										memcpy(bufleft, buf + i + 4, bufleftlen);
-										len = i;
-										headerdone = true;
-										break;
-									}
-								}
-								header.append(buf, len);
-								if (headerdone)
-									break;
-							}
-
-							header.append("\r\n");
-							size_t pos = 0, lastpos = 0;
-							std::string temp;
-							std::map<std::string, std::string> headers; // Content-Disposition
-							std::string httpver;
-							for (i = 0; i < header.length() - 1; i++) {
-								if (header[i] == '\r' && header[i + 1] == '\n') {
-									temp = header.substr(lastpos, i - lastpos);
-									lastpos = i + 2;
-									for (j = 0; j < temp.length(); j++) {
-										if (temp[j] == ':') {
-											headers[temp.substr(0, j)] = temp.substr(j + 1);
-											break;
-										}
-									}
-									if (j == temp.length())
-										httpver = temp;
-								}
-							}
-
-							std::vector<std::string> httpvers;
-							lastpos = 0;
-							httpver.append(" ");
-							for (i = 0; i < httpver.length(); i++) {
-								if (httpver[i] == ' ') {
-									std::string s0 = httpver.substr(lastpos, i - lastpos);
-									s0.erase(std::find(s0.begin(), s0.end(), ' '));
-									if (s0.length() > 0)
-										httpvers.push_back(s0);
-									lastpos = i;
-								}
-							}
-
-							if (httpvers.size() < 2 || !(httpvers[1] == "200" || httpvers[1] == "206")) {
-								std::lock_guard<std::recursive_mutex> gs(this->sockmt);
-								_qpull.pop();
-								break;
-							}
-							// Content-Length Last-Modified
-							std::map<std::string, std::string>::iterator iter = headers.find("Content-Length");
-							bool samed = false;
-							if (iter != headers.end()) {
-								pi->ui.totallen = atoi((*iter).second.c_str());
-								if (pi->ui.totallen == pi->ui.locallen) {
-									iter = headers.find("Last-Modified");
-									if (str2time((*iter).second.c_str()) == pi->ui.lastmodify) {
-										samed = true;
-									}
-								}
-								else if (pi->ui.totallen < pi->ui.locallen) {
-									remove(pi->filelocal.c_str());
-									pi->ui.locallen = 0;
-								}
-							}
-
-							if (samed) { // 已经下载了，并且大小和修改时间一致。不需要下载了。
-								std::lock_guard<std::recursive_mutex> gs(this->sockmt);
-								_qpull.pop();
-							}else {
-								//remove(pathlock.c_str());
-								FILE* f = _fsopen(pathlock.c_str(), "ab+", _SH_DENYWR);
-								if (f != nullptr) {
-									if (fwrite(bufleft, 1, bufleftlen, f) >= 0) {
-										pi->ui.locallen += bufleftlen;
-										while (!mpause) {
-											len = recv(sockfd, buf, sizeof(buf), 0);
-											pi->ui.active();
-											if (len <= 0)
-												break;
-											if (fwrite(buf, 1, len, f) < 0)
-												break;
-											fflush(f);
-											pi->ui.locallen += len;
-											if (pi->ui.locallen == pi->ui.totallen)
-												break;
-										}
-									}
-									fclose(f);
-									if (pi->ui.locallen == pi->ui.totallen) {
-										//rename(pathlock.c_str(), path.c_str());
-										iter = headers.find("Last-Modified");
-										//time_t tmodify = str2time((*iter).second.c_str());
-										setfiletime(pathinfo.c_str(), (*iter).second.c_str());
-										if (!mpause) { // 不是暂停，正常下载完毕。
-											std::lock_guard<std::recursive_mutex> gs(this->sockmt);
-											_qpull.pop();
-										}
-									}
-								}
 							}
 						}
 					}
-				}while (false);
-				closesocket(sockfd);
-			}
-		}
+					if (!header.empty()) {
+						break;
+					}
+				}
+				if (len <= 0) // 网络遇到错误！
+					break;
+				header.append("\r\n");
+				size_t pos = 0, lastpos = 0;
+				std::string temp;
+				std::map<std::string, std::string> headers; // Content-Disposition
+				std::string httpver;
+				for (i = 0; i < header.length() - 1; i++) {
+					if (header[i] == '\r' && header[i + 1] == '\n') {
+						temp = header.substr(lastpos, i - lastpos);
+						lastpos = i + 2;
+						for (j = 0; j < temp.length(); j++) {
+							if (temp[j] == ':') {
+								headers[temp.substr(0, j)] = temp.substr(j + 1);
+								break;
+							}
+						}
+						if (j == temp.length())
+							httpver = temp;
+					}
+				}
+				std::vector<std::string> httpvers;
+				lastpos = 0;
+				httpver.append(" ");
+				for (i = 0; i < httpver.length(); i++) {
+					if (httpver[i] == ' ') {
+						std::string s0 = httpver.substr(lastpos, i - lastpos);
+						s0.erase(std::find(s0.begin(), s0.end(), ' '));
+						if (s0.length() > 0)
+							httpvers.push_back(s0);
+						lastpos = i;
+					}
+				}
+				if (httpvers.size() < 2 || !(httpvers[1] == "200" || httpvers[1] == "206")) {
+					WCLOG(LS_ERROR) << "http response error:" << httpver;
+					std::lock_guard<std::recursive_mutex> gs(this->sockmt);
+					_qpull.pop_front();
+					delete pi;
+					pi = nullptr;
+					break;
+				}
+				std::map<std::string, std::string>::iterator iter = headers.find("Content-Length");
+				if (iter != headers.end()) {
+					pi->ui.contentlength = atoi((*iter).second.c_str());
+				}
+				pi->ui.totallen = 0;
+				iter = headers.find("Content-Range");
+				if (iter != headers.end()) {
+					temp = (*iter).second;
+					for (i = temp.length(); i >= 0; i--) {
+						if (temp[i] == '/') {
+							pi->ui.totallen = atoi(temp.substr(i + 1).c_str());
+							break;
+						}
+					}
+				}
+				if (pi->ui.totallen == 0) {
+					WCLOG(LS_ERROR) << "http response error: on Content-Range" << httpver;
+					break;
+				}
+				bool samed = false;
+				bool needremove = false;
+				if (pi->ui.totallen == pi->ui.locallen) { // 文件大小相等。已经下载过了。比较文件更新日期是否一样。
+					iter = headers.find("Last-Modified");
+					if (str2time((*iter).second.c_str()) == pi->ui.lastmodify) { // 大小和修改时间都一样，认为是相同文件，不需要重复下载。
+						WCLOG(LS_ERROR) << "alerady have:" << pi->filelocal << " size:" << pi->ui.totallen << " Last Modify:" << pi->ui.lastmodify;
+						std::lock_guard<std::recursive_mutex> gs(this->sockmt);
+						_qpull.pop_front();
+						delete pi;
+						pi = nullptr;
+						break;
+					}else { // 文件大小一样，但是服务端更新过了。删除本地文件。
+						needremove = true;
+					}
+				}
+				if (needremove || (pi->ui.totallen < pi->ui.locallen)) {
+					i = 20;
+					int removed = 0;
+					do {
+						removed = remove(pi->filelocal.c_str());
+						if (removed == 0)
+							break;
+						std::this_thread::sleep_for(std::chrono::milliseconds(10));
+						if (mpause)
+							break;
+					} while (i-- >= 0);
+					if(removed ==0)
+						pi->ui.locallen = 0;
+					else { // 当前进程不能删除错误文件[大概播放进程正在占用文件]，需要设置删除标志。等下次播放之前删除。
+						WCLOG(LS_ERROR) << "file need to remove:" << pi->filelocal << " peer size:" << pi->ui.totallen << " local size:" << pi->ui.locallen;
+						std::lock_guard<std::recursive_mutex> gs(this->sockmt);
+						_qpull.pop_front();
+						delete pi;
+						pi = nullptr;
+						break;
+					}
+				}
+				WCLOG(LS_ERROR) << "start record file:" << pi->filelocal << " size:" << pi->ui.totallen << " Last Modify:" << pi->ui.lastmodify;
+				FILE* f = _fsopen(path.c_str(), "ab+", _SH_DENYWR);
+				if (f == nullptr) {
+					WCLOG(LS_ERROR) << "_fsopen error:" << errno;
+					break;
+				}
+				while (!mpause) {
+					len = recv(sockfd, buf, sizeof(buf), 0);
+					//Sleep(100 * 2);
+					pi->ui.active();
+					if (len <= 0) {
+						WCLOG(LS_ERROR) << "socket recv error:" << errno;
+						break;
+					}
+					vbuf.insert(vbuf.end(), buf, buf + len);
+					size_t writed = fwrite(&vbuf[0], 1, vbuf.size(), f);
+					if (writed != vbuf.size()) {
+						WCLOG(LS_ERROR) << "fwrite error:" << errno <<" writed:" << writed;
+						pi->ui.locallen += writed;
+						break;
+					}
+					pi->ui.locallen += vbuf.size();
+					vbuf.clear();
+					fflush(f);
+					if (pi->ui.locallen >= pi->ui.totallen)
+						break;
+				}
+				fclose(f);
+				if (pi->ui.locallen >= pi->ui.totallen) {
+					iter = headers.find("Last-Modified");
+					setfiletime(pathinfo.c_str(), (*iter).second.c_str());
+					WCLOG(LS_ERROR) << "file download finish:" << pi->filelocal << " filesize:" << pi->ui.locallen << "(" << pi->ui.totallen << ")";
+					std::lock_guard<std::recursive_mutex> gs(this->sockmt);
+					_qpull.pop_front();
+					delete pi;
+					break;
+				}
+				WCLOG(LS_ERROR) << "file download part one:" << pi->filelocal << " filesize:" << pi->ui.locallen << "(" << pi->ui.totallen << ")";
+				std::lock_guard<std::recursive_mutex> gs(this->sockmt);
+				_qpull.pop_front();
+				pi->ui.failtimes++;
+				_qpull.push_back(pi);
+
+			} while (false);
+			closesocket(sockfd);
+		}while (false);
 		std::this_thread::sleep_for(std::chrono::milliseconds(0));
 	}
 }
@@ -228,12 +299,12 @@ std::string httpclient::prepareheader(const urlitem* ui) {
 	std::ostringstream os;
 	os << "GET " << ui->url << " HTTP/1.1\r\n"
 		<< "Host:" << ui->host << "\r\n"
-		<< "Ranges:bytes=" << ui->locallen << " -\r\n"
-		<< "Connection:keep-alive\r\n"
-		<< "Upgrade-Insecure-Requests:1\r\n"
+		<< "Range:bytes=" << ui->locallen << " -\r\n"
+		//<< "Connection:keep-alive\r\n"
+		//<< "Upgrade-Insecure-Requests:1\r\n"
 		<< "User-Agent:Mozilla/5.0(Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.25 Safari/537.36 Core/1.70.3676.400 QQBrowser/10.4.3457.400\r\n"
-		<< "Accept:text/html, application/xhtml+xml, application/xml; q=0.9,image/webp,image/apng,*/*;q=0.8\r\n"
-		<< "Accept-Encoding: gzip, deflate\r\n"
+		<< "Accept:*/*\r\n"
+		//<< "Accept-Encoding: gzip, deflate\r\n"
 		<< "Accept-Language: zh-CN,zh;q=0.9\r\n\r\n";
 
 
@@ -346,7 +417,14 @@ bool httpclient::get(std::string url, std::string& localfile,const std::string& 
 			localfile = pi->ui.file;
 		}
 		std::lock_guard<std::recursive_mutex> gs(this->sockmt);
-		_qpull.push(pi);
+		listpull::iterator iter;
+		for (iter = _qpull.begin(); iter != _qpull.end(); iter++) {
+			if ((*iter)->filelocal.compare(pi->filelocal) == 0)
+				break;
+		}
+		if(iter == _qpull.end())
+			_qpull.push_back(pi);
+		//_qpull.push(pi);
 		start();
 	}
 	else {

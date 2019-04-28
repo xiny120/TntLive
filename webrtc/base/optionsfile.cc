@@ -106,7 +106,7 @@ bool OptionsFile::IsLegalName(const std::string &name) {
   for (size_t pos = 0; pos < name.length(); ++pos) {
     if (name[pos] == '\n' || name[pos] == '\\' || name[pos] == '=') {
       // Illegal character.
-      LOG(LS_WARNING) << "Ignoring operation for illegal option " << name;
+      WCLOG(LS_WARNING) << "Ignoring operation for illegal option " << name;
       return false;
     }
   }
@@ -117,7 +117,7 @@ bool OptionsFile::IsLegalValue(const std::string &value) {
   for (size_t pos = 0; pos < value.length(); ++pos) {
     if (value[pos] == '\n' || value[pos] == '\\') {
       // Illegal character.
-      LOG(LS_WARNING) << "Ignoring operation for illegal value " << value;
+      WCLOG(LS_WARNING) << "Ignoring operation for illegal value " << value;
       return false;
     }
   }
@@ -126,7 +126,7 @@ bool OptionsFile::IsLegalValue(const std::string &value) {
 
 bool OptionsFile::GetStringValue(const std::string& option,
                                  std::string *out_val) const {
-  LOG(LS_VERBOSE) << "OptionsFile::GetStringValue "
+  WCLOG(LS_VERBOSE) << "OptionsFile::GetStringValue "
                   << option;
   if (!IsLegalName(option)) {
     return false;
@@ -141,7 +141,7 @@ bool OptionsFile::GetStringValue(const std::string& option,
 
 bool OptionsFile::GetIntValue(const std::string& option,
                               int *out_val) const {
-  LOG(LS_VERBOSE) << "OptionsFile::GetIntValue "
+  WCLOG(LS_VERBOSE) << "OptionsFile::GetIntValue "
                   << option;
   if (!IsLegalName(option)) {
     return false;
@@ -155,7 +155,7 @@ bool OptionsFile::GetIntValue(const std::string& option,
 
 bool OptionsFile::SetStringValue(const std::string& option,
                                  const std::string& value) {
-  LOG(LS_VERBOSE) << "OptionsFile::SetStringValue "
+  WCLOG(LS_VERBOSE) << "OptionsFile::SetStringValue "
                   << option << ":" << value;
   if (!IsLegalName(option) || !IsLegalValue(value)) {
     return false;
@@ -166,7 +166,7 @@ bool OptionsFile::SetStringValue(const std::string& option,
 
 bool OptionsFile::SetIntValue(const std::string& option,
                               int value) {
-  LOG(LS_VERBOSE) << "OptionsFile::SetIntValue "
+  WCLOG(LS_VERBOSE) << "OptionsFile::SetIntValue "
                   << option << ":" << value;
   if (!IsLegalName(option)) {
     return false;
@@ -175,7 +175,7 @@ bool OptionsFile::SetIntValue(const std::string& option,
 }
 
 bool OptionsFile::RemoveValue(const std::string& option) {
-  LOG(LS_VERBOSE) << "OptionsFile::RemoveValue " << option;
+  WCLOG(LS_VERBOSE) << "OptionsFile::RemoveValue " << option;
   if (!IsLegalName(option)) {
     return false;
   }

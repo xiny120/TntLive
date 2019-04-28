@@ -69,7 +69,7 @@ int64_t TimestampAligner::UpdateOffset(int64_t camera_time_us,
   // threshold.
   static const int64_t kResetLimitUs = 300000;
   if (std::abs(error_us) > kResetLimitUs) {
-    LOG(LS_INFO) << "Resetting timestamp translation after averaging "
+    WCLOG(LS_INFO) << "Resetting timestamp translation after averaging "
                  << frames_seen_ << " frames. Old offset: " << offset_us_
                  << ", new offset: " << diff_us;
     frames_seen_ = 0;

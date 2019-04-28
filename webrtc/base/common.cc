@@ -56,7 +56,7 @@ void LogAssert(const char* function, const char* file, int line,
   if (custom_assert_logger_) {
     custom_assert_logger_(function, file, line, expression);
   } else {
-    LOG(LS_ERROR) << file << "(" << line << ")" << ": ASSERT FAILED: "
+    WCLOG(LS_ERROR) << file << "(" << line << ")" << ": ASSERT FAILED: "
                   << expression << " @ " << function;
   }
 }

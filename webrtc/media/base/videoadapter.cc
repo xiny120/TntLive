@@ -177,7 +177,7 @@ bool VideoAdapter::AdaptFrameResolution(int in_width,
     if ((frames_in_ - frames_out_) % 90 == 0) {
       // TODO(fbarchard): Reduce to LS_VERBOSE when adapter info is not needed
       // in default calls.
-      LOG(LS_INFO) << "VAdapt Drop Frame: scaled " << frames_scaled_
+      WCLOG(LS_INFO) << "VAdapt Drop Frame: scaled " << frames_scaled_
                    << " / out " << frames_out_
                    << " / in " << frames_in_
                    << " Changes: " << adaption_changes_
@@ -235,7 +235,7 @@ bool VideoAdapter::AdaptFrameResolution(int in_width,
   if (previous_width_ && (previous_width_ != *out_width ||
                           previous_height_ != *out_height)) {
     ++adaption_changes_;
-    LOG(LS_INFO) << "Frame size changed: scaled " << frames_scaled_ << " / out "
+    WCLOG(LS_INFO) << "Frame size changed: scaled " << frames_scaled_ << " / out "
                  << frames_out_ << " / in " << frames_in_
                  << " Changes: " << adaption_changes_ << " Input: " << in_width
                  << "x" << in_height

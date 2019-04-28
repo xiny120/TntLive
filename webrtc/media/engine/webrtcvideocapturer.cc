@@ -131,7 +131,7 @@ WebRtcVideoCapturer::~WebRtcVideoCapturer() {}
 bool WebRtcVideoCapturer::Init(const Device& device) {
   RTC_DCHECK(!start_thread_);
   if (module_) {
-    LOG(LS_ERROR) << "The capturer is already initialized";
+    WCLOG(LS_ERROR) << "The capturer is already initialized";
     return false;
   }
 
@@ -157,7 +157,7 @@ bool WebRtcVideoCapturer::Init(const Device& device) {
     }
   }
   if (!found) {
-    LOG(LS_WARNING) << "Failed to find capturer for id: " << device.id;
+    WCLOG(LS_WARNING) << "Failed to find capturer for id: " << device.id;
     factory_->DestroyDeviceInfo(info);
     return false;
   }
@@ -173,7 +173,7 @@ bool WebRtcVideoCapturer::Init(const Device& device) {
       if (CapabilityToFormat(cap, &format)) {
         supported.push_back(format);
       } else {
-        LOG(LS_WARNING) << "Ignoring unsupported WebRTC capture format "
+        WCLOG(LS_WARNING) << "Ignoring unsupported WebRTC capture format "
                         << cap.rawType;
       }
     }
@@ -181,13 +181,13 @@ bool WebRtcVideoCapturer::Init(const Device& device) {
   factory_->DestroyDeviceInfo(info);
 
   if (supported.empty()) {
-    LOG(LS_ERROR) << "Failed to find usable formats for id: " << device.id;
+    WCLOG(LS_ERROR) << "Failed to find usable formats for id: " << device.id;
     return false;
   }
 
   module_ = factory_->Create(0, vcm_id);
   if (!module_) {
-    LOG(LS_ERROR) << "Failed to create capturer for id: " << device.id;
+    WCLOG(LS_ERROR) << "Failed to create capturer for id: " << device.id;
     return false;
   }
 
@@ -202,11 +202,11 @@ bool WebRtcVideoCapturer::Init(
     const rtc::scoped_refptr<webrtc::VideoCaptureModule>& module) {
   RTC_DCHECK(!start_thread_);
   if (module_) {
-    LOG(LS_ERROR) << "The capturer is already initialized";
+    WCLOG(LS_ERROR) << "The capturer is already initialized";
     return false;
   }
   if (!module) {
-    LOG(LS_ERROR) << "Invalid VCM supplied";
+    WCLOG(LS_ERROR) << "Invalid VCM supplied";
     return false;
   }
   // TODO(juberti): Set id and formats.
@@ -227,7 +227,7 @@ bool WebRtcVideoCapturer::GetBestCaptureFormat(const VideoFormat& desired,
     best_format->height = desired.height;
     best_format->fourcc = FOURCC_I420;
     best_format->interval = desired.interval;
-    LOG(LS_INFO) << "Failed to find best capture format,"
+    WCLOG(LS_INFO) << "Failed to find best capture format,"
                  << " fall back to the requested format "
                  << best_format->ToString();
   }
@@ -255,11 +255,11 @@ void WebRtcVideoCapturer::OnSinkWantsChanged(const rtc::VideoSinkWants& wants) {
 
 CaptureState WebRtcVideoCapturer::Start(const VideoFormat& capture_format) {
   if (!module_) {
-    LOG(LS_ERROR) << "The capturer has not been initialized";
+    WCLOG(LS_ERROR) << "The capturer has not been initialized";
     return CS_FAILED;
   }
   if (start_thread_) {
-    LOG(LS_ERROR) << "The capturer is already running";
+    WCLOG(LS_ERROR) << "The capturer is already running";
     RTC_DCHECK(start_thread_->IsCurrent())
         << "Trying to start capturer on different threads";
     return CS_FAILED;
@@ -274,14 +274,14 @@ CaptureState WebRtcVideoCapturer::Start(const VideoFormat& capture_format) {
 
   webrtc::VideoCaptureCapability cap;
   if (!FormatToCapability(capture_format, &cap)) {
-    LOG(LS_ERROR) << "Invalid capture format specified";
+    WCLOG(LS_ERROR) << "Invalid capture format specified";
     return CS_FAILED;
   }
 
   int64_t start = rtc::TimeMillis();
   module_->RegisterCaptureDataCallback(*this);
   if (module_->StartCapture(cap) != 0) {
-    LOG(LS_ERROR) << "Camera '" << GetId() << "' failed to start";
+    WCLOG(LS_ERROR) << "Camera '" << GetId() << "' failed to start";
     module_->DeRegisterCaptureDataCallback();
     async_invoker_.reset();
     SetCaptureFormat(nullptr);
@@ -289,7 +289,7 @@ CaptureState WebRtcVideoCapturer::Start(const VideoFormat& capture_format) {
     return CS_FAILED;
   }
 
-  LOG(LS_INFO) << "Camera '" << GetId() << "' started with format "
+  WCLOG(LS_INFO) << "Camera '" << GetId() << "' started with format "
                << capture_format.ToString() << ", elapsed time "
                << rtc::TimeSince(start) << " ms";
 
@@ -299,7 +299,7 @@ CaptureState WebRtcVideoCapturer::Start(const VideoFormat& capture_format) {
 
 void WebRtcVideoCapturer::Stop() {
   if (!start_thread_) {
-    LOG(LS_ERROR) << "The capturer is already stopped";
+    WCLOG(LS_ERROR) << "The capturer is already stopped";
     return;
   }
   RTC_DCHECK(start_thread_);
@@ -314,7 +314,7 @@ void WebRtcVideoCapturer::Stop() {
 
   // TODO(juberti): Determine if the VCM exposes any drop stats we can use.
   double drop_ratio = 0.0;
-  LOG(LS_INFO) << "Camera '" << GetId() << "' stopped after capturing "
+  WCLOG(LS_INFO) << "Camera '" << GetId() << "' stopped after capturing "
                << captured_frames_ << " frames and dropping "
                << drop_ratio << "%";
 
@@ -369,7 +369,7 @@ void WebRtcVideoCapturer::OnIncomingCapturedFrame(
 
 void WebRtcVideoCapturer::OnCaptureDelayChanged(const int32_t id,
                                                 const int32_t delay) {
-  LOG(LS_INFO) << "Capture delay changed to " << delay << " ms";
+  WCLOG(LS_INFO) << "Capture delay changed to " << delay << " ms";
 }
 
 void WebRtcVideoCapturer::SignalFrameCapturedOnStartThread(
@@ -382,7 +382,7 @@ void WebRtcVideoCapturer::SignalFrameCapturedOnStartThread(
   ++captured_frames_;
   // Log the size and pixel aspect ratio of the first captured frame.
   if (1 == captured_frames_) {
-    LOG(LS_INFO) << "Captured frame size "
+    WCLOG(LS_INFO) << "Captured frame size "
                  << frame.width() << "x" << frame.height()
                  << ". Expected format " << GetCaptureFormat()->ToString();
   }

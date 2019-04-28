@@ -22,5 +22,6 @@ public:
 	// data 数据缓冲
 	// size 数据缓冲大小。
 	virtual int Read(char* type, uint32_t* timestamp, char** data, int* size) = 0; 
+	virtual double GetPropDouble(const char* key) = 0;
 };
 

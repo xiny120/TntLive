@@ -56,6 +56,7 @@ void CDlgFlvPlayer::OnBnClickedCancel()
 		RTMPGuester::Destory(m_pPlayer);
 		m_pPlayer = NULL;
 		CDialogEx::OnCancel();
+		
 	}
 }
 
@@ -113,11 +114,13 @@ BOOL CDlgFlvPlayer::OnInitDialog(){
 			if (token == "pulldlghis") {
 				CefRefPtr<CefDictionaryValue> data = dict->GetDictionary("data");
 				CefString id = data->GetString("Id");
+				CefString filepath = data->GetString("FilePath");
 				data = dict->GetDictionary("ui");
 				CefString sessionid = data->GetString("SessionId");
 				CefString token = data->GetString("Token");
 				m_pPlayer = RTMPGuester::Create(*this);
-				std::string url = "http://gpk01.gwgz.com:8862/live/livestream/2019/04/26203319300.flv";
+				std::string url = "http://gpk01.gwgz.com:8862/";
+				url = url + std::string(filepath);
 				m_pPlayer->StartRtmpPlay(url.c_str(), GetDlgItem(IDC_STATIC_VIDEO)->GetSafeHwnd(), "flv", "");
 			}
 		}
@@ -135,4 +138,20 @@ void CDlgFlvPlayer::PostNcDestroy()
 	
 
 	__super::PostNcDestroy();
+}
+
+void CDlgFlvPlayer::OnRtmplayerPlayStart() {
+	TRACE("CDlgFlvPlayer::OnRtmplayerPlayStart\r\n");
+}
+void CDlgFlvPlayer::OnRtmplayerPlayStop() {
+	TRACE("CDlgFlvPlayer::OnRtmplayerPlayStop\r\n");
+}
+void CDlgFlvPlayer::OnRtmplayer1stVideo() {
+	TRACE("CDlgFlvPlayer::OnRtmplayer1stVideo\r\n");
+}
+void CDlgFlvPlayer::OnRtmplayer1stAudio() {
+	TRACE("CDlgFlvPlayer::OnRtmplayer1stAudio\r\n");
+}
+void CDlgFlvPlayer::OnRtmplayerConnectionFailed(int a) {
+
 }

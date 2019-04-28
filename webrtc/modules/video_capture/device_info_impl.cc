@@ -107,7 +107,7 @@ int32_t DeviceInfoImpl::GetCapability(const char* deviceUniqueIdUTF8,
     // Make sure the number is valid
     if (deviceCapabilityNumber >= (unsigned int) _captureCapabilities.size())
     {
-        LOG(LS_ERROR) << "Invalid deviceCapabilityNumber "
+        WCLOG(LS_ERROR) << "Invalid deviceCapabilityNumber "
                       << deviceCapabilityNumber << ">= number of capabilities ("
                       << _captureCapabilities.size() << ").";
         return -1;
@@ -262,7 +262,7 @@ int32_t DeviceInfoImpl::GetBestMatchedCapability(
         }// else height not good
     }//end for
 
-    LOG(LS_VERBOSE) << "Best camera format: " << bestWidth << "x" << bestHeight
+    WCLOG(LS_VERBOSE) << "Best camera format: " << bestWidth << "x" << bestHeight
                     << "@" << bestFrameRate
                     << "fps, color format: " << bestRawType;
 
@@ -339,7 +339,7 @@ int32_t DeviceInfoImpl::GetExpectedCaptureDelay(
     }
     if (bestDelay > kMaxCaptureDelay)
     {
-        LOG(LS_WARNING) << "Expected capture delay (" << bestDelay
+        WCLOG(LS_WARNING) << "Expected capture delay (" << bestDelay
                         << " ms) too high, using " << kMaxCaptureDelay
                         << " ms.";
         bestDelay = kMaxCaptureDelay;
