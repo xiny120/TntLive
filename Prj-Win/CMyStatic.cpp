@@ -18,11 +18,12 @@ END_MESSAGE_MAP()
 
 void CMyStatic::OnSize(UINT nType, int cx, int cy){
 	CStatic::OnSize(nType, cx, cy);
+	Invalidate();
 }
 
 
 BOOL CMyStatic::OnEraseBkgnd(CDC* pDC){
-	return TRUE;
+	return FALSE;
 	return CStatic::OnEraseBkgnd(pDC);
 }
 
@@ -33,14 +34,23 @@ void CMyStatic::OnPaint(){
 	CRect rc;
 	GetClientRect(rc);
 	dc.FillSolidRect(rc, RGB(0, 0, 0));
+	CString strMsg = "";
 	
 	if (gLiving == 0) {
-		COLORREF clr = dc.SetTextColor(RGB(255, 0, 0));
-		
-		dc.DrawText("暂无直播,您可以点播下列直播录像。", rc, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
-		dc.SetTextColor(clr);
-	}else {
-
+		strMsg = "正在连接直播服务器,请稍后...";
+	}else if(gLiving == 1) {
+		strMsg = "正在查询频道是否开始直播，请稍后...";
+	}else if (gLiving == 2) {
+		strMsg = "直播结束，您还可以收看往期精彩直播录像！";
+	}else if (gLiving == 3) {
+		strMsg = "目前暂无直播，您可以收看往期精彩直播录像！";
+	}else if (gLiving == 4) {
+		strMsg = "目前暂无直播，您可以收看往期精彩直播录像！";
+	}else if (gLiving == 99) {
+		strMsg = "直播缓冲中，精彩马上呈现...";
 	}
-	
+	COLORREF clr = dc.SetTextColor(RGB(255, 0, 0));
+	dc.DrawText(strMsg, rc, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+	dc.SetTextColor(clr);
+
 }

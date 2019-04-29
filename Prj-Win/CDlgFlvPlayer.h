@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "RtmpGuester.h"
+#include "CMyStatic.h"
 
 // CDlgFlvPlayer 对话框
 
@@ -27,6 +28,7 @@ private:
 	std::string minfo;
 	RTMPGuester		*m_pPlayer;
 	int m_iUserId;
+	CMyStatic	m_myStatic;
 	char*				m_pAudioMarker;
 	short*				m_pAudioMarketOut;
 	volatile int		m_iAudioMarker;
@@ -34,7 +36,8 @@ private:
 	volatile int		m_iAudioMarketId;
 	volatile int		m_iAudioMarketIdNew;
 	volatile time_t		m_iAudioMarketLast;
-
+	int	m_nVideoWidth;
+	int m_nVideoHeight;
 public:
 	virtual BOOL OnInitDialog();
 
@@ -81,4 +84,7 @@ public:
 		//TRACE("len:%d samples:%d channels:%d\r\n",len, rate, channels);
 	}
 	virtual void PostNcDestroy();
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg LRESULT OnPullDlgResize(WPARAM, LPARAM);
+	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
 };

@@ -83,12 +83,21 @@ void AnyRtmplayerImpl::OnMessage(rtc::Message* msg){
 		m1stAudio = true;
 		m1stVideo = true;
 		if (ply_decoder_ == NULL) {
-			ply_decoder_ = new PlyDecoder();
+			bool needgofast = true;
+			if (strcmp(mtype.c_str(), "rtmp") == 0) {
+			}
+			else if (strcmp(mtype.c_str(), "flv") == 0) {
+				needgofast = false;
+			}
+			else {
+				assert(0);
+			}
+			ply_decoder_ = new PlyDecoder(needgofast);
 			if (video_renderer_)
 				ply_decoder_->SetVideoRender(video_renderer_);
 		}
 		if (rtmp_pull_ == NULL) {
-			rtmp_pull_ = new AnyRtmpPull(*this, str_url_.c_str(), mtype.c_str());// mabs);
+			rtmp_pull_ = new AnyRtmpPull(*this, str_url_.c_str(), mtype.c_str());
 		}
 		callback_.OnRtmplayerPlayStart();
 	}

@@ -103,6 +103,7 @@ public:
 	afx_msg LRESULT OnPullDlgResize(WPARAM, LPARAM);
 	afx_msg LRESULT OnPullDlg(WPARAM, LPARAM);
 
+	//BOOL m_bLiving;
 	CMyStatic m_myStatic;
 	CEdit	m_editUrl;
 	CButton m_btnRtmp;
@@ -124,7 +125,7 @@ public:
 
 
 private:
-	DlgVideo		*m_pDlgVideoMain;
+	//DlgVideo		*m_pDlgVideoMain;
 	RTMPGuester		*m_pAVRtmplayer;
 	std::string mrtmpurl;
 	std::string mmedialisturl;

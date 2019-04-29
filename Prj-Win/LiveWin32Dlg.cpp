@@ -301,7 +301,7 @@ void CLiveWin32Dlg::OnBnClickedBtnRtcp(){
 }
 void CLiveWin32Dlg::OnCancel(){
 	// TODO: 在此添加专用代码和/或调用基类
-	if (AfxMessageBox(_T("退出码？"), MB_YESNO) == IDYES) {
+	if (AfxMessageBox(_T("退出吗？"), MB_YESNO) == IDYES) {
 		CDialogEx::OnCancel();
 	}
 }

@@ -13,9 +13,7 @@
 #include "../Prj-Win/xdefines.h"
 
 namespace webrtc {
-
 	const char kGdiClassName[] = "gdi_renderer";
-
 #if 1
 	VideoRenderer* VideoRenderer::CreatePlatformRenderer(const void* hwnd,
 		size_t width,
@@ -23,13 +21,11 @@ namespace webrtc {
 		return GdiRenderer::Create(hwnd, width, height);
 	}
 #endif
-
 	GdiRenderer::GdiRenderer(size_t width, size_t height)
 		: width_(width),
 		height_(height),
 		fps_(0),
-		hwnd_(NULL)
-	{
+		hwnd_(NULL){
 		assert(width > 0);
 		assert(height > 0);
 	}
@@ -37,7 +33,6 @@ namespace webrtc {
 	GdiRenderer::~GdiRenderer() { Destroy(); }
 
 	void GdiRenderer::Destroy() {
-
 		if (hwnd_ != NULL) {
 			hwnd_ = NULL;
 		}
@@ -45,11 +40,9 @@ namespace webrtc {
 
 	bool GdiRenderer::Init(const void* hwnd) {
 		hwnd_ = (HWND)hwnd;
-
 		if (hwnd_ == NULL) {
 			return false;
 		}
-
 		Resize(width_, height_);
 		return true;
 	}
@@ -62,25 +55,15 @@ namespace webrtc {
 			delete gdi_renderer;
 			return NULL;
 		}
-
 		return gdi_renderer;
 	}
 
 	void GdiRenderer::Resize(size_t width, size_t height) {
 		width_ = width;
 		height_ = height;
-
-		//::SetWindowPos(hwnd_, NULL, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
-		//RECT rc;
-		//::GetClientRect(hwnd_, &rc);
-		PostMessage(GetParent(hwnd_), WM_PULLDLG_RESIZE, width, height);
-
+		PostMessage(GetParent(hwnd_), WM_PULLDLG_RESIZE, width+40, height+20);
 	}
-
-
-	//test function for save local bmp
-	int bmp_write(unsigned char *image, int imageWidth, int imageHeight, char *filename)
-	{
+	int bmp_write(unsigned char *image, int imageWidth, int imageHeight, char *filename){
 		unsigned char header[54] = {
 		  0x42, 0x4d, 0, 0, 0, 0, 0, 0, 0, 0,
 			54, 0, 0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 32, 0,
@@ -120,13 +103,63 @@ namespace webrtc {
 		return 0;
 	}
 
-	void DrawBitmap(HWND hwnd, int x, int y, int nBmpWidth, int nBmpHeight, const unsigned char *pBmpData)
-	{
-		HBITMAP hBitmap = ::CreateBitmap(nBmpWidth, nBmpHeight, 1, 32, pBmpData);
+	void DrawBitmap(HWND hwnd, int w0, int h0, const unsigned char *pBmpData){
+		RECT rc;
+		double x, y, h3, w3;
+		GetClientRect(hwnd, &rc);
+		int totalh = rc.bottom - rc.top;
+		int totalw = rc.right - rc.left;
+
+		rc.bottom -= 10;
+		rc.right -= 20;
+		/*
+		int h1, w1,x = 0,y = 0;
+		h1 = rc.bottom - rc.top;
+		w1 = rc.right - rc.left;
+		h1 = h1 < h0 ? h0 : h1;
+		w1 = w1 < w0 ? w0 : w1;
+		if ((h1 > (rc.bottom - rc.top)) || (w1 > (rc.right - rc.left))) {
+			PostMessage(GetParent(hwnd), WM_PULLDLG_RESIZE, w0 + 20, h0 + 40);
+			return;
+		}
+
+		int h2 = h0 * w1 / w0;
+		int w2 = w0 * h1 / h0;
+		int h3 = h2;
+		int w3 = h2 * w0 / h0;
+		if (h2 > (rc.bottom - rc.top)) {
+			w3 = w2;
+			h3 = w2 * h0 / w0;
+		}
+
+		if (IsZoomed(hwnd) == 0) {
+			w3 = w0;
+			h3 = h0;
+		}
+		*/
+
+		w3 = (double)w0 * 1.25f;
+		h3 = (double)h0 * 1.25f;
+
+		if (w3 > (rc.right - rc.left)) {
+			w3 = w0;
+			h3 = h0;
+		}
+
+		x = (totalw - w3) / 2;
+		y = (totalh - h3) / 2;
+		x = x < 0 ? 0 : x;
+		y = y < 0 ? 0 : y;
+
+
+		HBITMAP hBitmap = ::CreateBitmap(w0, h0, 1, 32, pBmpData);
 		HDC hWndDc = ::GetDC(hwnd);
 		HDC hMemDc = ::CreateCompatibleDC(hWndDc);
 		HBITMAP hOldBitmap = (HBITMAP)::SelectObject(hMemDc, hBitmap);
-		::BitBlt(hWndDc, x, y, nBmpWidth, nBmpHeight, hMemDc, 0, 0, SRCCOPY);
+		//::BitBlt(hWndDc, x, y, w3, h3, hMemDc, 0, 0, SRCCOPY);
+		SetStretchBltMode(hWndDc,HALFTONE);
+		//SetStretchBltMode(COLORONCOLOR);
+		::StretchBlt(hWndDc,x, y, w3, h3, hMemDc, 0, 0, w0, h0, SRCCOPY);
 
 		::SelectObject(hMemDc, hOldBitmap);
 		::DeleteObject(hBitmap);
@@ -148,11 +181,7 @@ namespace webrtc {
 
 		webrtc::VideoFrame video_frame(videoFrame->video_frame_buffer(), 0, 0, videoFrame->rotation());
 		ConvertFromI420(video_frame, kARGB, 0, static_cast<uint8_t*>(pBits));
-		RECT rc;
-		GetClientRect(hwnd_, &rc);
-		int x = (rc.right - rc.left - width_) / 2;
-		int y = (rc.bottom - rc.top - height_) / 2;
-		DrawBitmap(hwnd_, x, y, width_, height_, pBits);
+		DrawBitmap(hwnd_,width_, height_, pBits);
 		//char filename[1024] = { 0 };
 		//sprintf(filename, "test%08d", fps_);
 		//bmp_write((unsigned char*)pBits, 512, 512, filename);

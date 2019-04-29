@@ -35,7 +35,7 @@ DlgRtmpPull::DlgRtmpPull(const char* rtmpurl,const char* medialisturl)
 	: CDialog(DlgRtmpPull::IDD)
 	, m_strUrl(_T("rtmp://www.pic98.com/live/livestream"))
 	, m_pAVRtmplayer(NULL)
-	, m_pDlgVideoMain(NULL)
+//	, m_pDlgVideoMain(NULL)
 	, m_nVideoWidth(720)
 	, m_nVideoHeight(576)
 	, m_nChatroomWidth(420)
@@ -107,14 +107,14 @@ BOOL DlgRtmpPull::OnInitDialog() {
 	srand(time(NULL));
 	brush.CreateSolidBrush(RGB(0, 0, 0));
 
-	m_pDlgVideoMain = new DlgVideo(this);
-	m_pDlgVideoMain->Create(DlgVideo::IDD, this);
-	m_pDlgVideoMain->ShowWindow(SW_HIDE);
-	CRect rc;
-	m_myStatic.GetWindowRect(rc);
+	//m_pDlgVideoMain = new DlgVideo(this);
+	//m_pDlgVideoMain->Create(DlgVideo::IDD, this);
+	//m_pDlgVideoMain->ShowWindow(SW_HIDE);
+	//CRect rc;
+	//m_myStatic.GetWindowRect(rc);
 	//m_staticCaptrue.ShowWindow(SW_HIDE);
-	ScreenToClient(rc);
-	m_pDlgVideoMain->SetWindowPos(NULL, rc.left, rc.top, rc.Width(), rc.Height(), SWP_SHOWWINDOW);
+	//ScreenToClient(rc);
+	//m_pDlgVideoMain->SetWindowPos(NULL, rc.left, rc.top, rc.Width(), rc.Height(), SWP_SHOWWINDOW);
 
 	CRect rc1;
 	GetClientRect(rc1);
@@ -122,11 +122,10 @@ BOOL DlgRtmpPull::OnInitDialog() {
 
 	CefBrowserSettings settings;
 	
-	
 	std::string url;
 	if (url.empty())
 		url = m_baseurl + "live/h5client/mainpage/#/pages/chatroom/chatroom";
-
+	CRect rc;
 	CefWindowInfo window_info;
 	rc.left = 0;
 	rc.top = 0;
@@ -153,11 +152,11 @@ BOOL DlgRtmpPull::DestroyWindow(){
 		RTMPGuester::Destory(m_pAVRtmplayer);
 		m_pAVRtmplayer = NULL;
 	}
-	if (m_pDlgVideoMain) {
-		m_pDlgVideoMain->DestroyWindow();
-		delete m_pDlgVideoMain;
-		m_pDlgVideoMain = NULL;
-	}
+	//if (m_pDlgVideoMain) {
+	//	m_pDlgVideoMain->DestroyWindow();
+	//	delete m_pDlgVideoMain;
+	//	m_pDlgVideoMain = NULL;
+	//}
 
 	return CDialog::DestroyWindow();
 }
@@ -170,19 +169,6 @@ void DlgRtmpPull::OnLButtonDblClk(UINT nFlags, CPoint point){
 	CDialog::OnLButtonDblClk(nFlags, point);
 }
 
-void DlgRtmpPull::OnGetMinMaxInfo(MINMAXINFO* lpMMI){
-	//设置对话框最小宽度与高度
-	RECT rc;
-	if (m_pDlgVideoMain != NULL) {
-		if (IsWindow(m_pDlgVideoMain->GetSafeHwnd())) {
-			m_pDlgVideoMain->GetWindowRect(&rc);
-			ScreenToClient(&rc);
-			lpMMI->ptMinTrackSize.x = m_nVideoWidth + m_nChatroomWidth + GetSystemMetrics(SM_CXFRAME) * 2;
-			lpMMI->ptMinTrackSize.y = m_nVideoHeight + m_nListHeight + GetSystemMetrics(SM_CYSIZE) + GetSystemMetrics(SM_CYFRAME) * 2;
-		}
-	}
-	__super::OnGetMinMaxInfo(lpMMI);
-}
 
 
 void DlgRtmpPull::Start(){
@@ -242,6 +228,19 @@ void DlgRtmpPull::Stop(){
 		m_pAVRtmplayer = NULL;
 	}
 }
+void DlgRtmpPull::OnGetMinMaxInfo(MINMAXINFO* lpMMI) {
+	//设置对话框最小宽度与高度
+	//RECT rc;
+	//if (m_pDlgVideoMain != NULL) {
+		//if (IsWindow(m_pDlgVideoMain->GetSafeHwnd())) {
+			//m_pDlgVideoMain->GetWindowRect(&rc);
+			//ScreenToClient(&rc);
+			lpMMI->ptMinTrackSize.x = m_nVideoWidth + 40 + m_nChatroomWidth + GetSystemMetrics(SM_CXFRAME) * 2;
+			lpMMI->ptMinTrackSize.y = m_nVideoHeight + 20 + m_nListHeight + GetSystemMetrics(SM_CYSIZE) + GetSystemMetrics(SM_CYFRAME) * 2;
+		//}
+	//}
+	__super::OnGetMinMaxInfo(lpMMI);
+}
 
 void DlgRtmpPull::OnSize(UINT nType, int cx, int cy){
 	__super::OnSize(nType, cx, cy);
@@ -252,8 +251,8 @@ void DlgRtmpPull::OnSize(UINT nType, int cx, int cy){
 
 	rcVideo.left = 0;
 	rcVideo.top = 0;
-	rcVideo.right = m_nVideoWidth;
-	rcVideo.bottom = m_nVideoHeight;
+	rcVideo.right = m_nVideoWidth + 40;
+	rcVideo.bottom = m_nVideoHeight + 20;
 
 	// 聊天窗口webview大小。
 	if (rcChatroom.left < rcVideo.right) {
@@ -299,6 +298,7 @@ void DlgRtmpPull::OnSize(UINT nType, int cx, int cy){
 		}
 	}
 	// 播放主窗口大小。
+	/*
 	if (m_pDlgVideoMain != NULL) {
 		int x = 0;
 		int y = 0;
@@ -312,6 +312,7 @@ void DlgRtmpPull::OnSize(UINT nType, int cx, int cy){
 			m_pDlgVideoMain->SetWindowPos(NULL, x, y, rcVideo.Width(), rcVideo.Height(), SWP_NOZORDER);
 		}
 	}
+	*/
 	return;
 }
 
@@ -360,6 +361,7 @@ LRESULT DlgRtmpPull::OnPullDlg(WPARAM, LPARAM) {
 			CefString token = dict->GetString("cmd");
 			if (token == "pulldlg") {
 				CefRefPtr<CefDictionaryValue> data = dict->GetDictionary("data");
+				CefString title = data->GetString("title");
 				CefString roomid = data->GetString("id");
 				CefString pulluri = data->GetString("pulluri");
 				CefString background = data->GetString("background");
@@ -380,11 +382,19 @@ LRESULT DlgRtmpPull::OnPullDlg(WPARAM, LPARAM) {
 						pb->ReloadIgnoreCache();
 					}
 				}
+
+				this->SetWindowText(title.c_str());
 				Start();
 			}else if (token == "pulldlghis") {
+				
+				if (gLiving == 99 ) {
+					AfxMessageBox(L"直播进行中，不能查看直播录像！请直播完毕后查看！");
+					return TRUE;
+				}
 				Stop();
 				CDlgFlvPlayer dlg(this, str);
 				dlg.DoModal();
+				Start();
 			}
 		}
 	}
@@ -398,31 +408,44 @@ BOOL DlgRtmpPull::PreTranslateMessage(MSG* pMsg){
 
 void DlgRtmpPull::OnRtmplayerPlayStart() {
 	TRACE("DlgRtmpPull::OnRtmplayerPlayStart\r\n");
+	gLiving = 1;
 }
 void DlgRtmpPull::OnRtmplayerPlayStop() {
 	TRACE("DlgRtmpPull::OnRtmplayerPlayStop\r\n");
+	gLiving = 0;
+	m_myStatic.Invalidate();
 	//m_pDlgVideoMain->ShowWindow(SW_HIDE);
 }
 void DlgRtmpPull::OnRtmplayer1stVideo() {
+	gLiving = 99;
+	m_myStatic.Invalidate();
 	TRACE("DlgRtmpPull::OnRtmplayer1stVideo\r\n");
 	//m_pDlgVideoMain->ShowWindow(SW_SHOW);
 }
 void DlgRtmpPull::OnRtmplayer1stAudio() {
+	gLiving = 99;
+	m_myStatic.Invalidate();
 	TRACE("DlgRtmpPull::OnRtmplayer1stAudio\r\n");
 }
 
 void DlgRtmpPull::OnRtmplayerOK() {
+	//gLiving = 1;
+	m_myStatic.Invalidate();
 	TRACE("OnRtmplayerOK\r\n");
 };
 void DlgRtmpPull::OnRtmplayerStatus(int cacheTime, int curBitrate) {
+	//TRACE("OnRtmplayerStatus cacheTime:%d curBitrate:%d\r\n",cacheTime,curBitrate);
 };
 void DlgRtmpPull::OnRtmplayerCache(int time) {
 };
 void DlgRtmpPull::OnRtmplayerClosed(int errcode) {
+	gLiving = 2;
 	TRACE("OnRtmplayerClosed\r\n");
-	m_pDlgVideoMain->ShowWindow(SW_HIDE);
+	m_myStatic.Invalidate();
+	//m_pDlgVideoMain->ShowWindow(SW_HIDE);
 };
 
 void DlgRtmpPull::OnRtmplayerConnectionFailed(int a) {
+	gLiving = 4;
 	TRACE("DlgRtmpPull::OnRtmplayerConnectionFailed: %d\r\n",a);
 }

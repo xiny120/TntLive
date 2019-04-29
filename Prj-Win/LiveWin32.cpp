@@ -52,13 +52,13 @@ int gLiving = 0;
 
 // CLiveWin32App 构造
 
-CLiveWin32App::CLiveWin32App()
-{
+CLiveWin32App::CLiveWin32App():CWinApp(L"怪秀直播"){
 	// 支持重新启动管理器
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_RESTART;
 
 	// TODO:  在此处添加构造代码，
 	// 将所有重要的初始化放置在 InitInstance 中
+	//CWinApp::CWinApp(L"helloabc");
 }
 
 
@@ -112,6 +112,15 @@ BOOL CLiveWin32App::InitInstance()
 		AfxMessageBox(L"错误0");
 	CString work = GetModuleDir();
 	CString work1 = GetWorkDir();
+
+	//First free the string allocated by MFC at CWinApp startup.
+	//The string is allocated before InitInstance is called.
+	free((void*)m_pszAppName);
+	//Change the name of the application file.
+	//The CWinApp destructor will free the memory.
+	m_pszAppName = _tcsdup(_T("唐能通短线是银"));
+
+
 	int resid[] = { IDR_BIN1, IDR_BIN2, IDR_BIN3, IDR_BIN4, IDR_BIN5,
 	IDR_BIN6, IDR_BIN7, IDR_BIN8, IDR_BIN9, IDR_BIN10 };
 

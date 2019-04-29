@@ -192,7 +192,7 @@ int bs_read_ue( bs_t *s )
 }
 #endif
 
-PlyDecoder::PlyDecoder()
+PlyDecoder::PlyDecoder(bool gofast)
 	: running_(false)
 	, playing_(false)
 	, h264_decoder_(NULL)
@@ -222,7 +222,7 @@ PlyDecoder::PlyDecoder()
 	running_ = true;
 	rtc::Thread::Start();
 
-	ply_buffer_ = new PlyBuffer(*this, this);
+	ply_buffer_ = new PlyBuffer(*this, this,gofast);
 }
 
 PlyDecoder::~PlyDecoder(){
@@ -338,6 +338,8 @@ void PlyDecoder::Run(){
                 webrtc::RTPFragmentationHeader frag_info;
                 int ret = h264_decoder_->Decode(encoded_image, false, &frag_info);
 				if (ret != 0){
+
+					WCLOG(LS_WARNING) << "h264_decoder_->Decode error:" <<  ret;
 				}
 			}
 			delete pkt;

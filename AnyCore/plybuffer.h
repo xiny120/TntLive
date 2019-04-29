@@ -73,7 +73,7 @@ public:
 class PlyBuffer : public rtc::MessageHandler
 {
 public:
-	PlyBuffer(PlyBufferCallback&callback, rtc::Thread*worker);
+	PlyBuffer(PlyBufferCallback&callback, rtc::Thread*worker,bool needgofast_);
 	virtual ~PlyBuffer();
 	void InitAudio(int samples, int chan);
 
@@ -105,7 +105,7 @@ private:
 	int fastbufi;
 	PlyBufferCallback		&callback_;
 	SpeexResamplerState* state;
-	bool	gofast,gofast0;
+	bool	gofast,gofast0,needgofast;
 	bool					got_audio_;
 	int						cache_time_;
 	int						cache_delta_;

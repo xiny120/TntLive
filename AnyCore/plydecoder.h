@@ -32,7 +32,7 @@
 class PlyDecoder : public rtc::Thread, PlyBufferCallback, public webrtc::DecodedImageCallback
 {
 public:
-	PlyDecoder();
+	PlyDecoder(bool);
 	virtual ~PlyDecoder();
 
 	void SetVideoRender(rtc::VideoSinkInterface<cricket::VideoFrame> *render){ video_render_ = render; };

@@ -31,7 +31,7 @@
 #define PB_TICK	1011
 
 
-PlyBuffer::PlyBuffer(PlyBufferCallback&callback, rtc::Thread*worker)
+PlyBuffer::PlyBuffer(PlyBufferCallback&callback, rtc::Thread*worker,bool needgofast_)
 	: callback_(callback)
 	, worker_thread_(NULL)
 	, got_audio_(false)
@@ -43,6 +43,7 @@ PlyBuffer::PlyBuffer(PlyBufferCallback&callback, rtc::Thread*worker)
 	, rtmp_fast_video_time_(0)
 	, rtmp_cache_time_(0)
 	, play_cur_time_(0)
+	, needgofast(needgofast_)
 	, gofast(false)
 	, gofast0(true)
 	, fastbuf(0)
@@ -306,9 +307,11 @@ void PlyBuffer::DoDecode(){
 		else if(media_buf_time >= PLY_2LOW_TIME) {
 			{
 				//rtc::CritScope cs(&cs_list_audio_);
-				if (gofast0) {
-					gofast = true;
-					gofast0 = false;
+				if (needgofast) {
+					if (gofast0) {
+						gofast = true;
+						gofast0 = false;
+					}
 				}
 			}
 

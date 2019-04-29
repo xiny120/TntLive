@@ -6,6 +6,7 @@
 #include "LiveWin32.h"
 #include "CDlgFlvPlayer.h"
 #include "afxdialogex.h"
+#include "xdefines.h"
 
 
 extern int gUserId;
@@ -35,6 +36,9 @@ void CDlgFlvPlayer::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CDlgFlvPlayer, CDialogEx)
 	ON_BN_CLICKED(IDOK, &CDlgFlvPlayer::OnBnClickedOk)
 	ON_BN_CLICKED(IDCANCEL, &CDlgFlvPlayer::OnBnClickedCancel)
+	ON_MESSAGE(WM_PULLDLG_RESIZE, &OnPullDlgResize)
+	ON_WM_GETMINMAXINFO()
+	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 
@@ -63,6 +67,7 @@ void CDlgFlvPlayer::OnBnClickedCancel()
 
 BOOL CDlgFlvPlayer::OnInitDialog(){
 	CDialogEx::OnInitDialog();
+	m_myStatic.SubclassDlgItem(IDC_STATIC_VIDEO, this);
 
 	delete[] m_pAudioMarker;
 	CString strId;
@@ -107,14 +112,49 @@ BOOL CDlgFlvPlayer::OnInitDialog(){
 
 	// TODO:  在此添加额外的初始化
 	if (!minfo.empty()) {
+		TRACE(minfo.c_str());
 		CefRefPtr<CefValue> jsonObject = CefParseJSON(minfo, JSON_PARSER_ALLOW_TRAILING_COMMAS);
 		if (jsonObject->IsValid()){
 			CefRefPtr<CefDictionaryValue> dict = jsonObject->GetDictionary();
 			CefString token = dict->GetString("cmd");
 			if (token == "pulldlghis") {
 				CefRefPtr<CefDictionaryValue> data = dict->GetDictionary("data");
+				CefString createdate = data->GetString("CreateDate");
 				CefString id = data->GetString("Id");
 				CefString filepath = data->GetString("FilePath");
+				std::string fp(filepath);
+				int lasti = fp.length();
+				std::string parts[5];
+				int idx = 0;
+				//size_t pos = fp.rfind('\\');
+				//pos = fp.rfind('/');
+				for (int i = fp.length()-1; i>=0; i--) {
+					if (fp[i] == '/' || fp[i] == '\\') {
+						parts[idx] = fp.substr(i+1, lasti - i-1);
+						lasti = i;
+						idx++;
+						if (idx > 4)
+							break;
+					}
+				}
+
+				std::string title;
+				title.append(parts[2]);
+				title.append("年");
+				title.append(parts[1]);
+				title.append("月");
+				title.append(parts[0].substr(0, 2));
+				title.append("日");
+				title.append(parts[0].substr(2, 2));
+				title.append("时");
+				title.append(parts[0].substr(4, 2));
+				title.append("分");
+				title.append(parts[0].substr(6, 2));
+				title.append("秒 - 直播录像");
+
+				this->SetWindowText(CA2W(title.c_str()));
+
+
 				data = dict->GetDictionary("ui");
 				CefString sessionid = data->GetString("SessionId");
 				CefString token = data->GetString("Token");
@@ -154,4 +194,37 @@ void CDlgFlvPlayer::OnRtmplayer1stAudio() {
 }
 void CDlgFlvPlayer::OnRtmplayerConnectionFailed(int a) {
 
+}
+
+void CDlgFlvPlayer::OnSize(UINT nType, int cx, int cy)
+{
+	__super::OnSize(nType, cx, cy);
+	CRect rc;
+	GetClientRect(rc);
+	if(IsWindow(m_myStatic.GetSafeHwnd()))
+		m_myStatic.MoveWindow(rc);
+	// TODO: 在此处添加消息处理程序代码
+}
+
+void CDlgFlvPlayer::OnGetMinMaxInfo(MINMAXINFO* lpMMI) {
+	//设置对话框最小宽度与高度
+	lpMMI->ptMinTrackSize.x = m_nVideoWidth + 40 +  GetSystemMetrics(SM_CXFRAME) * 2;
+	lpMMI->ptMinTrackSize.y = m_nVideoHeight + 20 + GetSystemMetrics(SM_CYSIZE) + GetSystemMetrics(SM_CYFRAME) * 2;
+	__super::OnGetMinMaxInfo(lpMMI);
+}
+
+LRESULT CDlgFlvPlayer::OnPullDlgResize(WPARAM wp, LPARAM lp) {
+	m_nVideoWidth = wp;
+	m_nVideoHeight = lp;
+	//PostMessage(WM_SIZE, 0, 0);
+	CRect rc;
+	GetClientRect(rc);
+	if (rc.Width() < m_nVideoWidth + 40 + GetSystemMetrics(SM_CXFRAME) * 2) {
+		rc.right = rc.left + m_nVideoWidth + 40 + GetSystemMetrics(SM_CXFRAME) * 2;
+	}
+	if (rc.Height() < m_nVideoHeight + 20 + GetSystemMetrics(SM_CYSIZE) + GetSystemMetrics(SM_CYFRAME) * 2) {
+		rc.bottom = rc.top + m_nVideoHeight + 20 + GetSystemMetrics(SM_CYSIZE) + GetSystemMetrics(SM_CYFRAME) * 2;;
+	}
+	MoveWindow(rc);
+	return TRUE;
 }
