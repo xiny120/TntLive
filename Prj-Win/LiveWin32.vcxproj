@@ -241,6 +241,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   <ItemGroup>
     <ClInclude Include="CDlgFlvPlayer.h" />
     <ClInclude Include="CMyStatic.h" />
+    <ClInclude Include="DlgPlayerBar.h" />
     <ClInclude Include="DlgRtmpPull.h" />
     <ClInclude Include="DlgRtmpPush.h" />
     <ClInclude Include="DlgVideo.h" />
@@ -254,6 +255,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   <ItemGroup>
     <ClCompile Include="CDlgFlvPlayer.cpp" />
     <ClCompile Include="CMyStatic.cpp" />
+    <ClCompile Include="DlgPlayerBar.cpp" />
     <ClCompile Include="DlgRtmpPull.cpp" />
     <ClCompile Include="DlgRtmpPush.cpp" />
     <ClCompile Include="DlgVideo.cpp" />

@@ -39,6 +39,11 @@ BEGIN_MESSAGE_MAP(CDlgFlvPlayer, CDialogEx)
 	ON_MESSAGE(WM_PULLDLG_RESIZE, &OnPullDlgResize)
 	ON_WM_GETMINMAXINFO()
 	ON_WM_SIZE()
+	ON_WM_DWMWINDOWMAXIMIZEDCHANGE()
+	ON_WM_TIMER()
+	ON_WM_MOUSEMOVE()
+	ON_WM_LBUTTONUP()
+	ON_WM_MOVING()
 END_MESSAGE_MAP()
 
 
@@ -68,6 +73,9 @@ void CDlgFlvPlayer::OnBnClickedCancel()
 BOOL CDlgFlvPlayer::OnInitDialog(){
 	CDialogEx::OnInitDialog();
 	m_myStatic.SubclassDlgItem(IDC_STATIC_VIDEO, this);
+	m_playerBar = new CDlgPlayerBar(this);
+	m_playerBar->Create(IDD_DLG_PLAYERBAR, this);
+	m_playerBar->ShowWindow(SW_SHOW);
 
 	delete[] m_pAudioMarker;
 	CString strId;
@@ -187,24 +195,17 @@ void CDlgFlvPlayer::OnRtmplayerPlayStop() {
 	TRACE("CDlgFlvPlayer::OnRtmplayerPlayStop\r\n");
 }
 void CDlgFlvPlayer::OnRtmplayer1stVideo() {
+	m_myStatic.SetLiving(99);
 	TRACE("CDlgFlvPlayer::OnRtmplayer1stVideo\r\n");
 }
 void CDlgFlvPlayer::OnRtmplayer1stAudio() {
+	m_myStatic.SetLiving(99);
 	TRACE("CDlgFlvPlayer::OnRtmplayer1stAudio\r\n");
 }
 void CDlgFlvPlayer::OnRtmplayerConnectionFailed(int a) {
 
 }
 
-void CDlgFlvPlayer::OnSize(UINT nType, int cx, int cy)
-{
-	__super::OnSize(nType, cx, cy);
-	CRect rc;
-	GetClientRect(rc);
-	if(IsWindow(m_myStatic.GetSafeHwnd()))
-		m_myStatic.MoveWindow(rc);
-	// TODO: 在此处添加消息处理程序代码
-}
 
 void CDlgFlvPlayer::OnGetMinMaxInfo(MINMAXINFO* lpMMI) {
 	//设置对话框最小宽度与高度
@@ -227,4 +228,66 @@ LRESULT CDlgFlvPlayer::OnPullDlgResize(WPARAM wp, LPARAM lp) {
 	}
 	MoveWindow(rc);
 	return TRUE;
+}
+
+
+void CDlgFlvPlayer::OnWindowMaximizedChange(BOOL bIsMaximized)
+{
+	// 此功能要求 Windows Vista 或更高版本。
+	// _WIN32_WINNT 符号必须 >= 0x0600。
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+
+	__super::OnWindowMaximizedChange(bIsMaximized);
+}
+
+
+void CDlgFlvPlayer::OnTimer(UINT_PTR nIDEvent)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+
+	__super::OnTimer(nIDEvent);
+}
+
+
+void CDlgFlvPlayer::OnMouseMove(UINT nFlags, CPoint point){
+	static CPoint lastPoint;
+	if (abs(point.x - lastPoint.x) > 5 || abs(point.y - lastPoint.y) > 5) {
+		m_playerBar->ShowWindow(SW_SHOW);
+	}
+	lastPoint = point;
+	__super::OnMouseMove(nFlags, point);
+}
+
+
+void CDlgFlvPlayer::OnLButtonUp(UINT nFlags, CPoint point){
+	if(m_playerBar->IsWindowVisible())
+		m_playerBar->ShowWindow(SW_HIDE);
+	else
+		m_playerBar->ShowWindow(SW_SHOW);
+	__super::OnLButtonUp(nFlags, point);
+}
+void CDlgFlvPlayer::OnSize(UINT nType, int cx, int cy){
+	__super::OnSize(nType, cx, cy);
+	CRect rc;
+	GetClientRect(rc);
+	if (IsWindow(m_myStatic.GetSafeHwnd()))
+		m_myStatic.MoveWindow(rc);
+	GetWindowRect(rc);
+	if(IsWindow(m_playerBar->GetSafeHwnd()))
+		AdjPlayBarPos(rc);
+}
+
+
+void CDlgFlvPlayer::OnMoving(UINT fwSide, LPRECT pRect){
+	__super::OnMoving(fwSide, pRect);
+	AdjPlayBarPos(pRect);
+}
+
+void CDlgFlvPlayer::AdjPlayBarPos(LPRECT pRect) {
+	CRect rc;
+	m_playerBar->GetWindowRect(rc);
+	int x = (pRect->right - pRect->left - rc.Width()) / 2 + pRect->left;
+	int y = pRect->bottom - rc.Height() - 30;
+	m_playerBar->SetWindowPos(NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+
 }

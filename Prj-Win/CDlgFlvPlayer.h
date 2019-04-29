@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "RtmpGuester.h"
 #include "CMyStatic.h"
+#include "DlgPlayerBar.h"
 
 // CDlgFlvPlayer 对话框
 
@@ -24,11 +25,13 @@ protected:
 public:
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
+	void AdjPlayBarPos(LPRECT pRect);
 private:
 	std::string minfo;
 	RTMPGuester		*m_pPlayer;
 	int m_iUserId;
 	CMyStatic	m_myStatic;
+	CDlgPlayerBar	*m_playerBar;
 	char*				m_pAudioMarker;
 	short*				m_pAudioMarketOut;
 	volatile int		m_iAudioMarker;
@@ -87,4 +90,9 @@ public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg LRESULT OnPullDlgResize(WPARAM, LPARAM);
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
+	afx_msg void OnWindowMaximizedChange(BOOL bIsMaximized);
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnMoving(UINT fwSide, LPRECT pRect);
 };

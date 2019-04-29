@@ -26,7 +26,7 @@
 // DlgRtmpPull 对话框
 HWND	m_hWndPullDlg;
 extern int gUserId;
-extern int gLiving;
+//extern int gLiving;
 extern std::string m_baseurl;
 
 IMPLEMENT_DYNAMIC(DlgRtmpPull, CDialog)
@@ -387,7 +387,7 @@ LRESULT DlgRtmpPull::OnPullDlg(WPARAM, LPARAM) {
 				Start();
 			}else if (token == "pulldlghis") {
 				
-				if (gLiving == 99 ) {
+				if ( m_myStatic.GetLiving() == 99 ) {
 					AfxMessageBox(L"直播进行中，不能查看直播录像！请直播完毕后查看！");
 					return TRUE;
 				}
@@ -408,28 +408,22 @@ BOOL DlgRtmpPull::PreTranslateMessage(MSG* pMsg){
 
 void DlgRtmpPull::OnRtmplayerPlayStart() {
 	TRACE("DlgRtmpPull::OnRtmplayerPlayStart\r\n");
-	gLiving = 1;
+	m_myStatic.SetLiving(1);
 }
 void DlgRtmpPull::OnRtmplayerPlayStop() {
 	TRACE("DlgRtmpPull::OnRtmplayerPlayStop\r\n");
-	gLiving = 0;
-	m_myStatic.Invalidate();
-	//m_pDlgVideoMain->ShowWindow(SW_HIDE);
+	m_myStatic.SetLiving(0);
 }
 void DlgRtmpPull::OnRtmplayer1stVideo() {
-	gLiving = 99;
-	m_myStatic.Invalidate();
+	m_myStatic.SetLiving(99);
 	TRACE("DlgRtmpPull::OnRtmplayer1stVideo\r\n");
-	//m_pDlgVideoMain->ShowWindow(SW_SHOW);
 }
 void DlgRtmpPull::OnRtmplayer1stAudio() {
-	gLiving = 99;
-	m_myStatic.Invalidate();
+	m_myStatic.SetLiving(99);
 	TRACE("DlgRtmpPull::OnRtmplayer1stAudio\r\n");
 }
 
 void DlgRtmpPull::OnRtmplayerOK() {
-	//gLiving = 1;
 	m_myStatic.Invalidate();
 	TRACE("OnRtmplayerOK\r\n");
 };
@@ -439,13 +433,11 @@ void DlgRtmpPull::OnRtmplayerStatus(int cacheTime, int curBitrate) {
 void DlgRtmpPull::OnRtmplayerCache(int time) {
 };
 void DlgRtmpPull::OnRtmplayerClosed(int errcode) {
-	gLiving = 2;
+	m_myStatic.SetLiving(2);
 	TRACE("OnRtmplayerClosed\r\n");
-	m_myStatic.Invalidate();
-	//m_pDlgVideoMain->ShowWindow(SW_HIDE);
 };
 
 void DlgRtmpPull::OnRtmplayerConnectionFailed(int a) {
-	gLiving = 4;
+	m_myStatic.SetLiving(4);
 	TRACE("DlgRtmpPull::OnRtmplayerConnectionFailed: %d\r\n",a);
 }

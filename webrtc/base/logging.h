@@ -41,7 +41,7 @@
 // LOG_CHECK_LEVEL(sev) (and LOG_CHECK_LEVEL_V(sev)) can be used as a test
 //     before performing expensive or sensitive operations whose sole purpose is
 //     to output logging data at the desired level.
-// Lastly, PLOG(sev, err) is an alias for LOG_ERR_EX.
+// Lastly, WCPLOG(sev, err) is an alias for LOG_ERR_EX.
 
 #ifndef WEBRTC_BASE_LOGGING_H_
 #define WEBRTC_BASE_LOGGING_H_
@@ -355,7 +355,7 @@ inline bool LogCheckLevel(LoggingSeverity sev) {
   LOG_SEVERITY_PRECONDITION(sev) \
     rtc::LogMessage(NULL, 0, sev, tag).stream()
 
-#define PLOG(sev, err) \
+#define WCPLOG(sev, err) \
   LOG_ERR_EX(sev, err)
 
 // TODO(?): Add an "assert" wrapper that logs in the same manner.

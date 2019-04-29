@@ -112,8 +112,8 @@ namespace webrtc {
 
 		rc.bottom -= 10;
 		rc.right -= 20;
-		/*
-		int h1, w1,x = 0,y = 0;
+		
+		int h1, w1;
 		h1 = rc.bottom - rc.top;
 		w1 = rc.right - rc.left;
 		h1 = h1 < h0 ? h0 : h1;
@@ -125,23 +125,28 @@ namespace webrtc {
 
 		int h2 = h0 * w1 / w0;
 		int w2 = w0 * h1 / h0;
-		int h3 = h2;
-		int w3 = h2 * w0 / h0;
+		h3 = h2;
+		w3 = h2 * w0 / h0;
 		if (h2 > (rc.bottom - rc.top)) {
 			w3 = w2;
 			h3 = w2 * h0 / w0;
 		}
 
-		if (IsZoomed(hwnd) == 0) {
+		//if (IsZoomed(hwnd) == 0) {
+		//	w3 = w0;
+		//	h3 = h0;
+		//}
+		
+
+		//w3 = (double)w0 * 1.25f;
+		//h3 = (double)h0 * 1.25f;
+
+		if (w3 > (rc.right - rc.left)) {
 			w3 = w0;
 			h3 = h0;
 		}
-		*/
 
-		w3 = (double)w0 * 1.25f;
-		h3 = (double)h0 * 1.25f;
-
-		if (w3 > (rc.right - rc.left)) {
+		if (w3 < w0 + 50) {
 			w3 = w0;
 			h3 = h0;
 		}
@@ -157,10 +162,12 @@ namespace webrtc {
 		HDC hMemDc = ::CreateCompatibleDC(hWndDc);
 		HBITMAP hOldBitmap = (HBITMAP)::SelectObject(hMemDc, hBitmap);
 		//::BitBlt(hWndDc, x, y, w3, h3, hMemDc, 0, 0, SRCCOPY);
-		SetStretchBltMode(hWndDc,HALFTONE);
+		int mode = ::SetStretchBltMode(hWndDc,HALFTONE);
+		::SetBrushOrgEx(hWndDc, 0, 0, NULL);
 		//SetStretchBltMode(COLORONCOLOR);
 		::StretchBlt(hWndDc,x, y, w3, h3, hMemDc, 0, 0, w0, h0, SRCCOPY);
-
+		::SetStretchBltMode(hWndDc, mode);
+		::SetBrushOrgEx(hWndDc, 0, 0, NULL);
 		::SelectObject(hMemDc, hOldBitmap);
 		::DeleteObject(hBitmap);
 		::DeleteDC(hMemDc);

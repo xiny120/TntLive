@@ -94,6 +94,7 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size) 
 	do {
 		FILE* f = _fsopen(mfile.c_str(), "rb", SH_DENYNO);
 		if (f == nullptr) {
+			WCLOG(LS_ERROR) << "_fsopen error:" << mfile << " error:" << errno;
 			break;
 		}
 		do {
@@ -253,138 +254,6 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size) 
 		} while(false);
 		fclose(f);
 	} while (false);
-
-	/*
-	FILE* f = _fsopen(mfile.c_str(), "rb", SH_DENYNO);
-	if (f != nullptr) {
-		if (!mbegin && ( mbuf == mbufcur)) {
-			mbegin = true;
-			mbufleftlen = mbuftotallen;
-			int64_t readed = 0;
-			fseek(f, 0, SEEK_SET);
-			do {
-				int64_t len = fread(mbufcur, 1, mbufleftlen, f);
-				if (len <= 0)
-					break;
-				readed += len;
-				mbufcur += len;
-				mbufleftlen -= len;
-
-			} while (true);// (readed < 1024);
-			if (readed >= 1024) {
-				char s = 1;
-				for (i = mfile.length() - 1; i >= 0; i--) {
-					if (mfile[i] == '\\' || mfile[i] == '/') {
-						s = mfile.substr(i + 1)[5];// _atoi64(mfile.substr(i + 1).c_str());
-						break;
-					}
-				}
-				if (s == 1)
-					s = mfile[5];// _atoi64(mfile.c_str());
-				
-				if (s == 0) s = 1;
-				for (int i = 0; i < 1024; i++) {
-					mbuf[i] = mbuf[i] ^ s;
-				}
-
-				FILE* fs = fopen("save.flv", "wb+");
-				fwrite(mbuf, 1, readed, fs);
-				fclose(fs);
-
-				FLV_HEADER * pheader = (FLV_HEADER*)mbuf;
-				int64_t len = mbufcur - mbuf;
-				char* p0 = mbuf;
-				p0 += sizeof(FLV_HEADER);
-				TAG_HEADER* ptag = (TAG_HEADER*)p0;
-				p0 += sizeof(TAG_HEADER);
-				uint32_t dwPreviousTagSize = (ptag->btPreviousTagSize[0] << 24) | (ptag->btPreviousTagSize[1] << 16) | (ptag->btPreviousTagSize[2] << 8) | ptag->btPreviousTagSize[3];
-				uint32_t dwDataSize = (ptag->btDataSize[0] << 16) | (ptag->btDataSize[1] << 8) | ptag->btDataSize[2];
-				uint32_t dwTimeStamp = (ptag->btTimeStamp[0] << 16) | (ptag->btTimeStamp[1] << 8) | ptag->btTimeStamp[2];
-				*data = NULL;
-				*size = dwDataSize;
-				*timestamp = dwTimeStamp;
-				*type = ptag->btTagType;
-				*data = new char[dwDataSize];
-				memcpy(*data, p0, dwDataSize);
-				p0 += dwDataSize;
-				std::size_t left = mbufcur - p0;
-				memcpy(mbuf, p0, left);
-				mbufcur = mbuf + left;
-				mbufleftlen = mbuftotallen - left;
-				WCLOG(LS_ERROR) << "first frame dwPreviousTagSize:" << dwPreviousTagSize << " dwDataSize:" << dwDataSize << " dwTimeStamp:" << dwTimeStamp;
-				dwDataSizeLast = dwDataSize;
-			}
-			else {
-				mbufcur = mbuf;
-				mbufleftlen = mbuftotallen;
-				mbegin = false;
-				return 0;
-			}
-		}else {
-			if ((mbufcur - mbuf) < sizeof(TAG_HEADER)) {
-				int64_t readed = 0;
-				std::size_t left = 0;
-				do {
-					int64_t len = fread(mbufcur, 1, mbufleftlen, f);
-					if (len <= 0)
-						break;
-					readed += len;
-					mbufcur += len;
-					mbufleftlen -= len;
-					left = mbufcur - mbuf;
-
-				} while (left < sizeof(TAG_HEADER));
-			}
-			if ((mbufcur - mbuf) >= sizeof(TAG_HEADER)) {
-				char* p0 = mbuf;
-				TAG_HEADER* ptag = (TAG_HEADER*)p0;
-				p0 += sizeof(TAG_HEADER);
-				uint32_t dwPreviousTagSize = (ptag->btPreviousTagSize[0] << 24) | (ptag->btPreviousTagSize[1] << 16) | (ptag->btPreviousTagSize[2] << 8) | ptag->btPreviousTagSize[3];
-				uint32_t dwDataSize = (ptag->btDataSize[0] << 16) | (ptag->btDataSize[1] << 8) | ptag->btDataSize[2];
-				uint32_t dwTimeStamp = (ptag->btTimeStamp[0] << 16) | (ptag->btTimeStamp[1] << 8) | ptag->btTimeStamp[2];
-				*data = NULL;
-				*size = dwDataSize;
-				*timestamp = dwTimeStamp;
-				*type = ptag->btTagType;
-
-				//WCLOG(LS_ERROR) << "go frame  TotalSize:" << sizeof(TAG_HEADER) + dwDataSizeLast << " dwPreviousTagSize:" << dwPreviousTagSize << " dwDataSize:" << dwDataSize << " dwTimeStamp:" << dwTimeStamp;
-				dwDataSizeLast = dwDataSize;
-				std::size_t left = mbufcur - p0;
-				if (dwDataSize > left) {
-					int64_t readed = 0;
-					do {
-						int64_t len = fread(mbufcur, 1, mbufleftlen, f);
-						if (len <= 0)
-							break;
-						readed += len;
-						mbufcur += len;
-						mbufleftlen -= len;
-						left = mbufcur - p0;
-
-					} while (dwDataSize > left);
-				}
-				if (dwDataSize <= left) {
-					*data = new char[dwDataSize];
-					memcpy(*data, p0, dwDataSize);
-					p0 += dwDataSize;
-					std::size_t left = mbufcur - p0;
-					memcpy(mbuf, p0, left);
-					mbufcur = mbuf + left;
-					mbufleftlen = mbuftotallen - left;
-				}
-				else {
-					WCLOG(LS_ERROR) << "error";
-					mbufcur = mbuf;
-					mbufleftlen = mbuftotallen;
-					mbegin = false;
-					return RS_PLY_FlvfileFinished;
-				}
-
-			}
-		}
-		fclose(f);
-	}
-	*/
 	return 0;
 }
 
