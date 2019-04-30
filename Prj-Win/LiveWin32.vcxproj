@@ -286,7 +286,12 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   <ItemGroup>
     <Image Include="anyrtc_logo.bmp" />
     <Image Include="anyrtc_logo.jpeg" />
+    <Image Include="res\bitmap2.bmp" />
+    <Image Include="res\fullscreen0_128.bmp" />
+    <Image Include="res\fullscreen_128.bmp" />
     <Image Include="res\LiveWin32.ico" />
+    <Image Include="res\sound.bmp" />
+    <Image Include="res\soundmute.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AnyCore\AnyCore.vcxproj">

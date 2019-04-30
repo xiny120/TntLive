@@ -177,6 +177,8 @@ BOOL CLiveWin32Dlg::OnInitDialog(){
 	path.ReleaseBuffer();
 	int pos = path.ReverseFind('\\');
 	path = path.Left(pos);
+	path += "\\cef_cache";
+	CreateDirectoryA(path.GetBuffer(),NULL);
 	// Specify CEF global settings here.
 	CefSettings settings;
 	settings.log_severity = cef_log_severity_t::LOGSEVERITY_DISABLE;// cef_log_severity_t::LOGSEVERITY_VERBOSE;

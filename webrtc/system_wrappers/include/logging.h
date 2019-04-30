@@ -79,7 +79,7 @@ class LogMessage {
 // Macros which automatically disable logging when WEBRTC_LOGGING == 0
 //////////////////////////////////////////////////////////////////////
 
-#ifndef LOG
+#ifndef WCLOG
 // The following non-obvious technique for implementation of a
 // conditional log stream was stolen from google3/base/logging.h.
 
