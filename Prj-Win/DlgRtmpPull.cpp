@@ -427,7 +427,7 @@ void DlgRtmpPull::OnRtmplayerOK() {
 	m_myStatic.Invalidate();
 	TRACE("OnRtmplayerOK\r\n");
 };
-void DlgRtmpPull::OnRtmplayerStatus(int cacheTime, int curBitrate) {
+void DlgRtmpPull::OnRtmplayerStatus(int cacheTime, int curBitrate, uint32_t curTime, double totalTime) {
 	//TRACE("OnRtmplayerStatus cacheTime:%d curBitrate:%d\r\n",cacheTime,curBitrate);
 };
 void DlgRtmpPull::OnRtmplayerCache(int time) {

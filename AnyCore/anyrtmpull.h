@@ -76,6 +76,7 @@ public:
 	AnyRtmpPull(AnyRtmpPullCallback&callback, const char* url, const char* type);// AnyBaseSource*);
 	virtual ~AnyRtmpPull(void);
 
+	double GetTotalTime() { return mtotaltime; };
 protected:
 	//* For Thread
 	virtual void Run();
@@ -90,6 +91,7 @@ protected:
 	void CallDisconnect(int code);
 
 private:
+	double	mtotaltime;
 	AnyRtmpPullCallback&	callback_;
 	SrsAvcAacCodec*		srs_codec_;
 	bool				running_;

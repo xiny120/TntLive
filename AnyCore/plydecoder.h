@@ -38,6 +38,7 @@ public:
 	void SetVideoRender(rtc::VideoSinkInterface<cricket::VideoFrame> *render){ video_render_ = render; };
     bool IsPlaying();
     int  CacheTime();
+	uint32_t CurTime();
 
 	void AddH264Data(const uint8_t*pdata, int len, uint32_t ts);
 	void AddAACData(const uint8_t*pdata, int len, uint32_t ts);

@@ -34,7 +34,7 @@ public:
 	virtual ~RTMPGuesterEvent(void) {};
 
 	virtual void OnRtmplayerOK() = 0;
-	virtual void OnRtmplayerStatus(int cacheTime, int curBitrate) = 0;
+	virtual void OnRtmplayerStatus(int cacheTime, int curBitrate,uint32_t, double) = 0;
 	virtual void OnRtmplayerCache(int time) = 0;
 	virtual void OnRtmplayerClosed(int errcode/*0:OK */) = 0;
 	virtual void OnGetPcmData(const void * p, const int len,const int rate, const int channels) = 0;

@@ -41,21 +41,18 @@ private:
 	volatile time_t		m_iAudioMarketLast;
 	int	m_nVideoWidth;
 	int m_nVideoHeight;
+	int cacheTime;
+	int curBitrate;
+	uint32_t curTime;
+	double totalTime;
 public:
 	virtual BOOL OnInitDialog();
 
 	//* For RTMPCGuesterEvent
-	virtual void OnRtmplayerOK() {
-		//TRACE("OnRtmplayerOK");
-	};
-	virtual void OnRtmplayerStatus(int cacheTime, int curBitrate) {
-	};
-	virtual void OnRtmplayerCache(int time) {
-	};
-	virtual void OnRtmplayerClosed(int errcode) {
-		TRACE("OnRtmplayerClosed");
-	};
-
+	virtual void OnRtmplayerOK();
+	virtual void OnRtmplayerStatus(int cacheTime_, int curBitrate_, uint32_t curTime_, double totalTime_);
+	virtual void OnRtmplayerCache(int time);
+	virtual void OnRtmplayerClosed(int errcode);
 	virtual void OnRtmplayerPlayStart();
 	virtual void OnRtmplayerPlayStop();
 	virtual void OnRtmplayer1stVideo();

@@ -75,7 +75,7 @@ BOOL CDlgFlvPlayer::OnInitDialog(){
 	m_myStatic.SubclassDlgItem(IDC_STATIC_VIDEO, this);
 	m_playerBar = new CDlgPlayerBar(this);
 	m_playerBar->Create(IDD_DLG_PLAYERBAR, this);
-	m_playerBar->ShowWindow(SW_SHOW);
+	m_playerBar->ShowWindow(SW_HIDE);
 
 	delete[] m_pAudioMarker;
 	CString strId;
@@ -180,11 +180,7 @@ BOOL CDlgFlvPlayer::OnInitDialog(){
 }
 
 
-void CDlgFlvPlayer::PostNcDestroy()
-{
-	// TODO: 在此添加专用代码和/或调用基类
-	
-
+void CDlgFlvPlayer::PostNcDestroy(){
 	__super::PostNcDestroy();
 }
 
@@ -205,6 +201,19 @@ void CDlgFlvPlayer::OnRtmplayer1stAudio() {
 void CDlgFlvPlayer::OnRtmplayerConnectionFailed(int a) {
 
 }
+void CDlgFlvPlayer::OnRtmplayerOK() {
+	//TRACE("OnRtmplayerOK");
+};
+void CDlgFlvPlayer::OnRtmplayerStatus(int cacheTime_, int curBitrate_, uint32_t curTime_, double totalTime_) {
+	cacheTime = cacheTime_, curBitrate = curBitrate_, curTime = curTime_, totalTime = totalTime_;
+	m_playerBar->mcurTime = curTime / 1000;
+	m_playerBar->mtotalTime = totalTime;
+};
+void CDlgFlvPlayer::OnRtmplayerCache(int time) {
+};
+void CDlgFlvPlayer::OnRtmplayerClosed(int errcode) {
+	TRACE("OnRtmplayerClosed");
+};
 
 
 void CDlgFlvPlayer::OnGetMinMaxInfo(MINMAXINFO* lpMMI) {

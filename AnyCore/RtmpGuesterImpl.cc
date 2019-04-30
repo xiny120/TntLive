@@ -86,9 +86,9 @@ void RtmpGuesterImpl::OnRtmplayerOK()
 {
 	callback_.OnRtmplayerOK();
 }
-void RtmpGuesterImpl::OnRtmplayerStatus(int cacheTime, int curBitrate)
+void RtmpGuesterImpl::OnRtmplayerStatus(int cacheTime, int curBitrate,uint32_t curTime,double totalTime)
 {
-	callback_.OnRtmplayerStatus(cacheTime, curBitrate);
+	callback_.OnRtmplayerStatus(cacheTime, curBitrate,curTime,totalTime);
 }
 void RtmpGuesterImpl::OnRtmplayerCache(int time)
 {

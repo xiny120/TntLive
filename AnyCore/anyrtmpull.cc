@@ -39,6 +39,7 @@ AnyRtmpPull::AnyRtmpPull(AnyRtmpPullCallback&callback, const char* url, const ch
 	, rtmp_status_(RS_PLY_Init)
 	, audio_payload_(NULL)
 	, video_payload_(NULL)
+	, mtotaltime(0)
 {
 	str_url_ = url;
 	if (strcmp(type, "rtmp") == 0) {
@@ -81,6 +82,7 @@ AnyRtmpPull::~AnyRtmpPull(void){
 		video_payload_ = NULL;
 	}
 }
+
 
 //* For Thread
 void AnyRtmpPull::Run(){
@@ -182,6 +184,7 @@ void AnyRtmpPull::DoReadData(){
 				//WCLOG(LS_ERROR) << "No flv";
 				srs_human_trace("drop message type=%#x, size=%dB", type, size);
 			}
+			mtotaltime = mrtmp->GetPropDouble("duration");
 		}
 	}
 	//if (srs_human_print_rtmp_packet(type, timestamp, data, size) != 0) {	
@@ -190,6 +193,7 @@ void AnyRtmpPull::DoReadData(){
 }
 
 int AnyRtmpPull::GotVideoSample(u_int32_t timestamp, SrsCodecSample *sample){
+	WCLOG(LS_ERROR) << "Frame Type: "<< sample->frame_type;
 	int ret = ERROR_SUCCESS;
 	// ignore info frame,
 	// @see https://github.com/simple-rtmp-server/srs/issues/288#issuecomment-69863909

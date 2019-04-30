@@ -263,6 +263,14 @@ int  PlyDecoder::CacheTime(){
     return 0;
 }
 
+uint32_t PlyDecoder::CurTime() {
+	if (ply_buffer_ != NULL) {
+		return ply_buffer_->GetPlayCurTime();
+	}
+	return 0;
+
+}
+
 bool PlyDecoder::Slowdown() {
 	if (ply_buffer_) {
 		return ply_buffer_->NeedSlowdown();
@@ -391,7 +399,7 @@ bool PlyDecoder::OnNeedDecodeData(PlyPacket* pkt){
 #endif
         int type = pdata[4] & 0x1f;
 		rtc::CritScope cs(&cs_list_h264_);
-		if (type == 7) {
+		if (type == 7) { 
 			//* Skip all buffer data, beacause decode is so slow!!!
 			std::list<PlyPacket*>::iterator iter = lst_h264_buffer_.begin();
 			while (iter != lst_h264_buffer_.end()) {

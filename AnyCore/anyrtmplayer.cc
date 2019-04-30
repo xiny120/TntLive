@@ -117,9 +117,9 @@ void AnyRtmplayerImpl::OnMessage(rtc::Message* msg){
 	}
 		break;
     case PLY_TICK: {
-        if (ply_decoder_) {
+        if (ply_decoder_ && rtmp_pull_) {
             if (ply_decoder_->IsPlaying()) {
-                callback_.OnRtmplayerStatus(ply_decoder_->CacheTime(), cur_bitrate_);
+                callback_.OnRtmplayerStatus(ply_decoder_->CacheTime(), cur_bitrate_, ply_decoder_->CurTime(),rtmp_pull_->GetTotalTime());
                 cur_bitrate_ = 0;
             } else {
                 callback_.OnRtmplayerCache(ply_decoder_->CacheTime());

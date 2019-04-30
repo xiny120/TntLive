@@ -39,7 +39,7 @@ public:
 protected:
 	//* For AnyRtmplayerEvent
 	virtual void OnRtmplayerOK();
-	virtual void OnRtmplayerStatus(int cacheTime, int curBitrate);
+	virtual void OnRtmplayerStatus(int cacheTime, int curBitrate, uint32_t curTime, double totalTime);
 	virtual void OnRtmplayerCache(int time);
 	virtual void OnRtmplayerClose(int errcode);
 	virtual void OnRtmplayerPlayStart();

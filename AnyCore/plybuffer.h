@@ -81,6 +81,8 @@ public:
 	int GetPlayAudio(void* audioSamples,const int samples,const int chan);
     PlyStuts PlayerStatus(){return ply_status_;};
     int GetPlayCacheTime(){return buf_cache_time_;};
+	int GetPlayCurTime() { return play_cur_time_; };
+
 	void CacheH264Data(const uint8_t*pdata, int len, uint32_t ts);
 	void CachePcmData(const uint8_t*pdata, int len, uint32_t ts);
 	bool NeedSlowdown();
@@ -109,7 +111,8 @@ private:
 	bool					got_audio_;
 	int						cache_time_;
 	int						cache_delta_;
-  int                     buf_cache_time_;
+	int                     buf_cache_time_;
+	int64_t					mdts;
 	PlyStuts				ply_status_;
 	rtc::Thread				*worker_thread_;
 	uint32_t				sys_fast_video_time_;	// Ãë¿ªÊ±¼äÖá

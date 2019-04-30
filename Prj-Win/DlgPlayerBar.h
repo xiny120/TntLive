@@ -51,14 +51,18 @@ public:
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_DLG_PLAYERBAR };
 #endif
+public:
+	uint32_t mcurTime;
+	double mtotalTime;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 
-	//CBitmap mbmpfullscreen;
-	//CBitmap mbmpnormal;
 	std::list<BarInfo*> mbarlist;
-
+	CRect mcurtimerc,mtotaltimerc,mtimerc,mseekbarrc,mseekbarbtnrc;
+	CFont mfont;
+	int mmousepos;
+	int mmousecap;
 	DECLARE_MESSAGE_MAP()
 public:
 	virtual void BarEventHover(BarInfo*);
@@ -73,4 +77,6 @@ public:
 	afx_msg void OnPaint();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 };

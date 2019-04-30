@@ -290,6 +290,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <Image Include="res\fullscreen0_128.bmp" />
     <Image Include="res\fullscreen_128.bmp" />
     <Image Include="res\LiveWin32.ico" />
+    <Image Include="res\seekbarbn.bmp" />
     <Image Include="res\sound.bmp" />
     <Image Include="res\soundmute.bmp" />
   </ItemGroup>

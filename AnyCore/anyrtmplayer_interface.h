@@ -47,7 +47,7 @@ public:
 	virtual ~AnyRtmplayerEvent(void){};
 
 	virtual void OnRtmplayerOK() = 0;
-	virtual void OnRtmplayerStatus(int cacheTime, int curBitrate) = 0;
+	virtual void OnRtmplayerStatus(int cacheTime, int curBitrate,uint32_t curTime,double totalTime) = 0;
 	virtual void OnRtmplayerCache(int time) = 0;
 	virtual void OnRtmplayerClose(int errcode) = 0;
 	virtual void OnRtmplayerPlayStart() = 0;
