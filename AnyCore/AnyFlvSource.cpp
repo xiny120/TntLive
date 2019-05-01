@@ -2,28 +2,7 @@
 #include "webrtc/base/logging.h"
 #include "httpclient.h"
 
-// https://blog.csdn.net/sz76211822/article/details/53760836
-struct FLV_HEADER{
-	uint8_t btSignature[3];
-	uint8_t btVersion;
-	uint8_t btFlags;
-	uint8_t btDataOffset[4];
-	FLV_HEADER(){
-		memset(this, 0, sizeof(FLV_HEADER));
-	}
-};
 
-struct TAG_HEADER{
-	uint8_t btPreviousTagSize[4];
-	uint8_t btTagType;
-	uint8_t btDataSize[3];
-	uint8_t btTimeStamp[3];
-	uint8_t btReserved;
-	uint8_t btStreamID[3];
-	TAG_HEADER(){
-		memset(this, 0, sizeof(TAG_HEADER));
-	}
-};
 
 AnyFlvSource::AnyFlvSource(){
 }
@@ -41,6 +20,7 @@ AnyFlvSource::~AnyFlvSource(){
 int AnyFlvSource::Create(std::string url) {
 	mb = new char[mblen];
 	dwDataSizeLast = 0;
+	mlasttimestamp = 0;
 	mreadpos = 0;
 	mbufv.clear();
 	mbufv.reserve(mblen);
@@ -75,7 +55,81 @@ int AnyFlvSource::Playstream() {
 	mreadpos = 0;
 	dwDataSizeLast = 0;
 	mfirstreadlenmin = 1024;
+	mlasttimestamp = 0;
 	return 0;
+}
+
+uint32_t AnyFlvSource::SeekTo(uint32_t pos,double totaltime) {
+	int64_t lastmreadpos = mreadpos;
+	std::vector<char> lastmbufv;
+	int64_t lastmreadpos0 = 0;
+	std::vector<char> lastmbufv0;
+	uint32_t pos0;
+
+	lastmbufv.assign(mbufv.begin(),mbufv.end());
+	mreadpos = 0;
+	mbufv.clear();
+	int size;
+	char type;
+	char* data;
+	uint32_t timestamp;
+	uint32_t ret = 0;
+	/**
+	* E.4.1 FLV Tag, page 75
+	*/
+	// 8 = audio
+//#define SRS_RTMP_TYPE_AUDIO 8
+// 9 = video
+//#define SRS_RTMP_TYPE_VIDEO 9
+// 18 = script data
+//#define SRS_RTMP_TYPE_SCRIPT 18
+	while (true) { // SrsCodecVideoAVCFrame
+		TAG_HEADER tag;
+		int code = Read(&type, &timestamp, &data, &size,tag);
+		if (code != 0)
+			break;
+		if (type == 0)
+			break;
+		
+		uint32_t to = timestamp / 1000;
+		if (data != NULL) {
+			if (type == 9) {
+				int8_t frame_type = data[0];
+				frame_type = (frame_type >> 4) & 0x0f;
+				if (frame_type == 1) {
+					pos0 = to;
+					lastmreadpos0 = mreadpos;
+					lastmbufv0.clear();
+					char* p = (char*)&tag;
+					lastmbufv0.insert(lastmbufv0.end(),p, (p + sizeof(tag)));
+					lastmbufv0.insert(lastmbufv0.end(), data, data + size);
+					lastmbufv0.insert(lastmbufv0.end(),mbufv.begin(), mbufv.end());
+					WCLOG(LS_ERROR) << "SeekTo Key Frame:" << pos << " (" << (int)frame_type << ") " << timestamp;
+				}
+			}
+			free(data);
+		}
+		//WCLOG(LS_ERROR) << "SeekTo:" << pos << " to:" << to << " timestamp:" << timestamp ;
+		if (to >= pos) {
+			ret = pos0;
+			mreadpos = lastmreadpos0;
+			mbufv.clear();
+			mbufv.assign(lastmbufv0.begin(), lastmbufv0.end());
+			break;
+		}
+		if (to >= (totaltime - 20)) {
+			WCLOG(LS_ERROR) << "SeekTo File End.";
+			break;
+		}
+	}
+
+	if (ret == 0) {
+		mreadpos = lastmreadpos;
+		mbufv.clear();
+		mbufv.assign(lastmbufv.begin(), lastmbufv.end());
+	}
+
+	return ret;
 }
 
 // 获取数据接口。参数全部参照rtmp协议。
@@ -83,7 +137,13 @@ int AnyFlvSource::Playstream() {
 // timestamp 时间戳
 // data 数据缓冲
 // size 数据缓冲大小。
-int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size) {
+int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,TAG_HEADER& tagout) {
+	static std::thread::id idt = std::this_thread::get_id();
+	if (idt != std::this_thread::get_id()) {
+		WCLOG(LS_ERROR) << "几个线程read:" << std::this_thread::get_id();
+		idt = std::this_thread::get_id();
+	}
+	
 	*data = NULL;
 	*size = 0;
 	*timestamp = 0;
@@ -143,42 +203,14 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size) 
 				FLV_HEADER* ph = (FLV_HEADER*)p0;
 				p0 += sizeof(FLV_HEADER);
 				len += sizeof(FLV_HEADER);
-				if (len > mbufv.size()) {
+				if (len > mbufv.size()) { // 缓冲区太小。
 					mfirstreadlenmin = len;
 					mreadpos = 0;
 					mbufv.clear();
 					WCLOG(LS_ERROR) << "first fread buffer not enough:" << mbufv.size() << "(need" << len << ")";
 					break;
 				}
-				TAG_HEADER* ptag = (TAG_HEADER*)p0;
-				p0 += sizeof(TAG_HEADER);
-				len += sizeof(TAG_HEADER);
-				if (len > mbufv.size()) {
-					mfirstreadlenmin = len;
-					mreadpos = 0;
-					mbufv.clear();
-					WCLOG(LS_ERROR) << "first fread buffer not enough:" << mbufv.size() << "(need" << len << ")";
-					break;
-				}
-				uint32_t dwPreviousTagSize = (ptag->btPreviousTagSize[0] << 24) | (ptag->btPreviousTagSize[1] << 16) | (ptag->btPreviousTagSize[2] << 8) | ptag->btPreviousTagSize[3];
-				uint32_t dwDataSize = (ptag->btDataSize[0] << 16) | (ptag->btDataSize[1] << 8) | ptag->btDataSize[2];
-				uint32_t dwTimeStamp = (ptag->btTimeStamp[0] << 16) | (ptag->btTimeStamp[1] << 8) | ptag->btTimeStamp[2];
-				len += dwDataSize;
-				if (len > mbufv.size()) {
-					mfirstreadlenmin = len;
-					mreadpos = 0;
-					mbufv.clear();
-					WCLOG(LS_ERROR) << "first fread buffer not enough:" << mbufv.size() << "(need" << len << ")";
-					break;
-				}
-				*size = dwDataSize;
-				*timestamp = dwTimeStamp;
-				*type = ptag->btTagType;
-				*data = new char[dwDataSize];
-				memcpy(*data, p0, dwDataSize);
-				p0 += dwDataSize;
-				mbufv.erase(mbufv.begin(),mbufv.begin() + len);
-				break;
+				mbufv.erase(mbufv.begin(), mbufv.begin() + len);
 			}
 			if (mbufv.size() < sizeof(TAG_HEADER)) {
 				len = 0;
@@ -193,6 +225,9 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size) 
 				} while (true);
 				if (len <= 0) {
 					WCLOG(LS_ERROR) << "first fread error:" << mfile << errno;
+					if ((mduration - 2) < mlasttimestamp / 1000) {
+						return 7;
+					}
 					break;
 				}
 			}
@@ -234,6 +269,7 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size) 
 			p0 = &mbufv[0];
 			len = 0;
 			ptag = (TAG_HEADER*)p0;
+			memcpy(&tagout, ptag, sizeof(TAG_HEADER));
 			p0 += sizeof(TAG_HEADER);
 			len += sizeof(TAG_HEADER);
 			dwPreviousTagSize = (ptag->btPreviousTagSize[0] << 24) | (ptag->btPreviousTagSize[1] << 16) | (ptag->btPreviousTagSize[2] << 8) | ptag->btPreviousTagSize[3];
@@ -246,11 +282,10 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size) 
 			memcpy(*data, p0, dwDataSize);
 			p0 += dwDataSize;
 			len += dwDataSize;
-			//mreadpos = mbufv.size();
 			mbufv.erase(mbufv.begin(), mbufv.begin() + len);
 			//WCLOG(LS_ERROR) << "go frame  TotalSize:" << sizeof(TAG_HEADER) + dwDataSizeLast << " dwPreviousTagSize:" << dwPreviousTagSize << " dwDataSize:" << dwDataSize << " dwTimeStamp:" << dwTimeStamp;
 			dwDataSizeLast = dwDataSize;
-
+			mlasttimestamp = dwTimeStamp;
 		} while(false);
 		fclose(f);
 	} while (false);
@@ -303,6 +338,9 @@ bool AnyFlvSource::onMetaData(char type_, char* data, int size) {
 						((char*)&dbl)[7-i] = *pcur++;
 					}
 					propdbl[key] = dbl;
+					if (key == "duration") {
+						mduration = dbl;
+					}
 					WCLOG(LS_WARNING) << key << ":" << dbl << "(double)";
 					break;
 				case 0x01:

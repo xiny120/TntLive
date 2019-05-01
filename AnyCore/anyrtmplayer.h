@@ -33,6 +33,7 @@ public:
 	virtual ~AnyRtmplayerImpl(void);
 
 	virtual void StartPlay(const char* url, const char*);// AnyBaseSource*);
+	virtual uint32_t SeekTo(uint32_t pos,double totaltime);
 	virtual void SetVideoRender(void* handle);
 	virtual void StopPlay();
 
@@ -49,6 +50,7 @@ protected:
 	virtual void OnRtmpullH264Data(const uint8_t*pdata, int len, uint32_t ts);
 	virtual void OnRtmpullAACData(const uint8_t*pdata, int len, uint32_t ts);
 	virtual bool OnRtmpullSlowdown();
+	virtual void OnRtmpullResetTime(uint32_t);
 	virtual void OnRtmpullConnectionFailed(int);
 
 
@@ -57,6 +59,8 @@ private:
 	PlyDecoder			*ply_decoder_;
 	bool	m1stVideo;
 	bool	m1stAudio;
+	uint32_t	mseekpos;
+	double mtotaltime;
     int                 cur_bitrate_;
 	std::string			str_url_;
 	std::string	mtype;

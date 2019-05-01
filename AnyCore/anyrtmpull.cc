@@ -133,9 +133,24 @@ void AnyRtmpPull::Run(){
 				}
 			}
 			break;
+			case RS_PLY_PAUSE: {
+				rtc::CritScope l(&cs_rtmp_);
+				if (mrtmp != nullptr) {
+					mrtmp->SeekTo(mseekpos, mtotaltime);
+					rtmp_status_ = RS_PLY_Played;
+				}
+
+			}
+				break;
 			}
 		}
 	}
+}
+
+uint32_t AnyRtmpPull::SeekTo(uint32_t pos,double totaltime) {
+	rtmp_status_ = RS_PLY_PAUSE;
+	mseekpos = pos;
+	return 0;
 }
 
 void AnyRtmpPull::DoReadData(){
@@ -143,7 +158,9 @@ void AnyRtmpPull::DoReadData(){
 	char type;
 	char* data;
 	u_int32_t timestamp;
-	int code = mrtmp->Read(&type, &timestamp, &data, &size);
+	//WCLOG(LS_ERROR) << "AnyRtmpPull::DoReadData" << GetCurrentThreadId();
+	TAG_HEADER tag ;
+	int code = mrtmp->Read(&type, &timestamp, &data, &size,tag);
 	if(code != 0){// 读取rtmp失败！网络可能有问题。 #define ERROR_SOCKET_TIMEOUT                1011
 		CallDisconnect(code);
 	}else {
@@ -193,7 +210,7 @@ void AnyRtmpPull::DoReadData(){
 }
 
 int AnyRtmpPull::GotVideoSample(u_int32_t timestamp, SrsCodecSample *sample){
-	WCLOG(LS_ERROR) << "Frame Type: "<< sample->frame_type;
+	//WCLOG(LS_ERROR) << "Frame Type: "<< sample->frame_type;
 	int ret = ERROR_SUCCESS;
 	// ignore info frame,
 	// @see https://github.com/simple-rtmp-server/srs/issues/288#issuecomment-69863909

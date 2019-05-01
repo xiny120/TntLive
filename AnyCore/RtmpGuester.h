@@ -53,6 +53,7 @@ public:
 
 	//* Rtmp function for pull rtmp stream 
 	virtual void StartRtmpPlay(const char* url, void* render, const char* sourcetype, const char* datadir) = 0;
+	virtual uint32_t SeekTo(uint32_t, double) = 0;
 	virtual void StopRtmpPlay() = 0;
 
 protected:

@@ -63,6 +63,7 @@ protected:
 	CFont mfont;
 	int mmousepos;
 	int mmousecap;
+	HCURSOR mcursor;
 	DECLARE_MESSAGE_MAP()
 public:
 	virtual void BarEventHover(BarInfo*);
@@ -79,4 +80,5 @@ public:
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 };

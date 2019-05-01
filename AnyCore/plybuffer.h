@@ -82,6 +82,7 @@ public:
     PlyStuts PlayerStatus(){return ply_status_;};
     int GetPlayCacheTime(){return buf_cache_time_;};
 	int GetPlayCurTime() { return play_cur_time_; };
+	void ResetCurTime(uint32_t t) { play_cur_time_ = t; };
 
 	void CacheH264Data(const uint8_t*pdata, int len, uint32_t ts);
 	void CachePcmData(const uint8_t*pdata, int len, uint32_t ts);

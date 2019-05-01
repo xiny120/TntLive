@@ -42,6 +42,7 @@ public:
 
 	void AddH264Data(const uint8_t*pdata, int len, uint32_t ts);
 	void AddAACData(const uint8_t*pdata, int len, uint32_t ts);
+	void ResetCurTime(uint32_t);
 	bool Slowdown();
 	int GetPcmData(void* audioSamples, uint32_t& samplesPerSec, size_t& nChannels);
 

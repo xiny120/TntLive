@@ -57,7 +57,7 @@ int AnyRtmpSource::Playstream() {
 // timestamp 时间戳
 // data 数据缓冲
 // size 数据缓冲大小。
-int AnyRtmpSource::Read(char* type, uint32_t* timestamp, char** data, int* size) {
+int AnyRtmpSource::Read(char* type, uint32_t* timestamp, char** data, int* size, TAG_HEADER& tag) {
 	if (rtmp_)
 		return srs_rtmp_read_packet(rtmp_, type, timestamp, data, size);
 	return 0;

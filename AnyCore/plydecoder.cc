@@ -268,7 +268,12 @@ uint32_t PlyDecoder::CurTime() {
 		return ply_buffer_->GetPlayCurTime();
 	}
 	return 0;
+}
 
+void PlyDecoder::ResetCurTime(uint32_t t) {
+	if (ply_buffer_ != NULL) {
+		return ply_buffer_->ResetCurTime(t);
+	}
 }
 
 bool PlyDecoder::Slowdown() {

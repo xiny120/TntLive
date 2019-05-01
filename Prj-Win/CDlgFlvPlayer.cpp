@@ -37,6 +37,7 @@ BEGIN_MESSAGE_MAP(CDlgFlvPlayer, CDialogEx)
 	ON_BN_CLICKED(IDOK, &CDlgFlvPlayer::OnBnClickedOk)
 	ON_BN_CLICKED(IDCANCEL, &CDlgFlvPlayer::OnBnClickedCancel)
 	ON_MESSAGE(WM_PULLDLG_RESIZE, &OnPullDlgResize)
+	ON_MESSAGE(WM_PULLDLG_SEEKTO, &CDlgFlvPlayer::OnPullDlgSeekto)
 	ON_WM_GETMINMAXINFO()
 	ON_WM_SIZE()
 	ON_WM_DWMWINDOWMAXIMIZEDCHANGE()
@@ -223,6 +224,11 @@ void CDlgFlvPlayer::OnGetMinMaxInfo(MINMAXINFO* lpMMI) {
 	__super::OnGetMinMaxInfo(lpMMI);
 }
 
+LRESULT CDlgFlvPlayer::OnPullDlgSeekto(WPARAM wp, LPARAM lp) {
+	m_pPlayer->SeekTo(wp, lp);
+	return TRUE;
+}
+
 LRESULT CDlgFlvPlayer::OnPullDlgResize(WPARAM wp, LPARAM lp) {
 	m_nVideoWidth = wp;
 	m_nVideoHeight = lp;
@@ -240,20 +246,14 @@ LRESULT CDlgFlvPlayer::OnPullDlgResize(WPARAM wp, LPARAM lp) {
 }
 
 
-void CDlgFlvPlayer::OnWindowMaximizedChange(BOOL bIsMaximized)
-{
+void CDlgFlvPlayer::OnWindowMaximizedChange(BOOL bIsMaximized){
 	// 此功能要求 Windows Vista 或更高版本。
 	// _WIN32_WINNT 符号必须 >= 0x0600。
-	// TODO: 在此添加消息处理程序代码和/或调用默认值
-
 	__super::OnWindowMaximizedChange(bIsMaximized);
 }
 
 
-void CDlgFlvPlayer::OnTimer(UINT_PTR nIDEvent)
-{
-	// TODO: 在此添加消息处理程序代码和/或调用默认值
-
+void CDlgFlvPlayer::OnTimer(UINT_PTR nIDEvent){
 	__super::OnTimer(nIDEvent);
 }
 

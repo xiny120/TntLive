@@ -28,6 +28,7 @@
 #define PLY_START	1001
 #define PLY_STOP	1002
 #define PLY_TICK    1003
+#define PLY_SEEK	1004
 
 AnyRtmplayer* AnyRtmplayer::Create(AnyRtmplayerEvent&callback){
 	return new webrtc::AnyRtmplayerImpl(callback);
@@ -40,6 +41,7 @@ AnyRtmplayerImpl::AnyRtmplayerImpl(AnyRtmplayerEvent&callback)	: AnyRtmplayer(ca
 	, rtmp_pull_(NULL)
 	, ply_decoder_(NULL)
     , cur_bitrate_(0)
+	, mseekpos(0)
 	, video_renderer_(NULL){
 	rtc::Thread::Start();
 	AnyRtmpCore::Inst();
@@ -56,6 +58,14 @@ AnyRtmplayerImpl::~AnyRtmplayerImpl(void){
 		delete ply_decoder_;
 		ply_decoder_ = NULL;
 	}
+}
+
+uint32_t AnyRtmplayerImpl::SeekTo(uint32_t pos,double totaltime) {
+	mseekpos = pos;
+	mtotaltime = totaltime;
+	rtc::Thread::Clear(this, PLY_TICK);
+	rtc::Thread::PostDelayed(RTC_FROM_HERE,1000, this, PLY_SEEK);
+	return 0;
 }
 
 void AnyRtmplayerImpl::StartPlay(const char* url,const char* type){
@@ -79,6 +89,14 @@ void AnyRtmplayerImpl::StopPlay(){
 
 void AnyRtmplayerImpl::OnMessage(rtc::Message* msg){
 	switch (msg->message_id) {
+	case PLY_SEEK: {
+		if (rtmp_pull_ != NULL) {
+			rtmp_pull_->SeekTo(mseekpos,mtotaltime);
+			rtc::Thread::PostDelayed(RTC_FROM_HERE, 100, this, PLY_TICK);
+			//OnRtmpullResetTime(mseekpos*100000);
+		}
+
+	}break;
 	case PLY_START: {
 		m1stAudio = true;
 		m1stVideo = true;
@@ -103,8 +121,6 @@ void AnyRtmplayerImpl::OnMessage(rtc::Message* msg){
 	}
 		break;
 	case PLY_STOP: {
-		//m1stAudio = true;
-		//m1stVideo = true;
 		callback_.OnRtmplayerPlayStop();
 		if (rtmp_pull_) {
 			delete rtmp_pull_;
@@ -146,9 +162,13 @@ void AnyRtmplayerImpl::OnRtmpullDisconnect(){
 	StopPlay();
 	callback_.OnRtmplayerClose(-2);
 }
+void AnyRtmplayerImpl::OnRtmpullResetTime(uint32_t t) {
+	if (ply_decoder_) {
+		ply_decoder_->ResetCurTime(t);
+	}
+}
 
 void AnyRtmplayerImpl::OnRtmpullH264Data(const uint8_t*pdata, int len, uint32_t ts){
-
 	if (ply_decoder_) {
 		ply_decoder_->AddH264Data(pdata, len, ts);
 		if (m1stVideo) {

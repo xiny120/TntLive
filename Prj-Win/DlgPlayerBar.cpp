@@ -5,6 +5,7 @@
 #include "LiveWin32.h"
 #include "DlgPlayerBar.h"
 #include "afxdialogex.h"
+#include "xdefines.h"
 
 #define IDT_HIDEME	1
 
@@ -51,6 +52,7 @@ BEGIN_MESSAGE_MAP(CDlgPlayerBar, CDialogEx)
 	ON_WM_LBUTTONUP()
 	ON_WM_LBUTTONDOWN()
 	ON_WM_MOUSEMOVE()
+	ON_WM_SETCURSOR()
 END_MESSAGE_MAP()
 
 
@@ -110,6 +112,7 @@ BOOL CDlgPlayerBar::OnInitDialog(){
 	CDialogEx::OnInitDialog();
 	mLastActive = time(NULL);
 	SetTimer(IDT_HIDEME, 500, NULL);
+	mcursor = LoadCursor(NULL, IDC_HAND);
 	BarInfo *bi = new BarInfo();
 	bi->mbmp[BarInfo::TwoType::ToNormal][BarInfo::Status::Normal].LoadBitmap(IDB_BMP_TONORMAL);
 	bi->mbmp[BarInfo::TwoType::ToNormal][BarInfo::Status::Hover].LoadBitmap(IDB_BMP_TONORMAL);
@@ -328,6 +331,11 @@ void CDlgPlayerBar::OnLButtonUp(UINT nFlags, CPoint point){
 	if (mmousecap == 1) {
 		mmousecap = 0;
 		::ReleaseCapture();
+		int pos = mmousepos - mseekbarrc.left;
+		if (pos > mseekbarrc.Width())
+			pos = mseekbarrc.Width();
+		double seektime = mtotalTime * pos / mseekbarrc.Width();
+		::PostMessage(::GetParent(GetSafeHwnd()),WM_PULLDLG_SEEKTO, seektime, mtotalTime);
 		return;
 	}
 	std::list<BarInfo*>::iterator iter;
@@ -339,8 +347,10 @@ void CDlgPlayerBar::OnLButtonUp(UINT nFlags, CPoint point){
 
 void CDlgPlayerBar::OnLButtonDown(UINT nFlags, CPoint point){
 	CDialogEx::OnLButtonDown(nFlags, point);
-	mmousecap = 1;
-	::SetCapture(GetSafeHwnd());
+	if (mseekbarbtnrc.PtInRect(point)) {
+		mmousecap = 1;
+		::SetCapture(GetSafeHwnd());
+	}
 }
 
 
@@ -355,4 +365,19 @@ void CDlgPlayerBar::OnMouseMove(UINT nFlags, CPoint point){
 		Invalidate();
 	}
 	CDialogEx::OnMouseMove(nFlags, point);
+}
+
+
+BOOL CDlgPlayerBar::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message){
+	std::list<BarInfo*>::iterator iter;
+	CPoint pt;
+	GetCursorPos(&pt);
+	ScreenToClient(&pt);
+	for (iter = mbarlist.begin(); iter != mbarlist.end(); iter++) {
+		if ((*iter)->mpos.PtInRect(pt)) {
+			SetCursor(mcursor);
+			break;
+		}
+	}
+	return CDialogEx::OnSetCursor(pWnd, nHitTest, message);
 }

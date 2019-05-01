@@ -30,6 +30,7 @@ enum RTMPLAYER_STATUS
 	RS_PLY_Played,		// 开始播放
 	RS_PLY_Closed,		// 播放停止
 	RS_PLY_Slowdown,	// 通知数据源减速数据供应
+	RS_PLY_PAUSE,
 	RS_PLY_FlvfileFinished // FLV文件读取完毕。
 };
 
@@ -77,6 +78,7 @@ public:
 	virtual ~AnyRtmpPull(void);
 
 	double GetTotalTime() { return mtotaltime; };
+	uint32_t SeekTo(uint32_t pos,double);
 protected:
 	//* For Thread
 	virtual void Run();
@@ -92,6 +94,7 @@ protected:
 
 private:
 	double	mtotaltime;
+	uint32_t mseekpos;
 	AnyRtmpPullCallback&	callback_;
 	SrsAvcAacCodec*		srs_codec_;
 	bool				running_;

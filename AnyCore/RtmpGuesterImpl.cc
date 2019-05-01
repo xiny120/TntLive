@@ -54,7 +54,14 @@ RtmpGuesterImpl::~RtmpGuesterImpl(){
 	}
 }
 
-//* Rtmp function for pull rtmp stream 
+uint32_t RtmpGuesterImpl::SeekTo(uint32_t pos,double totaltime) {
+	assert(threadid == GetCurrentThreadId());
+	if (av_rtmp_started_) {
+		av_rtmp_player_->SeekTo(pos,totaltime);
+	}
+	return 0;
+}
+
 void RtmpGuesterImpl::StartRtmpPlay(const char* url, void* render, const char* sourcetype,const char* dir){
 	assert(threadid == GetCurrentThreadId());
 	if (!av_rtmp_started_) {
