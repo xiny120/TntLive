@@ -189,6 +189,7 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         mwvMediaList.getSettings().setAppCacheEnabled(true);
 //        webView.loadUrl("file:///android_asset/test.html");//加载asset文件夹下html
         mwvMediaList.loadUrl(getResources().getString(R.string.app_uri) + "#/pages/medialist/medialist");//加载url
+        //mwvMediaList.loadUrl("http://www.qq.com");
 
         //使用webview显示html代码
 //        webView.loadDataWithBaseURL(null,"<html><head><title> 欢迎您 </title></head>" +
@@ -212,7 +213,7 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         //支持屏幕缩放
         webSettings.setSupportZoom(true);
         webSettings.setBuiltInZoomControls(true);
-        mwvMediaList.setWebContentsDebuggingEnabled(true);
+        //mwvMediaList.setWebContentsDebuggingEnabled(true);
 
 
     }
@@ -466,7 +467,29 @@ getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
             //必须要这一句代码:result.confirm()表示:
             //处理结果为确定状态同时唤醒WebCore线程
             //否则不能继续点击按钮
+            //Toast.makeText(getApplicationContext(),url,Toast.LENGTH_LONG);
             result.confirm();
+
+            try {
+                JSONObject obj = new JSONObject(message);
+                String cmd = obj.getString("cmd");
+                JSONObject objData = obj.getJSONObject("data");
+                String pulluri = objData.getString("FilePath");
+                objData = obj.getJSONObject("ui");
+                String sid = objData.getString("SessionId");
+                String tkn = objData.getString("Token");
+
+                Intent it = new Intent(getApplicationContext(), FlvPlayerActivity.class);
+                Bundle bd = new Bundle();
+                bd.putString("rtmp_url", pulluri+"?sessionid=" + sid + "&token=" + tkn);
+                it.putExtras(bd);
+                startActivity(it);
+
+            }catch (Exception e1){
+                Log.i("",e1.toString());
+
+            }
+
             return true;
         }
 
@@ -480,7 +503,7 @@ getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         //加载进度回调
         @Override
         public void onProgressChanged(WebView view, int newProgress) {
-
+            Log.i("ansen","加载进度:"+newProgress);
         }
     };
 

@@ -272,7 +272,7 @@ JOWW(void, RTMPGuestKit_nativeStartRtmpPlay)(JNIEnv* jni, jobject j_app, jstring
 	JRTMPGuestImpl* jApp = (JRTMPGuestImpl*)GetJApp(jni, j_app);
 	
 	std::string rtmp_url = JavaToStdString(jni, j_rtmp_url);
-	jApp->Guest()->StartRtmpPlay(rtmp_url.c_str(), reinterpret_cast<rtc::VideoSinkInterface<cricket::VideoFrame>*>(j_renderer_pointer),"rtmp");
+	jApp->Guest()->StartRtmpPlay(rtmp_url.c_str(), reinterpret_cast<rtc::VideoSinkInterface<cricket::VideoFrame>*>(j_renderer_pointer),"rtmp","");
 }
 
 JOWW(void, RTMPGuestKit_nativeStopRtmpPlay)(JNIEnv* jni, jobject j_app)

@@ -36,12 +36,12 @@ RtmpGuesterImpl::RtmpGuesterImpl(RTMPGuesterEvent&callback)
 	, av_rtmp_player_(NULL)
 	, video_render_(NULL){
 	av_rtmp_player_ = AnyRtmplayer::Create(*this);
-	threadid = GetCurrentThreadId();
+//	threadid = GetCurrentThreadId();
 }
 
 
 RtmpGuesterImpl::~RtmpGuesterImpl(){
-	assert(threadid == GetCurrentThreadId());
+//	assert(threadid == GetCurrentThreadId());
 	StopRtmpPlay();
 	if (av_rtmp_player_ != NULL) {
 		//av_rtmp_player_->StopPlay();

@@ -49,7 +49,7 @@ SurfaceTextureHelper::SurfaceTextureHelper(JNIEnv* jni,
 }
 
 SurfaceTextureHelper::~SurfaceTextureHelper() {
-  LOG(LS_INFO) << "SurfaceTextureHelper dtor";
+  WCLOG(LS_INFO) << "SurfaceTextureHelper dtor";
   JNIEnv* jni = AttachCurrentThreadIfNeeded();
   jni->CallVoidMethod(
       *j_surface_texture_helper_,

@@ -37,7 +37,7 @@ cricket::CaptureState AndroidVideoCapturer::Start(
   RTC_CHECK(thread_checker_.CalledOnValidThread());
   RTC_CHECK(!running_);
   const int fps = cricket::VideoFormat::IntervalToFps(capture_format.interval);
-  LOG(LS_INFO) << " AndroidVideoCapturer::Start " << capture_format.width << "x"
+  WCLOG(LS_INFO) << " AndroidVideoCapturer::Start " << capture_format.width << "x"
                << capture_format.height << "@" << fps;
 
   running_ = true;
@@ -48,7 +48,7 @@ cricket::CaptureState AndroidVideoCapturer::Start(
 }
 
 void AndroidVideoCapturer::Stop() {
-  LOG(LS_INFO) << " AndroidVideoCapturer::Stop ";
+  WCLOG(LS_INFO) << " AndroidVideoCapturer::Stop ";
   RTC_CHECK(thread_checker_.CalledOnValidThread());
   RTC_CHECK(running_);
   running_ = false;

@@ -69,7 +69,7 @@ void JRTMPGuestImpl::OnRtmplayerOK()
 		jni->CallVoidMethod(m_jJavaObj, j_callJavaMId);
 	}
 }
-void JRTMPGuestImpl::OnRtmplayerStatus(int cacheTime, int curBitrate) 
+void JRTMPGuestImpl::OnRtmplayerStatus(int cacheTime, int curBitrate,uint32_t, double)
 {
 	webrtc::AttachThreadScoped ats(webrtc_jni::GetJVM());
 	JNIEnv* jni = ats.env();
@@ -104,5 +104,21 @@ void JRTMPGuestImpl::OnRtmplayerClosed(int errcode)
 }
 
 void JRTMPGuestImpl::OnGetPcmData(const void * p, const int len, const int type,const int){
+
+}
+
+void JRTMPGuestImpl::OnRtmplayerPlayStart(){
+
+}
+void JRTMPGuestImpl::OnRtmplayerPlayStop() {
+
+}
+void JRTMPGuestImpl::OnRtmplayer1stVideo() {
+
+}
+void JRTMPGuestImpl::OnRtmplayer1stAudio() {
+
+}
+void JRTMPGuestImpl::OnRtmplayerConnectionFailed(int a) {
 
 }

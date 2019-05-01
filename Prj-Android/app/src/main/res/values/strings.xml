@@ -16,4 +16,8 @@
     <string name="version">V0.0.1</string>
 
     <string name="str_rtmp_company">Powered by Boyuan (Shanghai) Information Technology Co., Ltd.</string>
+
+    <string name="title_activity_flv_player">FlvPlayerActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>

@@ -42,12 +42,12 @@ AndroidVideoCapturerJni::AndroidVideoCapturerJni(JNIEnv* jni,
       surface_texture_helper_(SurfaceTextureHelper::create(
           jni, "Camera SurfaceTextureHelper", j_egl_context)),
       capturer_(nullptr) {
-  LOG(LS_INFO) << "AndroidVideoCapturerJni ctor";
+  WCLOG(LS_INFO) << "AndroidVideoCapturerJni ctor";
   thread_checker_.DetachFromThread();
 }
 
 AndroidVideoCapturerJni::~AndroidVideoCapturerJni() {
-  LOG(LS_INFO) << "AndroidVideoCapturerJni dtor";
+  WCLOG(LS_INFO) << "AndroidVideoCapturerJni dtor";
   jni()->CallVoidMethod(
       *j_video_capturer_,
       GetMethodID(jni(), *j_video_capturer_class_, "dispose", "()V"));
@@ -56,7 +56,7 @@ AndroidVideoCapturerJni::~AndroidVideoCapturerJni() {
 
 void AndroidVideoCapturerJni::Start(int width, int height, int framerate,
                                     webrtc::AndroidVideoCapturer* capturer) {
-  LOG(LS_INFO) << "AndroidVideoCapturerJni start";
+  WCLOG(LS_INFO) << "AndroidVideoCapturerJni start";
   RTC_DCHECK(thread_checker_.CalledOnValidThread());
   {
     rtc::CritScope cs(&capturer_lock_);
@@ -85,7 +85,7 @@ void AndroidVideoCapturerJni::Start(int width, int height, int framerate,
 }
 
 void AndroidVideoCapturerJni::Stop() {
-  LOG(LS_INFO) << "AndroidVideoCapturerJni stop";
+  WCLOG(LS_INFO) << "AndroidVideoCapturerJni stop";
   RTC_DCHECK(thread_checker_.CalledOnValidThread());
   {
     // TODO(nisse): Consider moving this block until *after* the call to
@@ -101,7 +101,7 @@ void AndroidVideoCapturerJni::Stop() {
                             "stopCapture", "()V");
   jni()->CallVoidMethod(*j_video_capturer_, m);
   CHECK_EXCEPTION(jni()) << "error during VideoCapturer.stopCapture";
-  LOG(LS_INFO) << "AndroidVideoCapturerJni stop done";
+  WCLOG(LS_INFO) << "AndroidVideoCapturerJni stop done";
 }
 
 template <typename... Args>
@@ -111,7 +111,7 @@ void AndroidVideoCapturerJni::AsyncCapturerInvoke(
     typename Identity<Args>::type... args) {
   rtc::CritScope cs(&capturer_lock_);
   if (!invoker_) {
-    LOG(LS_WARNING) << posted_from.function_name()
+    WCLOG(LS_WARNING) << posted_from.function_name()
                     << "() called for closed capturer.";
     return;
   }
@@ -162,7 +162,7 @@ AndroidVideoCapturerJni::GetSupportedFormats() {
 }
 
 void AndroidVideoCapturerJni::OnCapturerStarted(bool success) {
-  LOG(LS_INFO) << "AndroidVideoCapturerJni capture started: " << success;
+  WCLOG(LS_INFO) << "AndroidVideoCapturerJni capture started: " << success;
   AsyncCapturerInvoke(
       RTC_FROM_HERE, &webrtc::AndroidVideoCapturer::OnCapturerStarted, success);
 }
@@ -177,7 +177,7 @@ void AndroidVideoCapturerJni::OnMemoryBufferFrame(void* video_frame,
              rotation == 270);
   rtc::CritScope cs(&capturer_lock_);
   if (!capturer_) {
-    LOG(LS_WARNING) << "OnMemoryBufferFrame() called for closed capturer.";
+    WCLOG(LS_WARNING) << "OnMemoryBufferFrame() called for closed capturer.";
     return;
   }
   int adapted_width;
@@ -250,7 +250,7 @@ void AndroidVideoCapturerJni::OnTextureFrame(int width,
              rotation == 270);
   rtc::CritScope cs(&capturer_lock_);
   if (!capturer_) {
-    LOG(LS_WARNING) << "OnTextureFrame() called for closed capturer.";
+    WCLOG(LS_WARNING) << "OnTextureFrame() called for closed capturer.";
     surface_texture_helper_->ReturnTextureFrame();
     return;
   }
@@ -332,7 +332,7 @@ JOW(void, VideoCapturer_00024NativeObserver_nativeOnTextureFrameCaptured)
 
 JOW(void, VideoCapturer_00024NativeObserver_nativeCapturerStarted)
     (JNIEnv* jni, jclass, jlong j_capturer, jboolean j_success) {
-  LOG(LS_INFO) << "NativeObserver_nativeCapturerStarted";
+  WCLOG(LS_INFO) << "NativeObserver_nativeCapturerStarted";
   reinterpret_cast<AndroidVideoCapturerJni*>(j_capturer)->OnCapturerStarted(
       j_success);
 }
@@ -340,7 +340,7 @@ JOW(void, VideoCapturer_00024NativeObserver_nativeCapturerStarted)
 JOW(void, VideoCapturer_00024NativeObserver_nativeOnOutputFormatRequest)
     (JNIEnv* jni, jclass, jlong j_capturer, jint j_width, jint j_height,
         jint j_fps) {
-  LOG(LS_INFO) << "NativeObserver_nativeOnOutputFormatRequest";
+  WCLOG(LS_INFO) << "NativeObserver_nativeOnOutputFormatRequest";
   reinterpret_cast<AndroidVideoCapturerJni*>(j_capturer)->OnOutputFormatRequest(
       j_width, j_height, j_fps);
 }

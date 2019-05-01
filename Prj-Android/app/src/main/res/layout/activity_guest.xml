@@ -25,11 +25,13 @@
         android:layout_below="@+id/layout_gesture"
         android:id="@+id/webviewmeidalist"
         android:layout_width="match_parent"
-        android:layout_height="900px"/>
+
+        android:layout_height="match_parent"/>
     <WebView
-        android:layout_below="@+id/webviewmeidalist"
+        android:layout_below="@+id/layout_gesture"
         android:id="@+id/webview"
         android:layout_width="match_parent"
+        android:visibility="gone"
         android:layout_height="match_parent"/>
     <LinearLayout
         android:id="@+id/llayout_host_tools"

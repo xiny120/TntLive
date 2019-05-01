@@ -568,7 +568,7 @@ int32_t MediaCodecVideoEncoder::InitEncodeOnCodecThread(
         encoder_fourcc_ = libyuv::FOURCC_NV12;
         break;
       default:
-        LOG(LS_ERROR) << "Wrong color format.";
+        WCLOG(LS_ERROR) << "Wrong color format.";
         return WEBRTC_VIDEO_CODEC_ERROR;
     }
     size_t num_input_buffers = jni->GetArrayLength(input_buffers);

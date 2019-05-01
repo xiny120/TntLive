@@ -132,15 +132,15 @@ uint32_t AnyFlvSource::SeekTo(uint32_t pos,double totaltime) {
 	return ret;
 }
 
-// »ñÈ¡Êý¾Ý½Ó¿Ú¡£²ÎÊýÈ«²¿²ÎÕÕrtmpÐ­Òé¡£
-// type Êý¾ÝÀàÐÍ¡£
-// timestamp Ê±¼ä´Á
-// data Êý¾Ý»º³å
-// size Êý¾Ý»º³å´óÐ¡¡£
+// ï¿½ï¿½È¡ï¿½ï¿½ï¿½Ý½Ó¿Ú¡ï¿½ï¿½ï¿½ï¿½ï¿½È«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½rtmpÐ­ï¿½é¡£
+// type ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¡ï¿½
+// timestamp Ê±ï¿½ï¿½ï¿½
+// data ï¿½ï¿½ï¿½Ý»ï¿½ï¿½ï¿½
+// size ï¿½ï¿½ï¿½Ý»ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½ï¿½
 int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,TAG_HEADER& tagout) {
 	static std::thread::id idt = std::this_thread::get_id();
 	if (idt != std::this_thread::get_id()) {
-		WCLOG(LS_ERROR) << "¼¸¸öÏß³Ìread:" << std::this_thread::get_id();
+		WCLOG(LS_ERROR) << "ï¿½ï¿½ï¿½ï¿½ï¿½ß³ï¿½read:" << std::this_thread::get_id();
 		idt = std::this_thread::get_id();
 	}
 	
@@ -152,14 +152,15 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,T
 	int64_t len = 0;
 	FILE* f = nullptr;
 	do {
-		FILE* f = _fsopen(mfile.c_str(), "rb", SH_DENYNO);
+		//FILE* f = _fsopen(mfile.c_str(), "rb", SH_DENYNO);
+		FILE* f = fopen(mfile.c_str(), "rb");//, SH_DENYNO);
 		if (f == nullptr) {
 			WCLOG(LS_ERROR) << "_fsopen error:" << mfile << " error:" << errno;
 			break;
 		}
 		do {
 			fseek(f, mreadpos, SEEK_SET);
-			if (mreadpos == 0) { // µÚÒ»´Î¿ªÊ¼¶ÁÈ¡ÎÄ¼þ£¬µÚÒ»´ÎÐèÒª¶ÁÈ¡×îÉÙ1024×Ö½Ú¡£²¢ÇÒµÚÒ»´Î¶ÁÈ¡ÎÄ¼þÐèÒª·ÖÎöÍ·£¬²¢¶ÁÈ¡³öµÚÒ»Ö¡ÓÐÐ§Êý¾Ý¡£
+			if (mreadpos == 0) { // ï¿½ï¿½Ò»ï¿½Î¿ï¿½Ê¼ï¿½ï¿½È¡ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½1024ï¿½Ö½Ú¡ï¿½ï¿½ï¿½ï¿½Òµï¿½Ò»ï¿½Î¶ï¿½È¡ï¿½Ä¼ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½Ò»Ö¡ï¿½ï¿½Ð§ï¿½ï¿½ï¿½Ý¡ï¿½
 				WCLOG(LS_ERROR) << "first time to read:" << mfile;
 				len = 0;
 				dwDataSizeLast = 0;
@@ -169,7 +170,7 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,T
 					if (len <= 0)
 						break;
 					mbufv.insert(mbufv.end(), mb, mb + len);
-					mreadpos = _ftelli64(f);
+					mreadpos = ftell(f);
 					if (mbufv.size() >= mfirstreadlenmin)
 						break;
 				} while (true);
@@ -179,7 +180,7 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,T
 					WCLOG(LS_ERROR) << "first fread error:" << mfile << errno;
 					break;
 				}
-				if (mbufv.size() < mfirstreadlenmin) { // Ã»ÓÐ¶Áµ½×ã¹»Êý¾Ý¡£
+				if (mbufv.size() < mfirstreadlenmin) { // Ã»ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ã¹»ï¿½ï¿½ï¿½Ý¡ï¿½
 					mreadpos = 0;
 					mbufv.clear();
 					WCLOG(LS_ERROR) << "first fread buffer not enough:" << mbufv.size() << "(need 1024)";
@@ -203,7 +204,7 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,T
 				FLV_HEADER* ph = (FLV_HEADER*)p0;
 				p0 += sizeof(FLV_HEADER);
 				len += sizeof(FLV_HEADER);
-				if (len > mbufv.size()) { // »º³åÇøÌ«Ð¡¡£
+				if (len > mbufv.size()) { // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì«Ð¡ï¿½ï¿½
 					mfirstreadlenmin = len;
 					mreadpos = 0;
 					mbufv.clear();
@@ -219,19 +220,20 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,T
 					if (len <= 0)
 						break;
 					mbufv.insert(mbufv.end(), mb, mb + len);
-					mreadpos = _ftelli64(f);
+					mreadpos = ftell(f);
 					if (mbufv.size() >= sizeof(TAG_HEADER))
 						break;
 				} while (true);
 				if (len <= 0) {
 					WCLOG(LS_ERROR) << "first fread error:" << mfile << errno;
 					if ((mduration - 2) < mlasttimestamp / 1000) {
-						return 7;
+
+						return 0;
 					}
 					break;
 				}
 			}
-			if (mbufv.size() < sizeof(TAG_HEADER)) { // Ã»ÓÐ¶Áµ½×ã¹»Êý¾Ý¡£ÎÄ¼þÕýÔÚÏÂÔØ£¬Ã»¸ÏÉÏ²¥·Å½ø¶È¡£
+			if (mbufv.size() < sizeof(TAG_HEADER)) { // Ã»ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ã¹»ï¿½ï¿½ï¿½Ý¡ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø£ï¿½Ã»ï¿½ï¿½ï¿½Ï²ï¿½ï¿½Å½ï¿½ï¿½È¡ï¿½
 				WCLOG(LS_ERROR) << "fread buffer not enough:" << mbufv.size() << "(need" << sizeof(TAG_HEADER) << ")";
 				break;
 			}
@@ -252,7 +254,7 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,T
 					if (readed <= 0)
 						break;
 					mbufv.insert(mbufv.end(), mb, mb + readed);
-					mreadpos = _ftelli64(f);
+					mreadpos = ftell(f);
 					if (mbufv.size() >= len)
 						break;
 				} while (true);
@@ -261,7 +263,7 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,T
 					break;
 				}
 			}
-			if (mbufv.size() < len) { // Ã»ÓÐ¶Áµ½×ã¹»Êý¾Ý¡£ÎÄ¼þÕýÔÚÏÂÔØ£¬Ã»¸ÏÉÏ²¥·Å½ø¶È¡£
+			if (mbufv.size() < len) { // Ã»ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ã¹»ï¿½ï¿½ï¿½Ý¡ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø£ï¿½Ã»ï¿½ï¿½ï¿½Ï²ï¿½ï¿½Å½ï¿½ï¿½È¡ï¿½
 				WCLOG(LS_ERROR) << "fread buffer not enough:" << mbufv.size() << "(need" << len << ")";
 				break;
 			}
@@ -313,7 +315,7 @@ bool AnyFlvSource::onMetaData(char type_, char* data, int size) {
 		case 0x01: // Boolean type 1 Bypte bool 
 			pcur += 1;
 			break;
-		case 0x02: // String type ºóÃæ2¸ö×Ö½ÚÎª³¤¶È 
+		case 0x02: // String type ï¿½ï¿½ï¿½ï¿½2ï¿½ï¿½ï¿½Ö½ï¿½Îªï¿½ï¿½ï¿½ï¿½ 
 			len = *pcur;
 			pcur++;
 			len = len << 8 | *pcur;
@@ -348,7 +350,7 @@ bool AnyFlvSource::onMetaData(char type_, char* data, int size) {
 					WCLOG(LS_WARNING) << key << ":" << ((b != 0) ?"true":"false");
 					propbool[key] = (b != 0) ? true : false;
 					break;
-				case 0x02: // String type ºóÃæ2¸ö×Ö½ÚÎª³¤¶È 
+				case 0x02: // String type ï¿½ï¿½ï¿½ï¿½2ï¿½ï¿½ï¿½Ö½ï¿½Îªï¿½ï¿½ï¿½ï¿½ 
 					len = *pcur;
 					pcur++;
 					len = len << 8 | *pcur;

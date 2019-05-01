@@ -1,12 +1,44 @@
 #include "httpclient.h"
+#include <cstdio>
 #include <sstream>
 #include <iostream>
 #include <locale>
 #include <iomanip>
+
+#ifdef _WIN32
 #include <winsock.h>
 #include <share.h>
+#else
+#include <sys/file.h>
+#include <sys/socket.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <sys/stat.h>
+
+
+#include <unistd.h>
+#include <sys/uio.h>
+
+
+#include <sys/types.h>
+#include <errno.h>
+
+
+#endif
+
 #include "webrtc/base/logging.h"
+//#include "../../../../../Users/root/AppData/Local/Android/Sdk/ndk-bundle/sources/cxx-stl/llvm-libc++/include/string"
+//#include "../../../../../Users/root/AppData/Local/Android/Sdk/ndk-bundle/sources/cxx-stl/llvm-libc++/include/mutex"
 //#include <utime.h>
+
+#ifndef _WIN32
+#define SOCKET int
+#endif
+
+
 
 NS_MONSTERLIVE_NET_BEGIN
 
@@ -37,7 +69,7 @@ void httpclient::run() {
 					if (delay < 5) {
 						WCLOG(LS_ERROR) << "retry delay:" << pi->filepeer << " delay:" << delay;
 						
-						pi = nullptr; // ÖØÊÔµÄÊ±ºò£¬¼ä¸ôÐ¡ÓÚ5Ãë¡£
+						pi = nullptr; // ï¿½ï¿½ï¿½Ôµï¿½Ê±ï¿½ò£¬¼ï¿½ï¿½Ð¡ï¿½ï¿½5ï¿½ë¡£
 					}
 				}
 			}
@@ -83,7 +115,7 @@ void httpclient::run() {
 			memset(&stSockAddr, 0, sizeof(struct sockaddr_in));
 			stSockAddr.sin_family = AF_INET;
 			stSockAddr.sin_port = htons(pi->ui.port);
-			stSockAddr.sin_addr.S_un.S_addr = inet_addr(pi->ui.ip.front().c_str());
+			stSockAddr.sin_addr.s_addr = inet_addr(pi->ui.ip.front().c_str());
 			do {
 				if (-1 == connect(sockfd, (const struct sockaddr *)&stSockAddr, sizeof(struct sockaddr_in))) {
 					WCLOG(LS_ERROR) << "socket connect error:" << errno;
@@ -103,7 +135,7 @@ void httpclient::run() {
 					}
 					left -= len;
 				}
-				if (len <= 0) // ÍøÂçÓöµ½´íÎó¡£
+				if (len <= 0) // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 					break;
 				std::string header;
 				i = 0;
@@ -129,7 +161,7 @@ void httpclient::run() {
 						break;
 					}
 				}
-				if (len <= 0) // ÍøÂçÓöµ½´íÎó£¡
+				if (len <= 0) // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 					break;
 				header.append("\r\n");
 				size_t pos = 0, lastpos = 0;
@@ -191,16 +223,16 @@ void httpclient::run() {
 				}
 				bool samed = false;
 				bool needremove = false;
-				if (pi->ui.totallen == pi->ui.locallen) { // ÎÄ¼þ´óÐ¡ÏàµÈ¡£ÒÑ¾­ÏÂÔØ¹ýÁË¡£±È½ÏÎÄ¼þ¸üÐÂÈÕÆÚÊÇ·ñÒ»Ñù¡£
+				if (pi->ui.totallen == pi->ui.locallen) { // ï¿½Ä¼ï¿½ï¿½ï¿½Ð¡ï¿½ï¿½È¡ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½Ø¹ï¿½ï¿½Ë¡ï¿½ï¿½È½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½Ò»ï¿½ï¿½ï¿½ï¿½
 					iter = headers.find("Last-Modified");
-					if (str2time((*iter).second.c_str()) == pi->ui.lastmodify) { // ´óÐ¡ºÍÐÞ¸ÄÊ±¼ä¶¼Ò»Ñù£¬ÈÏÎªÊÇÏàÍ¬ÎÄ¼þ£¬²»ÐèÒªÖØ¸´ÏÂÔØ¡£
+					if (str2time((*iter).second.c_str()) == pi->ui.lastmodify) { // ï¿½ï¿½Ð¡ï¿½ï¿½ï¿½Þ¸ï¿½Ê±ï¿½ä¶¼Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Í¬ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½Ø¸ï¿½ï¿½ï¿½ï¿½Ø¡ï¿½
 						WCLOG(LS_ERROR) << "alerady have:" << pi->filelocal << " size:" << pi->ui.totallen << " Last Modify:" << pi->ui.lastmodify;
 						std::lock_guard<std::recursive_mutex> gs(this->sockmt);
 						_qpull.pop_front();
 						delete pi;
 						pi = nullptr;
 						break;
-					}else { // ÎÄ¼þ´óÐ¡Ò»Ñù£¬µ«ÊÇ·þÎñ¶Ë¸üÐÂ¹ýÁË¡£É¾³ý±¾µØÎÄ¼þ¡£
+					}else { // ï¿½Ä¼ï¿½ï¿½ï¿½Ð¡Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Ë¸ï¿½ï¿½Â¹ï¿½ï¿½Ë¡ï¿½É¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½
 						needremove = true;
 					}
 				}
@@ -217,7 +249,7 @@ void httpclient::run() {
 					} while (i-- >= 0);
 					if(removed ==0)
 						pi->ui.locallen = 0;
-					else { // µ±Ç°½ø³Ì²»ÄÜÉ¾³ý´íÎóÎÄ¼þ[´ó¸Å²¥·Å½ø³ÌÕýÔÚÕ¼ÓÃÎÄ¼þ]£¬ÐèÒªÉèÖÃÉ¾³ý±êÖ¾¡£µÈÏÂ´Î²¥·ÅÖ®Ç°É¾³ý¡£
+					else { // ï¿½ï¿½Ç°ï¿½ï¿½ï¿½Ì²ï¿½ï¿½ï¿½É¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½[ï¿½ï¿½Å²ï¿½ï¿½Å½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¼ï¿½ï¿½ï¿½Ä¼ï¿½]ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½É¾ï¿½ï¿½ï¿½ï¿½Ö¾ï¿½ï¿½ï¿½ï¿½ï¿½Â´Î²ï¿½ï¿½ï¿½Ö®Ç°É¾ï¿½ï¿½ï¿½ï¿½
 						WCLOG(LS_ERROR) << "file need to remove:" << pi->filelocal << " peer size:" << pi->ui.totallen << " local size:" << pi->ui.locallen;
 						std::lock_guard<std::recursive_mutex> gs(this->sockmt);
 						_qpull.pop_front();
@@ -227,7 +259,8 @@ void httpclient::run() {
 					}
 				}
 				WCLOG(LS_ERROR) << "start record file:" << pi->filelocal << " size:" << pi->ui.totallen << " Last Modify:" << pi->ui.lastmodify;
-				FILE* f = _fsopen(path.c_str(), "ab+", _SH_DENYWR);
+				//FILE* f = _fsopen(path.c_str(), "ab+", _SH_DENYWR);
+                FILE* f = fopen(path.c_str(), "ab+");// _SH_DENYWR);
 				if (f == nullptr) {
 					WCLOG(LS_ERROR) << "_fsopen error:" << errno;
 					break;
@@ -270,7 +303,11 @@ void httpclient::run() {
 				_qpull.push_back(pi);
 
 			} while (false);
+#ifdef _WIN32
 			closesocket(sockfd);
+#else
+			close(sockfd);
+#endif
 		}while (false);
 		std::this_thread::sleep_for(std::chrono::milliseconds(0));
 	}
@@ -315,7 +352,7 @@ std::string httpclient::prepareheader(const urlitem* ui) {
 bool httpclient::urlparse(std::string urlin, urlitem & out) {
 	bool ret = false;
 	int i = 0;
-	if (_stricmp(urlin.substr(0, 4).c_str(), "http") != 0)
+	if (strcmp(urlin.substr(0, 4).c_str(), "http") != 0)
 		return false;
 	int lastpos = 0;
 	int pos = 0;
@@ -323,14 +360,14 @@ bool httpclient::urlparse(std::string urlin, urlitem & out) {
 	std::string temp;
 	int idx = 0;
 	out.url = urlin;
-	// ²éÕÒ¡®?¡¯
+	// ï¿½ï¿½ï¿½Ò¡ï¿½?ï¿½ï¿½
 	out.fullpath = urlin;
 	pos = urlin.find('?', 0);
 	if (pos >= 0) {
 		out.fullpath = urlin.substr(0, pos);
 		out.query = urlin.substr(pos+1);
 	}
-	// ·ÖÎöqueryÒÔ & ·Ö¸î²ÎÊý¶Ô£¬ÒÔ=·Ö¸î k-v
+	// ï¿½ï¿½ï¿½ï¿½queryï¿½ï¿½ & ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½Ô£ï¿½ï¿½ï¿½=ï¿½Ö¸ï¿½ k-v
 	lastpos = 0;
 	for (i = 0; i < out.query.length(); i++) {
 		if (out.query[i] == '&') {
@@ -402,7 +439,7 @@ bool httpclient::urlparse(std::string urlin, urlitem & out) {
 	return true;
 }
 
-// url ÒªÏÂÔØµÄÎÄ¼þµÄurl, localfile ÏÂÔØºó±¾µØ±£´æµÄÎÄ¼þÃû£¬Èç¹ûÎª¿Õ£¬·µ»Ø¾Í·µ»ØurlÖÐµÄÎÄ¼þÃû¡£ localpath,±¾µØ±£´æµÄÄ¿Â¼¡£
+// url Òªï¿½ï¿½ï¿½Øµï¿½ï¿½Ä¼ï¿½ï¿½ï¿½url, localfile ï¿½ï¿½ï¿½Øºó±¾µØ±ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½Õ£ï¿½ï¿½ï¿½ï¿½Ø¾Í·ï¿½ï¿½ï¿½urlï¿½Ðµï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ localpath,ï¿½ï¿½ï¿½Ø±ï¿½ï¿½ï¿½ï¿½Ä¿Â¼ï¿½ï¿½
 bool httpclient::get(std::string url, std::string& localfile,const std::string& localpath) {
 	mpause = false;
 	bool ret = false;

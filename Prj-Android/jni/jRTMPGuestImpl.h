@@ -33,10 +33,15 @@ public:
 public:
 	//* For RTMPGuestEvent
 	virtual void OnRtmplayerOK();
-	virtual void OnRtmplayerStatus(int cacheTime, int curBitrate);
+	virtual void OnRtmplayerStatus(int cacheTime, int curBitrate,uint32_t, double);
 	virtual void OnRtmplayerCache(int time);
 	virtual void OnRtmplayerClosed(int errcode);
 	virtual void OnGetPcmData(const void * p, const int len, const int type,const int);
+    virtual void OnRtmplayerPlayStart();
+    virtual void OnRtmplayerPlayStop() ;
+    virtual void OnRtmplayer1stVideo() ;
+    virtual void OnRtmplayer1stAudio() ;
+    virtual void OnRtmplayerConnectionFailed(int a) ;
 
 private:
 	jobject			m_jJavaObj;
