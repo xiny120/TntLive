@@ -61,16 +61,13 @@ import static android.content.ContentValues.TAG;
  * Created by Eric on 2016/9/16.
  */
 public class GuestActivity extends Activity implements RTMPGuestHelper,  SurfaceHolder.Callback{
-    private RTMPGuestKit mGuest = null;
-    private WebView webView;
     private WebView mwvMediaList;
 
     private LinearLayout mToolbar = null;
-
     private TextView mTxtStatus = null;
+    private RTMPGuestKit mGuest = null;
     private SurfaceViewRenderer mSurfaceView = null;
     private VideoRenderer mRenderer = null;
-
     private SurfaceHolder mHolder;
 
     public static final float SHOW_SCALE = 16 * 1.0f / 9;
@@ -99,8 +96,6 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
             lp.width = mVideoWidth;//(int) (mScreenWidth * SHOW_SCALE);
             lp.height = mVideoWidth*576/720;
             lp.leftMargin = mVideoLeft;
-            //mSurfaceLayout.setLayoutParams(lp);
-            //mwvMediaList.setVisibility(View.GONE);
         }
     };
 
@@ -108,7 +103,6 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_guest);
-
         {//* Init UI
             mFullScreen = false;
             mTxtStatus = (TextView) findViewById(R.id.txt_rtmp_status);
@@ -116,26 +110,16 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
             mToolbar = (LinearLayout)findViewById(R.id.llayout_host_tools);
             mToolbar.setVisibility(View.GONE);
             mwvMediaList = (WebView)findViewById(R.id.webviewmeidalist);
-
-
             displayMetrics = new DisplayMetrics();
             this.getWindow().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
             mScreenWidth = displayMetrics.widthPixels;
             mScreenHeight = displayMetrics.heightPixels;
             mVideoWidth = mScreenWidth * 4 / 5;
             mVideoLeft = (mScreenWidth - mVideoWidth) / 2;
-
             mSurfaceView.init(AnyRTMP.Inst().Egl().getEglBaseContext(), new RendererCommon.RendererEvents(){
-                /**
-                 * Callback fired once first frame is rendered.
-                 */
                 public void onFirstFrameRendered(){
                     handler.sendMessage(handler.obtainMessage());
                 };
-
-                /**
-                 * Callback fired when rendered frame resolution or rotation has changed.
-                 */
                 public void onFrameResolutionChanged(int videoWidth, int videoHeight, int rotation){
 
                 };
@@ -143,136 +127,35 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
             mRenderer = new VideoRenderer(mSurfaceView);
         }
 
-        {
-            String rtmpUrl = getIntent().getExtras().getString("rtmp_url");
-            mGuest = new RTMPGuestKit(this, this);
-            mGuest.StartRtmpPlay(rtmpUrl, mRenderer.GetRenderPointer());
-        }
+        String rtmpUrl = getIntent().getExtras().getString("rtmp_url");
+        mGuest = new RTMPGuestKit(this, this);
+        mGuest.StartRtmpPlay(rtmpUrl, mRenderer.GetRenderPointer(),"rtmp","");
         initView();
-        WebSettings webSettings;
-/*
-        webView = (WebView) findViewById(R.id.webview);
-        webView.getSettings().setDomStorageEnabled(true);
-        webView.getSettings().setAppCacheMaxSize(1024*1024*8);
-        String appCachePath = getApplicationContext().getCacheDir().getAbsolutePath();
-        webView.getSettings().setAppCachePath(appCachePath);
-        webView.getSettings().setAllowFileAccess(true);
-        webView.getSettings().setAppCacheEnabled(true);
-//        webView.loadUrl("file:///android_asset/test.html");//加载asset文件夹下html
-        webView.loadUrl(getResources().getString(R.string.app_uri) + "#/pages/chatroom/chatroom");//加载url
-
-        //使用webview显示html代码
-//        webView.loadDataWithBaseURL(null,"<html><head><title> 欢迎您 </title></head>" +
-//                "<body><h2>使用webview显示 html代码</h2></body></html>", "text/html" , "utf-8", null);
-
-        webView.addJavascriptInterface(this,"android");//添加js监听 这样html就能调用客户端
-        webView.setWebChromeClient(webChromeClient);
-        webView.setWebViewClient(webViewClient);
-
-        WebSettings webSettings=webView.getSettings();
-        webSettings.setJavaScriptEnabled(true);//允许使用js
-
-
-        webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);//不使用缓存，只从网络获取数据.
-
-        //支持屏幕缩放
-        webSettings.setSupportZoom(true);
-        webSettings.setBuiltInZoomControls(true);
-*/
-
-        mwvMediaList = (WebView) findViewById(R.id.webviewmeidalist);
-        mwvMediaList.getSettings().setDomStorageEnabled(true);
-        mwvMediaList.getSettings().setAppCacheMaxSize(1024*1024*8);
-        String appCachePath = getApplicationContext().getCacheDir().getAbsolutePath();
-        mwvMediaList.getSettings().setAppCachePath(appCachePath);
-        mwvMediaList.getSettings().setAllowFileAccess(true);
-        mwvMediaList.getSettings().setAppCacheEnabled(true);
-//        webView.loadUrl("file:///android_asset/test.html");//加载asset文件夹下html
-        mwvMediaList.loadUrl(getResources().getString(R.string.app_uri) + "#/pages/medialist/medialist");//加载url
-        //mwvMediaList.loadUrl("http://www.qq.com");
-
-        //使用webview显示html代码
-//        webView.loadDataWithBaseURL(null,"<html><head><title> 欢迎您 </title></head>" +
-//                "<body><h2>使用webview显示 html代码</h2></body></html>", "text/html" , "utf-8", null);
-
-        mwvMediaList.addJavascriptInterface(this,"android");//添加js监听 这样html就能调用客户端
-        mwvMediaList.setWebChromeClient(webChromeClient);
-        mwvMediaList.setWebViewClient(webViewClient);
-
-        webSettings=mwvMediaList.getSettings();
-        webSettings.setJavaScriptEnabled(true);//允许使用js
-
-        /**
-         * LOAD_CACHE_ONLY: 不使用网络，只读取本地缓存数据
-         * LOAD_DEFAULT: （默认）根据cache-control决定是否从网络上取数据。
-         * LOAD_NO_CACHE: 不使用缓存，只从网络获取数据.
-         * LOAD_CACHE_ELSE_NETWORK，只要本地有，无论是否过期，或者no-cache，都使用缓存中的数据。
-         */
-        webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);//不使用缓存，只从网络获取数据.
-
-        //支持屏幕缩放
-        webSettings.setSupportZoom(true);
-        webSettings.setBuiltInZoomControls(true);
-        //mwvMediaList.setWebContentsDebuggingEnabled(true);
-
-
+        initWebView();
     }
-
-
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        //SV可见
-        //initMediaPlayer();
         Point pt = mSurfaceView.getVideoSize();
         Log.i("Tag",pt.toString());
     }
-
-
     @Override
     public void surfaceChanged(SurfaceHolder holder
             , int format, int width, int height) {
-        //SV状态变化
         Point pt = mSurfaceView.getVideoSize();
         Log.i("Tag",pt.toString());
     }
-
-
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        //if (mMediaPlayer != null) {
-         //   mMediaPlayer.pause();
-        //    mCurrentPos = mMediaPlayer.getCurrentPosition();
-        //}
     }
-
-    private void initView() {
-
-        mSurfaceLayout = (RelativeLayout) findViewById(R.id.layout_gesture);
-        RelativeLayout.LayoutParams lp =
-                (RelativeLayout.LayoutParams) mSurfaceLayout.getLayoutParams();
-        lp.width = mVideoWidth;//(int) (mScreenWidth * SHOW_SCALE);
-        lp.height = 120;//mVideoWidth*576/720;
-        lp.leftMargin = mVideoLeft;
-        mSurfaceLayout.setLayoutParams(lp);
-        //mSurfaceView.setLayoutParams(lp);
-        //mSurfaceView = (SurfaceView) findViewById(R.id.sv);
-        mHolder = mSurfaceView.getHolder();
-        mHolder.addCallback(this);
-        mTxtStatus.setVisibility(View.VISIBLE);
-    }
-
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
         if (mGuest != null) {
             mGuest.StopRtmpPlay();
             mGuest.Clear();
             mGuest = null;
         }
     }
-
 
     //当指定了android:configChanges="orientation"后,方向改变时onConfigurationChanged被调用,并且activity不再销毁重建
     @Override
@@ -290,22 +173,18 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
                 mFullScreen = true;
                 ((ImageView) btn).setImageResource(R.mipmap.tosmallwindow);
                 //getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//remove notification bar  即全屏
-
             default:
                 break;
         }
 
         fullScreenChange(!mFullScreen);
-
         Point ptVideo = mSurfaceView.getVideoSize();
         displayMetrics = new DisplayMetrics();
         this.getWindow().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         mScreenWidth = displayMetrics.widthPixels;
         mScreenHeight = displayMetrics.heightPixels;
-
         mVideoWidth = mScreenWidth * 4 / 5;
         mVideoLeft = (mScreenWidth - mVideoWidth) / 2;
-
         mSurfaceLayout = (RelativeLayout) findViewById(R.id.layout_gesture);
         RelativeLayout.LayoutParams lp =
                 (RelativeLayout.LayoutParams) mSurfaceLayout.getLayoutParams();
@@ -320,48 +199,44 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         mSurfaceLayout.setLayoutParams(lp);
     }
 
- public void fullScreenChange(boolean fullScreen) {
-//SharedPreferences mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-//boolean fullScreen = mPreferences.getBoolean("fullScreen", false);
-WindowManager.LayoutParams attrs = getWindow().getAttributes();
-System.out.println("fullScreen的值:" + fullScreen);
-if (fullScreen) {
-attrs.flags &= (~WindowManager.LayoutParams.FLAG_FULLSCREEN);
-getWindow().setAttributes(attrs);
-//取消全屏设置
-getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-//mPreferences.edit().putBoolean("fullScreen", false).commit() ;
-    if (Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 19) {
-        //低版本sdk
-        View v = getWindow().getDecorView();
-        v.setSystemUiVisibility(View.VISIBLE);
-    } else if (Build.VERSION.SDK_INT >= 19) {
-        View decorView = getWindow().getDecorView();
-        int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-        decorView.setSystemUiVisibility(uiOptions);
+     public void fullScreenChange(boolean fullScreen) {
+        //SharedPreferences mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        //boolean fullScreen = mPreferences.getBoolean("fullScreen", false);
+        WindowManager.LayoutParams attrs = getWindow().getAttributes();
+        System.out.println("fullScreen的值:" + fullScreen);
+        if (fullScreen) {
+            attrs.flags &= (~WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            getWindow().setAttributes(attrs);
+            //取消全屏设置
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            //mPreferences.edit().putBoolean("fullScreen", false).commit() ;
+            if (Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 19) {
+                //低版本sdk
+                View v = getWindow().getDecorView();
+                v.setSystemUiVisibility(View.VISIBLE);
+            } else if (Build.VERSION.SDK_INT >= 19) {
+                View decorView = getWindow().getDecorView();
+                int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+                decorView.setSystemUiVisibility(uiOptions);
+            }
+        } else {
+            attrs.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
+            getWindow().setAttributes(attrs);
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            //mPreferences.edit().putBoolean("fullScreen", true).commit();
+            if (Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 19) {
+                View v = getWindow().getDecorView();
+                v.setSystemUiVisibility(View.GONE);
+            } else if (Build.VERSION.SDK_INT >= 19) {
+                View decorView = getWindow().getDecorView();
+                int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN;
+                decorView.setSystemUiVisibility(uiOptions);
+            }
+
+        }
     }
-
-
-} else {
-attrs.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
-getWindow().setAttributes(attrs);
-getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-//mPreferences.edit().putBoolean("fullScreen", true).commit();
-    if (Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 19) {
-        View v = getWindow().getDecorView();
-        v.setSystemUiVisibility(View.GONE);
-    } else if (Build.VERSION.SDK_INT >= 19) {
-        View decorView = getWindow().getDecorView();
-        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                | View.SYSTEM_UI_FLAG_FULLSCREEN;
-        decorView.setSystemUiVisibility(uiOptions);
-    }
-
-}
-}
-
-
     /**
      * the button click event listener
      *
@@ -376,16 +251,11 @@ getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
             }
             finish();
         }else if(btn.getId() == R.id.btn_tofullscreen){
-            //mFullScreen = !mFullScreen;
             if(!mFullScreen){
-
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-
             }else{
-
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             }
-
         }
     }
 
@@ -403,12 +273,12 @@ getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
     }
 
     @Override
-    public void OnRtmplayerStatus(final int cacheTime, final int curBitrate) {
+    public void OnRtmplayerStatus(final int cacheTime, final int curBitrate,final int curTime, final int totalTime) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 if(curBitrate > 0 && cacheTime > 0)
-                    mTxtStatus.setText(String.format(getString(R.string.str_rtmp_pull_status), cacheTime, curBitrate));
+                    mTxtStatus.setText(String.format( getString(R.string.str_rtmp_pull_status), cacheTime, curBitrate,curTime,totalTime));
             }
         });
     }
@@ -431,7 +301,29 @@ getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
             }
         });
     }
+    @Override
+    public void OnRtmplayer1stVideo() {
 
+    }
+    @Override
+    public void OnRtmplayer1stAudio() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //mTxtStatus.setText(String.format( getString(R.string.str_rtmp_pull_status), cacheTime, curBitrate,curTime,totalTime));
+                mwvMediaList.loadUrl(getResources().getString(R.string.app_uri) + "#/pages/chatroom/chatroom");
+            }
+        });
+    }
+    @Override
+    public void OnRtmplayerConnectionFailed(int a) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mTxtStatus.setText(R.string.str_rtmp);
+            }
+        });
+    }
 
     //WebViewClient主要帮助WebView处理各种通知、请求事件
     private WebViewClient webViewClient=new WebViewClient(){
@@ -462,7 +354,6 @@ getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         //不支持js的alert弹窗，需要自己监听然后通过dialog弹窗
         @Override
         public boolean onJsAlert(WebView webView, String url, String message, JsResult result) {
-
             //注意:
             //必须要这一句代码:result.confirm()表示:
             //处理结果为确定状态同时唤醒WebCore线程
@@ -481,15 +372,13 @@ getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
                 Intent it = new Intent(getApplicationContext(), FlvPlayerActivity.class);
                 Bundle bd = new Bundle();
-                bd.putString("rtmp_url", pulluri+"?sessionid=" + sid + "&token=" + tkn);
+                bd.putString("minfo", message);
                 it.putExtras(bd);
                 startActivity(it);
 
             }catch (Exception e1){
                 Log.i("",e1.toString());
-
             }
-
             return true;
         }
 
@@ -517,6 +406,47 @@ getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         Log.i("ansen","html调用客户端:"+str);
     }
 
+    private void initView() {
+        mSurfaceLayout = (RelativeLayout) findViewById(R.id.layout_gesture);
+        RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) mSurfaceLayout.getLayoutParams();
+        lp.width = mVideoWidth;//(int) (mScreenWidth * SHOW_SCALE);
+        lp.height = 120;//mVideoWidth*576/720;
+        lp.leftMargin = mVideoLeft;
+        mSurfaceLayout.setLayoutParams(lp);
+        mHolder = mSurfaceView.getHolder();
+        mHolder.addCallback(this);
+        mTxtStatus.setVisibility(View.VISIBLE);
+    }
+    private void initWebView(){
+        WebSettings webSettings;
+        mwvMediaList = (WebView) findViewById(R.id.webviewmeidalist);
+        webSettings=mwvMediaList.getSettings();
+        webSettings.setDomStorageEnabled(true);
+        webSettings.setAppCacheMaxSize(1024*1024*8);
+        String appCachePath = getApplicationContext().getCacheDir().getAbsolutePath();
+        webSettings.setAppCachePath(appCachePath);
+        webSettings.setAllowFileAccess(true);
+        webSettings.setAppCacheEnabled(true);
+        mwvMediaList.loadUrl(getResources().getString(R.string.app_uri) + "#/pages/medialist/medialist");//加载url
+        //mwvMediaList.loadUrl("http://www.qq.com");
 
+//        webView.loadDataWithBaseURL(null,"<html><head><title> 欢迎您 </title></head>" +
+//                "<body><h2>使用webview显示 html代码</h2></body></html>", "text/html" , "utf-8", null);
 
+        mwvMediaList.addJavascriptInterface(this,"android");//添加js监听 这样html就能调用客户端
+        mwvMediaList.setWebChromeClient(webChromeClient);
+        mwvMediaList.setWebViewClient(webViewClient);
+        webSettings.setJavaScriptEnabled(true);//允许使用js
+        /**
+         * LOAD_CACHE_ONLY: 不使用网络，只读取本地缓存数据
+         * LOAD_DEFAULT: （默认）根据cache-control决定是否从网络上取数据。
+         * LOAD_NO_CACHE: 不使用缓存，只从网络获取数据.
+         * LOAD_CACHE_ELSE_NETWORK，只要本地有，无论是否过期，或者no-cache，都使用缓存中的数据。
+         */
+        webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);//不使用缓存，只从网络获取数据.
+        //支持屏幕缩放
+        webSettings.setSupportZoom(true);
+        webSettings.setBuiltInZoomControls(true);
+        //mwvMediaList.setWebContentsDebuggingEnabled(true);
+    }
 }

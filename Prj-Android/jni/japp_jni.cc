@@ -161,34 +161,27 @@ jlong GetJApp(JNIEnv* jni, jobject j_app)
 //=================================================================
 //* AnyRTM.class
 //=================================================================
-JOWW(void, AnyRTMP_nativeInitCtx)(JNIEnv* jni, jclass, jobject context, jobject egl_context)
-{
-	if(!av_static_initialized)
-	{
+JOWW(void, AnyRTMP_nativeInitCtx)(JNIEnv* jni, jclass, jobject context, jobject egl_context){
+	if(!av_static_initialized){
         // talk/ assumes pretty widely that the current Thread is ThreadManager'd, but
         // ThreadManager only WrapCurrentThread()s the thread where it is first
         // created.  Since the semantics around when auto-wrapping happens in
         // webrtc/base/ are convoluted, we simply wrap here to avoid having to think
         // about ramifications of auto-wrapping there.
         rtc::ThreadManager::Instance()->WrapCurrentThread();
-
 		 ALOGD("JVM::Initialize nativeInitCtx");
 		//* Set Video Context
 		webrtc_jni::AndroidVideoCapturerJni::SetAndroidObjects(jni, context);
 		//* Set Audio Context
 		webrtc::JVM::Initialize(webrtc_jni::GetJVM(), context);
 		av_static_initialized = true;
-        
         jclass j_eglbase14_context_class = webrtc_jni::FindClass(jni, "org/webrtc/EglBase14$Context");
         if (jni->IsInstanceOf(egl_context, j_eglbase14_context_class)) {
             webrtc_jni::MediaCodecVideoEncoderFactory* java_encoder = new webrtc_jni::MediaCodecVideoEncoderFactory();
             rtc::scoped_ptr<cricket::WebRtcVideoEncoderFactory> external_encoder(java_encoder);
             java_encoder->SetEGLContext(jni, egl_context);
-            
             webrtc::AnyRtmpCore::Inst().SetExternalVideoEncoderFactory(external_encoder.release());
         }
-        
-
         rtc::LogMessage::LogToDebug(rtc::LS_ERROR);
 	}
 }
@@ -267,12 +260,12 @@ JOWW(jlong, RTMPGuestKit_nativeCreate)(JNIEnv* jni, jclass, jobject j_obj)
 	return webrtc_jni::jlongFromPointer(jApp);
 }
 
-JOWW(void, RTMPGuestKit_nativeStartRtmpPlay)(JNIEnv* jni, jobject j_app, jstring j_rtmp_url, jlong j_renderer_pointer)
-{
+JOWW(void, RTMPGuestKit_nativeStartRtmpPlay)(JNIEnv* jni, jobject j_app, jstring j_rtmp_url, jlong j_renderer_pointer,jstring j_type_,jstring j_dir_){
 	JRTMPGuestImpl* jApp = (JRTMPGuestImpl*)GetJApp(jni, j_app);
-	
 	std::string rtmp_url = JavaToStdString(jni, j_rtmp_url);
-	jApp->Guest()->StartRtmpPlay(rtmp_url.c_str(), reinterpret_cast<rtc::VideoSinkInterface<cricket::VideoFrame>*>(j_renderer_pointer),"rtmp","");
+	std::string dir_ = JavaToStdString(jni,j_dir_);
+	std::string type_ = JavaToStdString(jni,j_type_);
+	jApp->Guest()->StartRtmpPlay(rtmp_url.c_str(), reinterpret_cast<rtc::VideoSinkInterface<cricket::VideoFrame>*>(j_renderer_pointer),type_.c_str(),dir_.c_str());
 }
 
 JOWW(void, RTMPGuestKit_nativeStopRtmpPlay)(JNIEnv* jni, jobject j_app)

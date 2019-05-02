@@ -24,7 +24,10 @@ package org.anyrtc.core;
 public interface RTMPGuestHelper {
     //* For RTMPCGuesterEvent
     public void OnRtmplayerOK();
-    public void OnRtmplayerStatus(int cacheTime, int curBitrate);
+    public void OnRtmplayerStatus(int cacheTime, int curBitrate,int curTime,int totalTime);
     public void OnRtmplayerCache(int time);
     public void OnRtmplayerClosed(int errcode);
+    public void OnRtmplayer1stVideo() ;
+    public void OnRtmplayer1stAudio() ;
+    public void OnRtmplayerConnectionFailed(int a) ;
 }

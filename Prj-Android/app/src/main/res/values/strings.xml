@@ -6,13 +6,14 @@
     <string name="str_rtmp">目前暂无直播...</string>
 
     <string name="app_uri">http://210.192.107.62:8080/live/h5client/mainpage/</string>
+    <string name="app_hosthis">http://gpk01.gwgz.com:8862/</string>
     <string name="hint_rtmp_url">输入推流/拉流地址</string>
     <string name="str_rtmp_success">RTMP 连接成功</string>
     <string name="str_rtmp_failed">RTMP 连接失败</string>
     <string name="str_rtmp_status">RTMP 延迟：%1$d 网络：%2$d</string>
     <string name="str_rtmp_reconnecting">直播重连中(%1$d秒)...</string>
     <string name="str_rtmp_play_success">直播握手成功...</string>
-    <string name="str_rtmp_pull_status">缓冲数据中，直播马上开始... 缓存区：%1$d@%2$d</string>
+    <string name="str_rtmp_pull_status">缓冲数据中，直播马上开始... 缓存区：%1$d@%2$d - curTime:%d totalTime:%d</string>
     <string name="version">V0.0.1</string>
 
     <string name="str_rtmp_company">Powered by Boyuan (Shanghai) Information Technology Co., Ltd.</string>

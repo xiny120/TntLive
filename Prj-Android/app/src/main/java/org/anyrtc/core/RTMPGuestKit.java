@@ -65,11 +65,11 @@ public class RTMPGuestKit {
 
 
     //* Rtmp function for pull rtmp stream 
-    public void StartRtmpPlay(final String strUrl, final long renderPointer) {
+    public void StartRtmpPlay(final String strUrl, final long renderPointer,final  String type_,final String dir_) {
         mExecutor.execute(new Runnable() {
             @Override
             public void run() {
-                nativeStartRtmpPlay(strUrl, renderPointer);
+                nativeStartRtmpPlay(strUrl, renderPointer,type_,dir_);
             }
         });
     }
@@ -87,7 +87,7 @@ public class RTMPGuestKit {
      *  Native function
      */
     private native long nativeCreate(Object obj);
-    private native void nativeStartRtmpPlay(final String strUrl, final long renderPointer);
+    private native void nativeStartRtmpPlay(final String strUrl, final long renderPointer,final  String type_,final String dir_);
     private native void nativeStopRtmpPlay();
     private native void nativeDestroy();
 }

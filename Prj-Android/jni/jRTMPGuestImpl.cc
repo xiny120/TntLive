@@ -24,10 +24,8 @@
 JRTMPGuestImpl::JRTMPGuestImpl(jobject javaObj)
 : m_pGuest(NULL)
 , m_jJavaObj(NULL)
-, m_jClass(NULL)
-{
-	if(javaObj)
-	{
+, m_jClass(NULL){
+	if(javaObj)	{
 		webrtc::AttachThreadScoped ats(webrtc_jni::GetJVM());
 		m_jJavaObj = ats.env()->NewGlobalRef(javaObj);
 		m_jClass = reinterpret_cast<jclass> (ats.env()->NewGlobalRef(ats.env()->GetObjectClass(m_jJavaObj)));
@@ -35,21 +33,18 @@ JRTMPGuestImpl::JRTMPGuestImpl(jobject javaObj)
 	m_pGuest = RTMPGuester::Create(*this);
 }
 
-JRTMPGuestImpl::~JRTMPGuestImpl(void)
-{
+JRTMPGuestImpl::~JRTMPGuestImpl(void){
 	Close();
 }
 
-void JRTMPGuestImpl::Close()
-{
+void JRTMPGuestImpl::Close(){
 	if (m_pGuest) {
 		m_pGuest->StopRtmpPlay();
 		RTMPGuester::Destory(m_pGuest);
 		m_pGuest = NULL;
 	}
 
-	if(m_jJavaObj)
-	{
+	if(m_jJavaObj)	{
 		webrtc::AttachThreadScoped ats(webrtc_jni::GetJVM());
 		ats.env()->DeleteGlobalRef(m_jClass);
 		m_jClass = NULL;
@@ -58,8 +53,7 @@ void JRTMPGuestImpl::Close()
 	}
 }
 
-void JRTMPGuestImpl::OnRtmplayerOK() 
-{
+void JRTMPGuestImpl::OnRtmplayerOK() {
 	webrtc::AttachThreadScoped ats(webrtc_jni::GetJVM());
 	JNIEnv* jni = ats.env();
 	{
@@ -69,19 +63,17 @@ void JRTMPGuestImpl::OnRtmplayerOK()
 		jni->CallVoidMethod(m_jJavaObj, j_callJavaMId);
 	}
 }
-void JRTMPGuestImpl::OnRtmplayerStatus(int cacheTime, int curBitrate,uint32_t, double)
-{
+void JRTMPGuestImpl::OnRtmplayerStatus(int cacheTime, int curBitrate,uint32_t curTime, double totalTime){
 	webrtc::AttachThreadScoped ats(webrtc_jni::GetJVM());
 	JNIEnv* jni = ats.env();
 	{
 		// Get *** callback interface method id
-		jmethodID j_callJavaMId = webrtc_jni::GetMethodID(jni, m_jClass, "OnRtmplayerStatus", "(II)V");
+		jmethodID j_callJavaMId = webrtc_jni::GetMethodID(jni, m_jClass, "OnRtmplayerStatus", "(IIII)V");
 		// Callback with params
-		jni->CallVoidMethod(m_jJavaObj, j_callJavaMId, cacheTime, curBitrate);
+		jni->CallVoidMethod(m_jJavaObj, j_callJavaMId, cacheTime, curBitrate,(int)(curTime/1000),(int)totalTime);
 	}
 }
-void JRTMPGuestImpl::OnRtmplayerCache(int time) 
-{
+void JRTMPGuestImpl::OnRtmplayerCache(int time) {
 	webrtc::AttachThreadScoped ats(webrtc_jni::GetJVM());
 	JNIEnv* jni = ats.env();
 	{
@@ -117,8 +109,15 @@ void JRTMPGuestImpl::OnRtmplayer1stVideo() {
 
 }
 void JRTMPGuestImpl::OnRtmplayer1stAudio() {
+	webrtc::AttachThreadScoped ats(webrtc_jni::GetJVM());
+	JNIEnv* jni = ats.env();
+	jmethodID j_callJavaMId = webrtc_jni::GetMethodID(jni, m_jClass, "OnRtmplayer1stAudio", "()V");
+	jni->CallVoidMethod(m_jJavaObj, j_callJavaMId);
 
 }
 void JRTMPGuestImpl::OnRtmplayerConnectionFailed(int a) {
-
+	webrtc::AttachThreadScoped ats(webrtc_jni::GetJVM());
+	JNIEnv* jni = ats.env();
+	jmethodID j_callJavaMId = webrtc_jni::GetMethodID(jni, m_jClass, "OnRtmplayerConnectionFailed", "(I)V");
+	jni->CallVoidMethod(m_jJavaObj, j_callJavaMId, a);
 }
