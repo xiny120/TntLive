@@ -32,7 +32,7 @@ public:
 	AnyRtmplayerImpl(AnyRtmplayerEvent&callback);
 	virtual ~AnyRtmplayerImpl(void);
 
-	virtual void StartPlay(const char* url, const char*);// AnyBaseSource*);
+	virtual void StartPlay(const char* url, const char*,const char*);// AnyBaseSource*);
 	virtual uint32_t SeekTo(uint32_t pos,double totaltime);
 	virtual void SetVideoRender(void* handle);
 	virtual void StopPlay();
@@ -64,6 +64,7 @@ private:
     int                 cur_bitrate_;
 	std::string			str_url_;
 	std::string	mtype;
+	std::string mdir;
 	rtc::VideoSinkInterface < cricket::VideoFrame > *video_renderer_;
 };
 

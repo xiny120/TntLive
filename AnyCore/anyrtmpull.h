@@ -74,7 +74,7 @@ public:
 class AnyRtmpPull : public rtc::Thread
 {
 public:
-	AnyRtmpPull(AnyRtmpPullCallback&callback, const char* url, const char* type);// AnyBaseSource*);
+	AnyRtmpPull(AnyRtmpPullCallback&callback, const char* url, const char* type,const char* dir);// AnyBaseSource*);
 	virtual ~AnyRtmpPull(void);
 
 	double GetTotalTime() { return mtotaltime; };
@@ -101,6 +101,7 @@ private:
     bool                connected_;
 	int					retry_ct_;
 	std::string			str_url_;
+	std::string mdir;
     
     rtc::CriticalSection	cs_rtmp_;
 	RTMPLAYER_STATUS	rtmp_status_;

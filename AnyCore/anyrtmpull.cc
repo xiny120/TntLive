@@ -30,7 +30,7 @@
 static u_int8_t fresh_nalu_header[] = { 0x00, 0x00, 0x00, 0x01 };
 static u_int8_t cont_nalu_header[] = { 0x00, 0x00, 0x01 };
 
-AnyRtmpPull::AnyRtmpPull(AnyRtmpPullCallback&callback, const char* url, const char* type)// AnyBaseSource* abs)
+AnyRtmpPull::AnyRtmpPull(AnyRtmpPullCallback&callback, const char* url, const char* type,const char* dir)// AnyBaseSource* abs)
 	: callback_(callback)
 	, srs_codec_(NULL)
 	, running_(false)
@@ -47,8 +47,8 @@ AnyRtmpPull::AnyRtmpPull(AnyRtmpPullCallback&callback, const char* url, const ch
 	}
 	else if (strcmp(type, "flv") == 0) {
 		std::string localfile = "";
-		monsterlive::net::httpclient::me()->get(url, localfile, "");
-		mrtmp = new AnyFlvSource(localfile);
+		monsterlive::net::httpclient::me()->get(url, localfile,dir );
+		mrtmp = new AnyFlvSource(localfile,dir);
 
 	}
 	mrtmp->Create(url);
@@ -65,7 +65,7 @@ AnyRtmpPull::~AnyRtmpPull(void){
 	rtc::Thread::SleepMs(100);
 	{
 		rtc::CritScope l(&cs_rtmp_);
-		mrtmp->Disconnect(); // ÕâÀï±ØÐëÏÈ¶Ï¿ª¡£²»È»»áËÀËø¡£
+		mrtmp->Disconnect(); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¶Ï¿ï¿½ï¿½ï¿½ï¿½ï¿½È»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	}
 	rtc::Thread::Stop();
 	delete mrtmp;
@@ -161,7 +161,7 @@ void AnyRtmpPull::DoReadData(){
 	//WCLOG(LS_ERROR) << "AnyRtmpPull::DoReadData" << GetCurrentThreadId();
 	TAG_HEADER tag ;
 	int code = mrtmp->Read(&type, &timestamp, &data, &size,tag);
-	if(code != 0){// ¶ÁÈ¡rtmpÊ§°Ü£¡ÍøÂç¿ÉÄÜÓÐÎÊÌâ¡£ #define ERROR_SOCKET_TIMEOUT                1011
+	if(code != 0){// ï¿½ï¿½È¡rtmpÊ§ï¿½Ü£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½â¡£ #define ERROR_SOCKET_TIMEOUT                1011
 		CallDisconnect(code);
 	}else {
 		if (type == SRS_RTMP_TYPE_VIDEO) {
@@ -200,8 +200,10 @@ void AnyRtmpPull::DoReadData(){
 			if (!mrtmp->onMetaData(type, data, size)) {
 				//WCLOG(LS_ERROR) << "No flv";
 				srs_human_trace("drop message type=%#x, size=%dB", type, size);
-			}
-			mtotaltime = mrtmp->GetPropDouble("duration");
+			}else {
+                mtotaltime = mrtmp->GetPropDouble("duration");
+                WCLOG(LS_ERROR) << "No flv" << mtotaltime;
+            }
 		}
 	}
 	//if (srs_human_print_rtmp_packet(type, timestamp, data, size) != 0) {	
@@ -410,7 +412,7 @@ void AnyRtmpPull::RescanVideoframe(const char*pdata, int len, uint32_t timestamp
 }
 
 void AnyRtmpPull::CallConnect(){
-	retry_ct_ = 0; // Èç¹ûÊÇÍøÂçÎÊÌâ£¬¾ÍÓÀÔ¶²»Í£³¢ÊÔÖØÁ¬¡£
+	retry_ct_ = 0; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½â£¬ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     connected_ = true;
     callback_.OnRtmpullConnected();
 }

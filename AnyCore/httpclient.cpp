@@ -5,6 +5,14 @@
 #include <locale>
 #include <iomanip>
 
+#ifdef WIN32
+#include <io.h>
+#include <direct.h> 
+#else
+#include <unistd.h>
+#include <sys/stat.h>
+#endif
+
 #ifdef _WIN32
 #include <winsock.h>
 #include <share.h>
@@ -38,7 +46,39 @@
 #define SOCKET int
 #endif
 
+#define MAX_PATH_LEN 256
 
+#ifdef WIN32
+#define ACCESS(fileName,accessMode) _access(fileName,accessMode)
+#define MKDIR(path) _mkdir(path)
+#else
+#define ACCESS(fileName,accessMode) access(fileName,accessMode)
+#define MKDIR(path) mkdir(path,S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)
+#endif
+
+
+// 从左到右依次判断文件夹是否存在,不存在就创建
+// example: /home/root/mkdir/1/2/3/4/
+// 注意:最后一个如果是文件夹的话,需要加上 '\' 或者 '/'
+int32_t createDirectory(const std::string &directoryPath){
+	uint32_t dirPathLen = directoryPath.length();
+	if (dirPathLen > MAX_PATH_LEN)	{
+		return -1;
+	}
+	char tmpDirPath[MAX_PATH_LEN] = { 0 };
+	for (uint32_t i = 0; i < dirPathLen; ++i)	{
+		tmpDirPath[i] = directoryPath[i];
+		if (tmpDirPath[i] == '\\' || tmpDirPath[i] == '/')		{
+			if (ACCESS(tmpDirPath, 0) != 0)		{
+				int32_t ret = MKDIR(tmpDirPath);
+				if (ret != 0){
+					return ret;
+				}
+			}
+		}
+	}
+	return 0;
+}
 
 NS_MONSTERLIVE_NET_BEGIN
 
@@ -67,7 +107,7 @@ void httpclient::run() {
 						pi->ui.firsttry = time(nullptr);
 					int delay = (time(nullptr) - pi->ui.lastactive);
 					if (delay < 5) {
-						WCLOG(LS_ERROR) << "retry delay:" << pi->filepeer << " delay:" << delay;
+						//WCLOG(LS_ERROR) << "retry delay:" << pi->filepeer << " delay:" << delay;
 						
 						pi = nullptr; // ���Ե�ʱ�򣬼��С��5�롣
 					}
@@ -87,14 +127,14 @@ void httpclient::run() {
 				delete pi;
 				break;
 			}
-			std::string localfile = pi->filelocal;
-			if (localfile.empty()) {
-				localfile = pi->ui.file;
-			}
-			std::string path = localfile;
-			if (!pi->pathlocal.empty()) {
-				path = pi->pathlocal + "/" + localfile;
-			}
+			//std::string localfile = pi->filelocal;
+			//if (localfile.empty()) {
+			//	localfile = pi->ui.file;
+			//}
+			//std::string pathdir = pi->pathlocal + pi->ui.pathdir;
+			std::string path = pi->filelocal;// localfile;
+			//path = pathdir + localfile;
+			//createDirectory(pathdir);
 			std::string pathinfo = path + ".info";
 			pi->ui.locallen = 0;
 			pi->ui.lastmodify = getfiletime(pathinfo.c_str());
@@ -262,7 +302,7 @@ void httpclient::run() {
 				//FILE* f = _fsopen(path.c_str(), "ab+", _SH_DENYWR);
                 FILE* f = fopen(path.c_str(), "ab+");// _SH_DENYWR);
 				if (f == nullptr) {
-					WCLOG(LS_ERROR) << "_fsopen error:" << errno;
+					WCLOG(LS_ERROR) << "downloading _fsopen error:" << path << errno;
 					break;
 				}
 				while (!mpause) {
@@ -332,7 +372,6 @@ int httpclient::Init() {
 }
 
 std::string httpclient::prepareheader(const urlitem* ui) {
-	
 	std::ostringstream os;
 	os << "GET " << ui->url << " HTTP/1.1\r\n"
 		<< "Host:" << ui->host << "\r\n"
@@ -343,10 +382,7 @@ std::string httpclient::prepareheader(const urlitem* ui) {
 		<< "Accept:*/*\r\n"
 		//<< "Accept-Encoding: gzip, deflate\r\n"
 		<< "Accept-Language: zh-CN,zh;q=0.9\r\n\r\n";
-
-
 	return os.str();
-
 }
 
 bool httpclient::urlparse(std::string urlin, urlitem & out) {
@@ -416,6 +452,9 @@ bool httpclient::urlparse(std::string urlin, urlitem & out) {
 	}else if (pos = out.path.rfind('\\') >= 0) {
 		out.file = out.path.substr(pos + 1);
 	}
+
+	out.pathdir = out.path.substr(1,out.path.length() - out.file.length()-1);
+
 	struct hostent *hptr;
 	char **pptr;
 	if ((hptr = gethostbyname(out.host.c_str())) != nullptr) {
@@ -435,23 +474,32 @@ bool httpclient::urlparse(std::string urlin, urlitem & out) {
 			break;
 		}
 	}
-
 	return true;
 }
 
 // url Ҫ���ص��ļ���url, localfile ���غ󱾵ر�����ļ��������Ϊ�գ����ؾͷ���url�е��ļ����� localpath,���ر����Ŀ¼��
-bool httpclient::get(std::string url, std::string& localfile,const std::string& localpath) {
+bool httpclient::get(const std::string url, std::string& localfile_,const std::string localpath) {
 	mpause = false;
 	bool ret = false;
 	pullitem *pi = new pullitem();
 	pi->filepeer = url;
-	pi->filelocal = localfile;
-	pi->pathlocal = localpath;
+	pi->filelocal = localfile_.c_str();
+	pi->pathlocal = localpath.c_str();
+	localfile_ = "shit";
 	ret = urlparse(url, pi->ui);
 	if (ret) {
-		if (pi->filelocal.empty()) {
-			pi->filelocal = pi->ui.file;
-			localfile = pi->ui.file;
+		if (pi->filelocal.length() < 1) {
+			std::string lf = pi->filelocal.c_str();
+			if (lf.empty()) {
+				lf = pi->ui.file.c_str();
+			}
+			std::string pathdir = pi->pathlocal + "/" + pi->ui.pathdir;
+			std::string path = lf;
+			path = pathdir +"/"+ lf;
+			createDirectory(pathdir);
+
+			pi->filelocal = path;
+			localfile_ = path;
 		}
 		std::lock_guard<std::recursive_mutex> gs(this->sockmt);
 		listpull::iterator iter;

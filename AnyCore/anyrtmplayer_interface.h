@@ -29,7 +29,7 @@ public:
 	virtual ~AnyRtmplayer(void){};
 	static AnyRtmplayer* Create(AnyRtmplayerEvent&callback);
 
-	virtual void StartPlay(const char* url, const char* type) = 0;// AnyBaseSource*) = 0;
+	virtual void StartPlay(const char* url, const char* type,const char* dir) = 0;// AnyBaseSource*) = 0;
 	virtual uint32_t SeekTo(uint32_t pos,double totaltime) = 0;
 	virtual void SetVideoRender(void* handle) = 0;
 	virtual void StopPlay() = 0;

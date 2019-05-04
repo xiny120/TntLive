@@ -38,7 +38,7 @@ LOCAL_SRC_FILES := $(ANYCORE)/srs_librtmp/srs_librtmp.cpp \
 		$(ANYCORE)/AnyBaseSource.cpp \
 		$(ANYCORE)/AnyRtmpSource.cpp \
 		$(ANYCORE)/AnyFlvSource.cpp \
-		$(ANYCORE)httpclient.cpp
+		$(ANYCORE)/httpclient.cpp
 	
 ## 
 ## Widows (call host-path,/cygdrive/path/to/your/file/libstlport_shared.so) 	

@@ -30,6 +30,7 @@
         <activity
             android:name=".FlvPlayerActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="landscape"
             android:label="@string/title_activity_flv_player"
             android:theme="@style/FullscreenTheme"></activity>
         <activity

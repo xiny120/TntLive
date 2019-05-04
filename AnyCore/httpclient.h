@@ -31,7 +31,8 @@ public:
 	std::string host; // www.pic98.com
 	uint16_t port; // 8080
 	std::string path; // /file/beautileg/samansha/201901011506.jpg
-	std::string file; // 201901011506.jpg #ºÅ»¹Ã»½âÎö¡£¡£¡£¡£¡£
+	std::string pathdir; // /file/beautileg/samasha
+	std::string file; // 201901011506.jpg #ï¿½Å»ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	std::list<std::string> ip;	// dns result for www.pic98.com
 	std::string officalhost;
 	std::list<std::string> aliases;	// dns result for www.pic98.com
@@ -67,11 +68,11 @@ private:
 public:
 	static httpclient* me();
 	virtual int Init();
-	bool get(std::string url, std::string& file,const std::string& dir);
+	bool get(const std::string url, std::string& file,const std::string dir);
 	void pause() { mpause = true; };
 	void start() { mpause = false; };
 private:
-	//Êý¾Ý´¦ÀíÁ÷³ÌÔÚ´Ë
+	//ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½
 	virtual void run();
 	bool mrun;
 	bool mpause;

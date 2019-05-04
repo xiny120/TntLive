@@ -36,12 +36,16 @@ RtmpGuesterImpl::RtmpGuesterImpl(RTMPGuesterEvent&callback)
 	, av_rtmp_player_(NULL)
 	, video_render_(NULL){
 	av_rtmp_player_ = AnyRtmplayer::Create(*this);
-//	threadid = GetCurrentThreadId();
+#ifdef _WIN32
+	threadid = GetCurrentThreadId();
+#endif
 }
 
 
 RtmpGuesterImpl::~RtmpGuesterImpl(){
-//	assert(threadid == GetCurrentThreadId());
+#ifdef _WIN32
+	assert(threadid == GetCurrentThreadId());
+#endif
 	StopRtmpPlay();
 	if (av_rtmp_player_ != NULL) {
 		//av_rtmp_player_->StopPlay();
@@ -55,7 +59,9 @@ RtmpGuesterImpl::~RtmpGuesterImpl(){
 }
 
 uint32_t RtmpGuesterImpl::SeekTo(uint32_t pos,double totaltime) {
+#ifdef _WIN32
 	assert(threadid == GetCurrentThreadId());
+#endif
 	if (av_rtmp_started_) {
 		av_rtmp_player_->SeekTo(pos,totaltime);
 	}
@@ -63,19 +69,23 @@ uint32_t RtmpGuesterImpl::SeekTo(uint32_t pos,double totaltime) {
 }
 
 void RtmpGuesterImpl::StartRtmpPlay(const char* url, void* render, const char* sourcetype,const char* dir){
+#ifdef _WIN32
 	assert(threadid == GetCurrentThreadId());
+#endif
 	if (!av_rtmp_started_) {
 		av_rtmp_started_ = true;
 		rtmp_url_ = url;
 		video_render_ = webrtc::VideoRenderer::Create(render, 720, 80);
 		av_rtmp_player_->SetVideoRender(video_render_);
-		av_rtmp_player_->StartPlay(url,sourcetype);// , mabs);
+		av_rtmp_player_->StartPlay(url,sourcetype,dir);// , mabs);
 		webrtc::AnyRtmpCore::Inst().StartAudioTrack(this);
 	}
 }
 
 void RtmpGuesterImpl::StopRtmpPlay(){
+#ifdef _WIN32
 	assert(threadid == GetCurrentThreadId());
+#endif
 	if (av_rtmp_started_) {
 		av_rtmp_started_ = false;
 		rtmp_url_ = "";
@@ -130,6 +140,7 @@ void RtmpGuesterImpl::OnRtmplayerConnectionFailed(int a) {
 int RtmpGuesterImpl::OnNeedPlayAudio(void* audioSamples, uint32_t& samplesPerSec, size_t& nChannels)
 {
 	int ret = ((webrtc::AnyRtmplayerImpl*)av_rtmp_player_)->GetNeedPlayAudio(audioSamples, samplesPerSec, nChannels);
+	//WCLOG(LS_ERROR) << "OnNeedPlayAudio" << ret << " sps:" << samplesPerSec <<" Channels:" << nChannels;
 	if(ret> 0)
 		callback_.OnGetPcmData(audioSamples,ret, samplesPerSec, nChannels);
 	return ret;

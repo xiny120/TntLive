@@ -2,6 +2,7 @@ package org.anyrtc.anyrtmp;
 
 import android.annotation.SuppressLint;
 import android.graphics.Point;
+import android.os.Environment;
 import android.os.Message;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -24,6 +25,8 @@ import org.json.JSONObject;
 import org.webrtc.RendererCommon;
 import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoRenderer;
+
+import java.io.File;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -90,6 +93,7 @@ public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHel
                 actionBar.show();
             }
             mControlsView.setVisibility(View.VISIBLE);
+
         }
     };
     private boolean mVisible;
@@ -119,12 +123,12 @@ public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHel
     Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            mTxtStatus.setVisibility(View.GONE);
-            RelativeLayout.LayoutParams lp =
-                    (RelativeLayout.LayoutParams) mSurfaceLayout.getLayoutParams();
-            lp.width = mVideoWidth;//(int) (mScreenWidth * SHOW_SCALE);
-            lp.height = mVideoWidth*576/720;
-            lp.leftMargin = mVideoLeft;
+            mTxtStatus.setVisibility(View.VISIBLE);//(View.GONE);
+            //RelativeLayout.LayoutParams lp =
+            //        (RelativeLayout.LayoutParams) mSurfaceLayout.getLayoutParams();
+           // lp.width = mVideoWidth;//(int) (mScreenWidth * SHOW_SCALE);
+           // lp.height = mVideoWidth*576/720;
+           // lp.leftMargin = mVideoLeft;
         }
     };
     @Override
@@ -180,10 +184,33 @@ public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHel
             String tkn = objData.getString("Token");
             String url = getResources().getString(R.string.app_hosthis) +pulluri;
             mGuest = new RTMPGuestKit(this, this);
-            mGuest.StartRtmpPlay(url, mRenderer.GetRenderPointer(), "flv", "");
+            mGuest.StartRtmpPlay(url, mRenderer.GetRenderPointer(), "flv", getDataPath() );
         }catch (Exception e1){
 
         }
+    }
+
+    public String getDataPath() {
+        String ret = "";
+        //首先判断外部存储是否可用
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            ret = getExternalFilesDir("").getAbsolutePath();
+            File sd = new File(ret);
+            Log.e("qq", "sd = " + sd);//sd = /storage/emulated/0
+            if (!sd.canWrite()) {
+                ret = "";
+            }
+        }
+        if(ret == ""){
+            ret = getFilesDir().getAbsolutePath();
+            File sd = new File(ret);
+            Log.e("qq", "sd = " + sd);//sd = /storage/emulated/0
+            if (!sd.canWrite()) {
+                ret = "";
+            }
+        }
+
+        return ret;
     }
 
     @Override
@@ -201,6 +228,7 @@ public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHel
             hide();
         } else {
             show();
+            delayedHide(5000);
         }
     }
 
@@ -277,6 +305,7 @@ public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHel
 
     @Override
     public void OnRtmplayerStatus(final int cacheTime, final int curBitrate,final int curTime, final int totalTime) {
+        Log.i("org.anyrtc.anyrtmp",String.format("Status TotalTime:%d",totalTime));
         runOnUiThread(new Runnable() {
             @Override
             public void run() {

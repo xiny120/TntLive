@@ -11,7 +11,7 @@ class AnyFlvSource :
 	public AnyBaseSource{
 public:
 	AnyFlvSource();
-	AnyFlvSource(const std::string);
+	AnyFlvSource(const std::string,const std::string );
 	virtual ~AnyFlvSource();
 
 	virtual int Create(std::string url); // 仿rtmp协议建立数据源接口。但是真实源可以是文件，rtmp,rtsp,等等已知文件或协议。
@@ -39,6 +39,7 @@ public:
 
 private:
 	std::string mfile;
+	std::string mdir;
 	std::vector<char> mbufv;
 	int64_t mreadpos;
 	int64_t mfirstreadlenmin;

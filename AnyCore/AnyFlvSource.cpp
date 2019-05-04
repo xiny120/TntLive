@@ -7,8 +7,9 @@
 AnyFlvSource::AnyFlvSource(){
 }
 
-AnyFlvSource::AnyFlvSource(const std::string _file):
+AnyFlvSource::AnyFlvSource(const std::string _file, const std::string _dir):
 	mfile(_file),
+	mdir(_dir),
 	mb(nullptr),
 	mblen(102400){
 }
@@ -153,11 +154,15 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,T
 	FILE* f = nullptr;
 	do {
 		//FILE* f = _fsopen(mfile.c_str(), "rb", SH_DENYNO);
+		//std::string dir0 = mdir + "/fuck/" + mfile;
+        //WCLOG(LS_ERROR) << "_fsopen funck:" << dir0 << " error:" << errno;
+
 		FILE* f = fopen(mfile.c_str(), "rb");//, SH_DENYNO);
 		if (f == nullptr) {
 			WCLOG(LS_ERROR) << "_fsopen error:" << mfile << " error:" << errno;
 			break;
 		}
+        //WCLOG(LS_ERROR) << "_fsopen success:" << mfile << " error:" << errno;
 		do {
 			fseek(f, mreadpos, SEEK_SET);
 			if (mreadpos == 0) { // ��һ�ο�ʼ��ȡ�ļ�����һ����Ҫ��ȡ����1024�ֽڡ����ҵ�һ�ζ�ȡ�ļ���Ҫ����ͷ������ȡ����һ֡��Ч���ݡ�
@@ -225,9 +230,9 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,T
 						break;
 				} while (true);
 				if (len <= 0) {
-					WCLOG(LS_ERROR) << "first fread error:" << mfile << errno;
+					//WCLOG(LS_ERROR) << "first fread error:" << mfile << errno;
 					if ((mduration - 2) < mlasttimestamp / 1000) {
-
+					    fclose(f);
 						return 0;
 					}
 					break;

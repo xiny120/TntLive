@@ -20,6 +20,21 @@
 #include "webrtc/api/java/jni/classreferenceholder.h"
 #include "webrtc/api/java/jni/jni_helpers.h"
 #include "webrtc/modules/utility/include/helpers_android.h"
+#include<android/log.h>
+
+#define TAG "org.anyrtc.anyrtmp" // 这个是自定义的LOG的标识
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG,TAG ,__VA_ARGS__) // 定义LOGD类型
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO,TAG ,__VA_ARGS__) // 定义LOGI类型
+#define LOGW(...) __android_log_print(ANDROID_LOG_WARN,TAG ,__VA_ARGS__) // 定义LOGW类型
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,TAG ,__VA_ARGS__) // 定义LOGE类型
+#define LOGF(...) __android_log_print(ANDROID_LOG_FATAL,TAG ,__VA_ARGS__) // 定义LOGF类型
+
+#define TAG "org.anyrtc.anyrtmp" // 这个是自定义的LOG的标识
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG,TAG ,__VA_ARGS__) // 定义LOGD类型
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO,TAG ,__VA_ARGS__) // 定义LOGI类型
+#define LOGW(...) __android_log_print(ANDROID_LOG_WARN,TAG ,__VA_ARGS__) // 定义LOGW类型
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,TAG ,__VA_ARGS__) // 定义LOGE类型
+#define LOGF(...) __android_log_print(ANDROID_LOG_FATAL,TAG ,__VA_ARGS__) // 定义LOGF类型
 
 JRTMPGuestImpl::JRTMPGuestImpl(jobject javaObj)
 : m_pGuest(NULL)
@@ -69,8 +84,11 @@ void JRTMPGuestImpl::OnRtmplayerStatus(int cacheTime, int curBitrate,uint32_t cu
 	{
 		// Get *** callback interface method id
 		jmethodID j_callJavaMId = webrtc_jni::GetMethodID(jni, m_jClass, "OnRtmplayerStatus", "(IIII)V");
+		int tt = (int)totalTime;
+		int ct = (curTime/1000);
+		LOGI("%d",tt);
 		// Callback with params
-		jni->CallVoidMethod(m_jJavaObj, j_callJavaMId, cacheTime, curBitrate,(int)(curTime/1000),(int)totalTime);
+		jni->CallVoidMethod(m_jJavaObj, j_callJavaMId, cacheTime, curBitrate,ct,tt);
 	}
 }
 void JRTMPGuestImpl::OnRtmplayerCache(int time) {
