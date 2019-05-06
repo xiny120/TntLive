@@ -161,7 +161,7 @@ void AnyRtmpPull::DoReadData(){
 	//WCLOG(LS_ERROR) << "AnyRtmpPull::DoReadData" << GetCurrentThreadId();
 	TAG_HEADER tag ;
 	int code = mrtmp->Read(&type, &timestamp, &data, &size,tag);
-	if(code != 0){// ��ȡrtmpʧ�ܣ�������������⡣ #define ERROR_SOCKET_TIMEOUT                1011
+	if(code != 0){// Read error #define ERROR_SOCKET_TIMEOUT                1011
 		CallDisconnect(code);
 	}else {
 		if (type == SRS_RTMP_TYPE_VIDEO) {

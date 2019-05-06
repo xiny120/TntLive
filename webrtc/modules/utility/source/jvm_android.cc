@@ -70,12 +70,12 @@ jclass LookUpClass(const char* name) {
 // AttachCurrentThreadIfNeeded implementation.
 AttachCurrentThreadIfNeeded::AttachCurrentThreadIfNeeded()
     : attached_(false) {
-  ALOGD("AttachCurrentThreadIfNeeded::ctor%s", GetThreadInfo().c_str());
+  //ALOGD("AttachCurrentThreadIfNeeded::ctor%s", GetThreadInfo().c_str());
   JavaVM* jvm = JVM::GetInstance()->jvm();
   RTC_CHECK(jvm);
   JNIEnv* jni = GetEnv(jvm);
   if (!jni) {
-    ALOGD("Attaching thread to JVM");
+    //ALOGD("Attaching thread to JVM");
     JNIEnv* env = nullptr;
     jint ret = jvm->AttachCurrentThread(&env, nullptr);
     attached_ = (ret == JNI_OK);
@@ -83,10 +83,10 @@ AttachCurrentThreadIfNeeded::AttachCurrentThreadIfNeeded()
 }
 
 AttachCurrentThreadIfNeeded::~AttachCurrentThreadIfNeeded() {
-  ALOGD("AttachCurrentThreadIfNeeded::dtor%s", GetThreadInfo().c_str());
+  //ALOGD("AttachCurrentThreadIfNeeded::dtor%s", GetThreadInfo().c_str());
   RTC_DCHECK(thread_checker_.CalledOnValidThread());
   if (attached_) {
-    ALOGD("Detaching thread from JVM");
+    //ALOGD("Detaching thread from JVM");
     jint res = JVM::GetInstance()->jvm()->DetachCurrentThread();
     RTC_CHECK(res == JNI_OK) << "DetachCurrentThread failed: " << res;
   }

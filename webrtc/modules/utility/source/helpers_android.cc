@@ -102,7 +102,7 @@ AttachThreadScoped::AttachThreadScoped(JavaVM* jvm)
     // Adding debug log here so we can track down potential leaks and figure
     // out why we sometimes see "Native thread exiting without having called
     // DetachCurrentThread" in logcat outputs.
-    ALOGD("Attaching thread to JVM%s", GetThreadInfo().c_str());
+    //ALOGD("Attaching thread to JVM%s", GetThreadInfo().c_str());
     jint res = jvm->AttachCurrentThread(&env_, NULL);
     attached_ = (res == JNI_OK);
     RTC_CHECK(attached_) << "AttachCurrentThread failed: " << res;
@@ -111,7 +111,7 @@ AttachThreadScoped::AttachThreadScoped(JavaVM* jvm)
 
 AttachThreadScoped::~AttachThreadScoped() {
   if (attached_) {
-    ALOGD("Detaching thread from JVM%s", GetThreadInfo().c_str());
+    //ALOGD("Detaching thread from JVM%s", GetThreadInfo().c_str());
     jint res = jvm_->DetachCurrentThread();
     RTC_CHECK(res == JNI_OK) << "DetachCurrentThread failed: " << res;
     RTC_CHECK(!GetEnv(jvm_));

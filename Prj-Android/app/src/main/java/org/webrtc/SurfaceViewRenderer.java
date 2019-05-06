@@ -113,6 +113,7 @@ public class SurfaceViewRenderer extends SurfaceView
   };
 
   public Point getVideoSize(){
+
     Point pt = new Point();
     pt.x = frameWidth;
     pt.y = frameHeight;

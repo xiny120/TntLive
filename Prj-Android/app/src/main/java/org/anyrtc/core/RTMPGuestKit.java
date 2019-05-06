@@ -81,13 +81,21 @@ public class RTMPGuestKit {
             }
         });
     }
-
+    public void SeekTo(final  long p1,final double p2) {
+        mExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                nativeSeekTo(p1,p2);
+            }
+        });
+    }
 
     /**
      *  Native function
      */
     private native long nativeCreate(Object obj);
     private native void nativeStartRtmpPlay(final String strUrl, final long renderPointer,final  String type_,final String dir_);
+    private native void nativeSeekTo(final  long p1,final double p2);
     private native void nativeStopRtmpPlay();
     private native void nativeDestroy();
 }

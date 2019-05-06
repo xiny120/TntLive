@@ -10,12 +10,15 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.webkit.WebView;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import org.anyrtc.core.AnyRTMP;
@@ -33,12 +36,16 @@ import java.io.File;
  * status bar and navigation/system bar) with user interaction.
  */
 public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHelper,  SurfaceHolder.Callback{
+    private TextView mTxtCur = null;
+    private TextView mTxtTotal = null;
     private TextView mTxtStatus = null;
     private RTMPGuestKit mGuest = null;
     private SurfaceViewRenderer mSurfaceView = null;
     private VideoRenderer mRenderer = null;
     private SurfaceHolder mHolder;
+    private SeekBar mseekbar;
 
+    private  int mTotalTime;
     //屏幕宽度
     private int mScreenWidth;
     private int mVideoWidth;
@@ -47,6 +54,9 @@ public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHel
     private int mScreenHeight;
     private DisplayMetrics displayMetrics;
     private RelativeLayout mSurfaceLayout;
+
+    private int mVideoWidth0;
+    private int mVideoHeight0;
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -124,52 +134,75 @@ public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHel
         @Override
         public void handleMessage(Message msg) {
             mTxtStatus.setVisibility(View.VISIBLE);//(View.GONE);
-            //RelativeLayout.LayoutParams lp =
-            //        (RelativeLayout.LayoutParams) mSurfaceLayout.getLayoutParams();
-           // lp.width = mVideoWidth;//(int) (mScreenWidth * SHOW_SCALE);
-           // lp.height = mVideoWidth*576/720;
-           // lp.leftMargin = mVideoLeft;
         }
     };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_flv_player);
-
         mVisible = true;
+        mTxtCur = (TextView)findViewById(R.id.textViewCur);
+        mTxtTotal = (TextView)findViewById(R.id.textViewTotal);
+        mseekbar = (SeekBar) findViewById(R.id.seekBar);
+        mseekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                //Log.i("org.anyrtc.anyrtmp","onProgressChanged");
+                //mseekbar.setProgress((int)cur);
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                double w = mseekbar.getMax();// - mseekbar.getMin();
+                double cur = mseekbar.getProgress();
+                double tt = mTotalTime;
+                double curtime = cur * mTotalTime / w;
+                mGuest.SeekTo((long)curtime,mTotalTime);
+                Log.i("org.anyrtc.anyrtmp","onStopTrackingTouch");
+            }
+        });
         mControlsView = findViewById(R.id.fullscreen_content_controls);
         mContentView = findViewById(R.id.layout_gesture);
         mSurfaceLayout = (RelativeLayout) findViewById(R.id.layout_gesture);
-
-        // Set up the user interaction to manually show or hide the system UI.
         mContentView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 toggle();
             }
         });
-
-        // Upon interacting with UI controls, delay any scheduled hide()
-        // operations to prevent the jarring behavior of controls going away
-        // while interacting with the UI.
-        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
-
-
+        //findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
         mTxtStatus = (TextView) findViewById(R.id.txt_rtmp_status);
         mSurfaceView = (SurfaceViewRenderer) findViewById(R.id.suface_view);
         displayMetrics = new DisplayMetrics();
         this.getWindow().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         mScreenWidth = displayMetrics.widthPixels;
         mScreenHeight = displayMetrics.heightPixels;
-        mVideoWidth = mScreenWidth * 4 / 5;
-        mVideoLeft = (mScreenWidth - mVideoWidth) / 2;
         mSurfaceView.init(AnyRTMP.Inst().Egl().getEglBaseContext(), new RendererCommon.RendererEvents(){
             public void onFirstFrameRendered(){
                 handler.sendMessage(handler.obtainMessage());
             };
             public void onFrameResolutionChanged(int videoWidth, int videoHeight, int rotation){
-
+                mVideoWidth0 = videoWidth;
+                mVideoHeight0 = videoHeight;
+                mVideoWidth = mScreenWidth * 4 / 5;
+                mVideoLeft = (mScreenWidth - mVideoWidth) / 2;
+                final FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(0,0);
+                lp.width = mVideoWidth;
+                lp.height = mVideoWidth*mVideoHeight0/mVideoWidth0;
+                if(lp.height > mScreenHeight){
+                    lp.height = mScreenHeight;
+                    lp.width = lp.height * mVideoWidth0 / mVideoHeight0;
+                    mVideoLeft = (mScreenWidth - lp.width) / 2;
+                }
+                lp.leftMargin = mVideoLeft;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mSurfaceLayout.setLayoutParams(lp);
+                    }
+                });
             };
         });
         mRenderer = new VideoRenderer(mSurfaceView);
@@ -184,12 +217,45 @@ public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHel
             String tkn = objData.getString("Token");
             String url = getResources().getString(R.string.app_hosthis) +pulluri;
             mGuest = new RTMPGuestKit(this, this);
+
+            String [] lines = new String[10];
+            int pos,lastpos = pulluri.length();
+            int i = 0;
+            for(i = 0; i <10; i++){
+                pos = pulluri.lastIndexOf('/',lastpos-1);
+                if(pos <0)
+                    break;
+                lines[i] = pulluri.substring(pos+1,lastpos);
+                lastpos = pos;
+                if(i >=2)
+                    break;
+            }
+            if(i >= 2){
+                String title = String.format("%s年%s月%s日 %s:%s:%s直播录像",lines[2],lines[1],lines[0].substring(0,2),lines[0].substring(2,4),lines[0].substring(4,6),lines[0].substring(6,8));
+                this.setTitle(title);
+            }
+
             mGuest.StartRtmpPlay(url, mRenderer.GetRenderPointer(), "flv", getDataPath() );
         }catch (Exception e1){
+            Log.i("test","");
+        }
 
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setHomeButtonEnabled(true);
+            actionBar.setDisplayHomeAsUpEnabled(true);
         }
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                this.finish(); // back button
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
     public String getDataPath() {
         String ret = "";
         //首先判断外部存储是否可用
@@ -209,14 +275,12 @@ public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHel
                 ret = "";
             }
         }
-
         return ret;
     }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-
         // Trigger the initial hide() shortly after the activity has been
         // created, to briefly hint to the user that UI controls
         // are available.
@@ -298,6 +362,7 @@ public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHel
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                mTxtStatus.setVisibility(View.VISIBLE);
                 mTxtStatus.setText(R.string.str_rtmp);
             }
         });
@@ -305,10 +370,20 @@ public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHel
 
     @Override
     public void OnRtmplayerStatus(final int cacheTime, final int curBitrate,final int curTime, final int totalTime) {
-        Log.i("org.anyrtc.anyrtmp",String.format("Status TotalTime:%d",totalTime));
+        //Log.i("org.anyrtc.anyrtmp",String.format("Status TotalTime:%d",totalTime));
+        mTotalTime = totalTime;
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                double w = mseekbar.getMax();// - mseekbar.getMin();
+                double tt = totalTime;
+                double cur = w * curTime / totalTime  ;
+                mseekbar.setProgress((int)cur);
+                String curTitle = String.format("%02d:%02d:%02d",curTime / 3600,curTime%3600/60,curTime%3600%60);
+                String totalTitle = String.format("%02d:%02d:%02d",totalTime / 3600,totalTime%3600/60,totalTime%3600%60);
+                mTxtCur.setText(curTitle);
+                mTxtTotal.setText(totalTitle);
+
                 if(curBitrate > 0 && cacheTime > 0)
                     mTxtStatus.setText(String.format( getString(R.string.str_rtmp_pull_status), cacheTime, curBitrate,curTime,totalTime));
             }
@@ -326,25 +401,24 @@ public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHel
 
     @Override
     public void OnRtmplayerClosed(int errcode) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mTxtStatus.setText(R.string.str_rtmp);
-            }
-        });
+
     }
     @Override
     public void OnRtmplayer1stVideo() {
+       runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
 
+            }
+        });
     }
     @Override
     public void OnRtmplayer1stAudio() {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                //mTxtStatus.setText(String.format( getString(R.string.str_rtmp_pull_status), cacheTime, curBitrate,curTime,totalTime));
-                //mwvMediaList.loadUrl(getResources().getString(R.string.app_uri) + "#/pages/chatroom/chatroom");
-            }
+                mTxtStatus.setVisibility(View.GONE);
+              }
         });
     }
     @Override

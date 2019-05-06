@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0099cc"
+    android:background="#000"
     tools:context=".FlvPlayerActivity">
 
     <!-- The primary full-screen view. This can be replaced with whatever view
@@ -43,25 +45,72 @@
         android:layout_height="match_parent"
         android:fitsSystemWindows="true">
 
-        <LinearLayout
+        <RelativeLayout
             android:id="@+id/fullscreen_content_controls"
             style="?metaButtonBarStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center_horizontal"
-            android:background="@color/black_overlay"
+            android:background="@color/colorPlayerBar"
             android:orientation="horizontal"
             tools:ignore="UselessParent">
 
-            <Button
-                android:id="@+id/dummy_button"
-                style="?metaButtonBarButtonStyle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="128px"
+                android:layout_height="128px"
+                android:layout_margin="5dp"
                 android:layout_weight="1"
-                android:text="@string/dummy_button" />
+                android:layout_alignParentLeft="true"
+                android:adjustViewBounds="true"
+                android:visibility="gone"
+                app:srcCompat="@mipmap/fullscreen_128" />
 
-        </LinearLayout>
+            <TextView
+                android:id="@+id/textViewCur"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@id/imageView"
+                android:layout_margin="5dp"
+                android:text="00:00:00"
+                />
+
+            <SeekBar
+                android:id="@+id/seekBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/textViewCur"
+                android:layout_centerVertical="true"
+                android:layout_margin="5dp"
+                android:layout_toLeftOf="@id/textViewTotal"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/textViewTotal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@id/imageView2"
+                android:layout_margin="5dp"
+                android:text="00:00:00"
+                 />
+
+
+            <ImageView
+                android:id="@+id/imageView2"
+                android:layout_width="128px"
+                android:layout_height="128px"
+                android:layout_margin="5dp"
+                android:layout_weight="1"
+                android:layout_alignParentRight="true"
+                android:adjustViewBounds="true"
+                app:srcCompat="@mipmap/sound" />
+
+
+
+
+        </RelativeLayout>
     </FrameLayout>
 
 </FrameLayout>

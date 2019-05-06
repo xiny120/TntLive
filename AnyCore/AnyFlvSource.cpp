@@ -87,10 +87,14 @@ uint32_t AnyFlvSource::SeekTo(uint32_t pos,double totaltime) {
 	while (true) { // SrsCodecVideoAVCFrame
 		TAG_HEADER tag;
 		int code = Read(&type, &timestamp, &data, &size,tag);
-		if (code != 0)
-			break;
-		if (type == 0)
-			break;
+		if (code != 0) {
+            WCLOG(LS_ERROR) << "SeekTo Read error:" << errno << " code:" << code;
+            break;
+        }
+		if (type == 0) {
+            WCLOG(LS_ERROR) << "SeekTo type error:" << errno << " code:" << code;
+            break;
+        }
 		
 		uint32_t to = timestamp / 1000;
 		if (data != NULL) {
@@ -105,7 +109,7 @@ uint32_t AnyFlvSource::SeekTo(uint32_t pos,double totaltime) {
 					lastmbufv0.insert(lastmbufv0.end(),p, (p + sizeof(tag)));
 					lastmbufv0.insert(lastmbufv0.end(), data, data + size);
 					lastmbufv0.insert(lastmbufv0.end(),mbufv.begin(), mbufv.end());
-					WCLOG(LS_ERROR) << "SeekTo Key Frame:" << pos << " (" << (int)frame_type << ") " << timestamp;
+					WCLOG(LS_ERROR) << "SeekTo Key Frame:" << to << " (" << (int)frame_type << ") " << timestamp;
 				}
 			}
 			free(data);
@@ -116,6 +120,7 @@ uint32_t AnyFlvSource::SeekTo(uint32_t pos,double totaltime) {
 			mreadpos = lastmreadpos0;
 			mbufv.clear();
 			mbufv.assign(lastmbufv0.begin(), lastmbufv0.end());
+			WCLOG(LS_ERROR) << "SeekTo OK:" << to << " timestamp:" << timestamp;
 			break;
 		}
 		if (to >= (totaltime - 20)) {
@@ -231,7 +236,7 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,T
 				} while (true);
 				if (len <= 0) {
 					//WCLOG(LS_ERROR) << "first fread error:" << mfile << errno;
-					if ((mduration - 2) < mlasttimestamp / 1000) {
+					if ((mduration - 1) < mlasttimestamp / 1000) {
 					    fclose(f);
 						return 0;
 					}

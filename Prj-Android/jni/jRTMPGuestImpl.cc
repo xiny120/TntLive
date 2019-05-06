@@ -86,7 +86,7 @@ void JRTMPGuestImpl::OnRtmplayerStatus(int cacheTime, int curBitrate,uint32_t cu
 		jmethodID j_callJavaMId = webrtc_jni::GetMethodID(jni, m_jClass, "OnRtmplayerStatus", "(IIII)V");
 		int tt = (int)totalTime;
 		int ct = (curTime/1000);
-		LOGI("%d",tt);
+		//LOGI("%d",tt);
 		// Callback with params
 		jni->CallVoidMethod(m_jJavaObj, j_callJavaMId, cacheTime, curBitrate,ct,tt);
 	}
