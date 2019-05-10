@@ -217,6 +217,7 @@ void DlgRtmpPull::Start(){
 		UpdateData(TRUE);
 		m_pAVRtmplayer->StartRtmpPlay(url.c_str(),m_myStatic.GetSafeHwnd() /*m_pDlgVideoMain->m_hWnd*/, "rtmp","");
 		m_btnRtmp.SetWindowTextW(L"½áÊø");
+		this->ShowWindow(SW_SHOWNORMAL);
 	}
 }
 
@@ -376,6 +377,14 @@ LRESULT DlgRtmpPull::OnPullDlg(WPARAM, LPARAM) {
 				GetMedialist()->GetMainFrame()->LoadURL(urlmedialist);
 				m_strUri = url + "?sessionid=" + sid + "&token=" + tkn;
 				CWnd* pWnd = this->GetDlgItem(IDC_STATIC_CEF3);
+				if (pWnd != NULL && IsWindow(pWnd->GetSafeHwnd())) {
+					CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
+					if (pb != nullptr) {
+						pb->ReloadIgnoreCache();
+					}
+				}
+
+				pWnd = this->GetDlgItem(IDC_STATIC_LIST);
 				if (pWnd != NULL && IsWindow(pWnd->GetSafeHwnd())) {
 					CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
 					if (pb != nullptr) {
