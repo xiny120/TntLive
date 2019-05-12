@@ -160,17 +160,31 @@ public class MainActivity extends AppCompatActivity {
             try {
                 JSONObject obj = new JSONObject(message);
                 String cmd = obj.getString("cmd");
-                JSONObject objData = obj.getJSONObject("data");
-                String pulluri = objData.getString("pulluri");
-                objData = obj.getJSONObject("ui");
-                String sid = objData.getString("SessionId");
-                String tkn = objData.getString("Token");
 
-                Intent it = new Intent(getApplicationContext(), GuestActivity.class);
-                Bundle bd = new Bundle();
-                bd.putString("rtmp_url", pulluri+"?sessionid=" + sid + "&token=" + tkn);
-                it.putExtras(bd);
-                startActivity(it);
+
+                if(cmd.equals("pulldlghis117") || cmd.equals("pulldlghisgp")){
+                    try {
+                        Intent it = new Intent(getApplicationContext(), FlvPlayerActivity.class);
+                        Bundle bd = new Bundle();
+                        bd.putString("minfo", message);
+                        it.putExtras(bd);
+                        startActivity(it);
+
+                    }catch (Exception e1){
+                        Log.i("",e1.toString());
+                    }
+                }else {
+                    JSONObject objData = obj.getJSONObject("data");
+                    String pulluri = objData.getString("pulluri");
+                    objData = obj.getJSONObject("ui");
+                    String sid = objData.getString("SessionId");
+                    String tkn = objData.getString("Token");
+                    Intent it = new Intent(getApplicationContext(), GuestActivity.class);
+                    Bundle bd = new Bundle();
+                    bd.putString("rtmp_url", pulluri + "?sessionid=" + sid + "&token=" + tkn);
+                    it.putExtras(bd);
+                    startActivity(it);
+                }
 
             }catch (Exception e1){
                 Log.i("",e1.toString());

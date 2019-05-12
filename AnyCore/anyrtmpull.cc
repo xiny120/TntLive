@@ -202,7 +202,7 @@ void AnyRtmpPull::DoReadData(){
 				srs_human_trace("drop message type=%#x, size=%dB", type, size);
 			}else {
                 mtotaltime = mrtmp->GetPropDouble("duration");
-                WCLOG(LS_ERROR) << "No flv" << mtotaltime;
+                //WCLOG(LS_ERROR) << "No flv" << mtotaltime;
             }
 		}
 	}

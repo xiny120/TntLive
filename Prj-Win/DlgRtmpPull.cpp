@@ -405,6 +405,17 @@ LRESULT DlgRtmpPull::OnPullDlg(WPARAM, LPARAM) {
 				dlg.DoModal();
 				Start();
 			}
+			else {
+
+				if (m_myStatic.GetLiving() == 99) {
+					AfxMessageBox(L"直播进行中，不能查看直播录像！请直播完毕后查看！");
+					return TRUE;
+				}
+				//Stop();
+				CDlgFlvPlayer dlg(this, str);
+				dlg.DoModal();
+				//Start();
+			}
 		}
 	}
 	return TRUE;
@@ -434,7 +445,7 @@ void DlgRtmpPull::OnRtmplayer1stAudio() {
 
 void DlgRtmpPull::OnRtmplayerOK() {
 	m_myStatic.Invalidate();
-	TRACE("OnRtmplayerOK\r\n");
+	//TRACE("OnRtmplayerOK\r\n");
 };
 void DlgRtmpPull::OnRtmplayerStatus(int cacheTime, int curBitrate, uint32_t curTime, double totalTime) {
 	//TRACE("OnRtmplayerStatus cacheTime:%d curBitrate:%d\r\n",cacheTime,curBitrate);
@@ -443,10 +454,10 @@ void DlgRtmpPull::OnRtmplayerCache(int time) {
 };
 void DlgRtmpPull::OnRtmplayerClosed(int errcode) {
 	m_myStatic.SetLiving(2);
-	TRACE("OnRtmplayerClosed\r\n");
+	//TRACE("OnRtmplayerClosed\r\n");
 };
 
 void DlgRtmpPull::OnRtmplayerConnectionFailed(int a) {
 	m_myStatic.SetLiving(4);
-	TRACE("DlgRtmpPull::OnRtmplayerConnectionFailed: %d\r\n",a);
+	//TRACE("DlgRtmpPull::OnRtmplayerConnectionFailed: %d\r\n",a);
 }

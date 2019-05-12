@@ -62,9 +62,11 @@ void CDlgFlvPlayer::OnBnClickedCancel()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	if (AfxMessageBox(L"退出播放？", MB_YESNO) == IDYES) {
-		m_pPlayer->StopRtmpPlay();
-		RTMPGuester::Destory(m_pPlayer);
-		m_pPlayer = NULL;
+		if (m_pPlayer != nullptr) {
+			m_pPlayer->StopRtmpPlay();
+			RTMPGuester::Destory(m_pPlayer);
+			m_pPlayer = NULL;
+		}
 		CDialogEx::OnCancel();
 		
 	}
@@ -126,7 +128,7 @@ BOOL CDlgFlvPlayer::OnInitDialog(){
 		if (jsonObject->IsValid()){
 			CefRefPtr<CefDictionaryValue> dict = jsonObject->GetDictionary();
 			CefString token = dict->GetString("cmd");
-			if (token == "pulldlghis") {
+			if (token == "pulldlghis117" || token == "pulldlghisgp") {
 				CefRefPtr<CefDictionaryValue> data = dict->GetDictionary("data");
 				CefString createdate = data->GetString("CreateDate");
 				CefString id = data->GetString("Id");

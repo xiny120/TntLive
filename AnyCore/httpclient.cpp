@@ -135,6 +135,7 @@ void httpclient::run() {
 			std::string path = pi->filelocal;// localfile;
 			//path = pathdir + localfile;
 			//createDirectory(pathdir);
+			WCLOG(LS_ERROR) << "file download start:" << pi->filelocal ;
 			std::string pathinfo = path + ".info";
 			pi->ui.locallen = 0;
 			pi->ui.lastmodify = getfiletime(pathinfo.c_str());
@@ -507,8 +508,10 @@ bool httpclient::get(const std::string url, std::string& localfile_,const std::s
 			if ((*iter)->filelocal.compare(pi->filelocal) == 0)
 				break;
 		}
-		if(iter == _qpull.end())
+		if (iter == _qpull.end()) {
 			_qpull.push_back(pi);
+			WCLOG(LS_ERROR) << "file download queue push:" << pi->filelocal << " filesize:" << pi->ui.locallen << "(" << pi->ui.totallen << ")";
+		}
 		//_qpull.push(pi);
 		start();
 	}

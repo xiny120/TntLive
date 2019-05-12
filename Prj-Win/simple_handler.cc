@@ -180,6 +180,11 @@ bool SimpleHandler::OnJSDialog(CefRefPtr<CefBrowser> browser,
 			//::PostMessage(m_hWndDlg, WM_PULLDLG, 0, 0);
 			::PostMessage(m_hWndPullDlg, WM_PULLDLG, 0, 0);
 		}
+		else {
+			CPullDlgData::me()->push(str0);
+			//::PostMessage(m_hWndDlg, WM_PULLDLG, 0, 0);
+			::PostMessage(m_hWndPullDlg, WM_PULLDLG, 0, 0);
+		}
 	}
 
 

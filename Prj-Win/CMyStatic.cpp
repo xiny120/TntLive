@@ -37,9 +37,9 @@ void CMyStatic::OnPaint(){
 	CString strMsg = "";
 	
 	if (mLiving == 0) {
-		strMsg = "正在连接直播服务器,请稍后...";
+		strMsg = "目前暂无直播，您可以收看往期精彩直播录像！";
 	}else if(mLiving == 1) {
-		strMsg = "正在查询频道是否开始直播，请稍后...";
+		strMsg = "目前暂无直播，您可以收看往期精彩直播录像！";
 	}else if (mLiving == 2) {
 		strMsg = "直播结束，您还可以收看往期精彩直播录像！";
 	}else if (mLiving == 3) {

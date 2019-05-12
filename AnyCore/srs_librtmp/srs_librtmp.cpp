@@ -1007,14 +1007,14 @@ extern ISrsLog* _srs_log;
 extern ISrsThreadContext* _srs_context;
 
 // donot print method
-#if 1
+#if 0
 #define srs_verbose(msg, ...) _srs_log->verbose(NULL, _srs_context->get_id(), msg, ##__VA_ARGS__)
 #define srs_info(msg, ...)    _srs_log->info(NULL, _srs_context->get_id(), msg, ##__VA_ARGS__)
 #define srs_trace(msg, ...)   _srs_log->trace(NULL, _srs_context->get_id(), msg, ##__VA_ARGS__)
 #define srs_warn(msg, ...)    _srs_log->warn(NULL, _srs_context->get_id(), msg, ##__VA_ARGS__)
 #define srs_error(msg, ...)   _srs_log->error(NULL, _srs_context->get_id(), msg, ##__VA_ARGS__)
 // use __FUNCTION__ to print c method
-#elif 0
+#elif 1
 #define srs_verbose(msg, ...) _srs_log->verbose(__FUNCTION__, _srs_context->get_id(), msg, ##__VA_ARGS__)
 #define srs_info(msg, ...)    _srs_log->info(__FUNCTION__, _srs_context->get_id(), msg, ##__VA_ARGS__)
 #define srs_trace(msg, ...)   _srs_log->trace(__FUNCTION__, _srs_context->get_id(), msg, ##__VA_ARGS__)
@@ -1032,15 +1032,15 @@ extern ISrsThreadContext* _srs_context;
 // TODO: FIXME: add more verbose and info logs.
 #ifndef SRS_AUTO_VERBOSE
 #undef srs_verbose
-#define srs_verbose(msg, ...) (void)0
+#define srs_verbose(msg, ...) _srs_log->verbose(__FUNCTION__, _srs_context->get_id(), msg, ##__VA_ARGS__)
 #endif
 #ifndef SRS_AUTO_INFO
 #undef srs_info
-#define srs_info(msg, ...) (void)0
+#define srs_info(msg, ...)  _srs_log->info(__FUNCTION__, _srs_context->get_id(), msg, ##__VA_ARGS__)
 #endif
 #ifndef SRS_AUTO_TRACE
 #undef srs_trace
-#define srs_trace(msg, ...) (void)0
+#define srs_trace(msg, ...)  _srs_log->trace(__FUNCTION__, _srs_context->get_id(), msg, ##__VA_ARGS__)
 #endif
 
 #endif
@@ -11613,6 +11613,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //#include <srs_kernel_log.hpp>
 
 //#include <srs_kernel_error.hpp>
+#ifdef  _WIN32
+#include <sstream>
+#endif //  _WIN32
 
 ISrsLog::ISrsLog()
 {
@@ -11627,24 +11630,145 @@ int ISrsLog::initialize()
     return ERROR_SUCCESS;
 }
 
-void ISrsLog::verbose(const char* /*tag*/, int /*context_id*/, const char* /*fmt*/, ...)
+void ISrsLog::verbose(const char* tag, int context_id, const char* fmt, ...)
 {
+#ifdef  _WIN32
+	char strBuffer[4096] = { 0 };
+	char buf[512] = { 0 };
+	char* p0 = strBuffer;
+	strcpy(p0, tag);
+	p0 += strlen(tag);
+	strcpy(p0, "\t");
+	p0 += strlen("\t");
+	_itoa(context_id, buf, 10);
+	strcpy(p0, buf);
+	p0 += strlen(buf);
+	strcpy(p0, "\t");
+	p0 += strlen("\t");
+	int len = sizeof(strBuffer) - 10 - (p0 - strBuffer);
+	
+	va_list vlArgs;
+	va_start(vlArgs, fmt);
+	_vsnprintf_s(p0, len,len, fmt, vlArgs);
+	//vsprintf(strBuffer, strOutputString, vlArgs);
+	va_end(vlArgs);
+	strcat(strBuffer, "\r\n");
+	OutputDebugStringA(strBuffer);
+
+#endif //  _WIN32
 }
 
-void ISrsLog::info(const char* /*tag*/, int /*context_id*/, const char* /*fmt*/, ...)
+void ISrsLog::info(const char* tag, int context_id, const char* fmt, ...)
 {
+#ifdef  _WIN32
+	char strBuffer[4096] = { 0 };
+	char buf[512] = { 0 };
+	char* p0 = strBuffer;
+	strcpy(p0, tag);
+	p0 += strlen(tag);
+	strcpy(p0, "\t");
+	p0 += strlen("\t");
+	_itoa(context_id, buf, 10);
+	strcpy(p0, buf);
+	p0 += strlen(buf);
+	strcpy(p0, "\t");
+	p0 += strlen("\t");
+	int len = sizeof(strBuffer) - 10 - (p0 - strBuffer);
+
+	va_list vlArgs;
+	va_start(vlArgs, fmt);
+	_vsnprintf_s(p0, len, len, fmt, vlArgs);
+	//vsprintf(strBuffer, strOutputString, vlArgs);
+	va_end(vlArgs);
+	strcat(strBuffer, "\r\n");
+	OutputDebugStringA(strBuffer);
+
+#endif //  _WIN32
 }
 
-void ISrsLog::trace(const char* /*tag*/, int /*context_id*/, const char* /*fmt*/, ...)
+void ISrsLog::trace(const char* tag, int context_id, const char* fmt, ...)
 {
+#ifdef  _WIN32
+	char strBuffer[4096] = { 0 };
+	char buf[512] = { 0 };
+	char* p0 = strBuffer;
+	strcpy(p0, tag);
+	p0 += strlen(tag);
+	strcpy(p0, "\t");
+	p0 += strlen("\t");
+	_itoa(context_id, buf, 10);
+	strcpy(p0, buf);
+	p0 += strlen(buf);
+	strcpy(p0, "\t");
+	p0 += strlen("\t");
+	int len = sizeof(strBuffer) - 10 - (p0 - strBuffer);
+
+	va_list vlArgs;
+	va_start(vlArgs, fmt);
+	_vsnprintf_s(p0, len, len, fmt, vlArgs);
+	//vsprintf(strBuffer, strOutputString, vlArgs);
+	va_end(vlArgs);
+	strcat(strBuffer, "\r\n");
+	OutputDebugStringA(strBuffer);
+
+#endif //  _WIN32
 }
 
-void ISrsLog::warn(const char* /*tag*/, int /*context_id*/, const char* /*fmt*/, ...)
+void ISrsLog::warn(const char* tag, int context_id, const char* fmt, ...)
 {
+#ifdef  _WIN32
+	char strBuffer[4096] = { 0 };
+	char buf[512] = { 0 };
+	char* p0 = strBuffer;
+	strcpy(p0, tag);
+	p0 += strlen(tag);
+	strcpy(p0, "\t");
+	p0 += strlen("\t");
+	_itoa(context_id, buf, 10);
+	strcpy(p0, buf);
+	p0 += strlen(buf);
+	strcpy(p0, "\t");
+	p0 += strlen("\t");
+	int len = sizeof(strBuffer) - 10 - (p0 - strBuffer);
+
+	va_list vlArgs;
+	va_start(vlArgs, fmt);
+	_vsnprintf_s(p0, len, len, fmt, vlArgs);
+	//vsprintf(strBuffer, strOutputString, vlArgs);
+	va_end(vlArgs);
+	strcat(strBuffer, "\r\n");
+	OutputDebugStringA(strBuffer);
+
+#endif //  _WIN32	
 }
 
-void ISrsLog::error(const char* /*tag*/, int /*context_id*/, const char* /*fmt*/, ...)
+void ISrsLog::error(const char* tag, int context_id, const char* fmt, ...)
 {
+#ifdef  _WIN32
+	char strBuffer[4096] = { 0 };
+	char buf[512] = { 0 };
+	char* p0 = strBuffer;
+	strcpy(p0, tag);
+	p0 += strlen(tag);
+	strcpy(p0, "\t");
+	p0 += strlen("\t");
+	_itoa(context_id, buf, 10);
+	strcpy(p0, buf);
+	p0 += strlen(buf);
+	strcpy(p0, "\t");
+	p0 += strlen("\t");
+	int len = sizeof(strBuffer) - 10 - (p0 - strBuffer);
+
+	va_list vlArgs;
+	va_start(vlArgs, fmt);
+	_vsnprintf_s(p0, len, len, fmt, vlArgs);
+	//vsprintf(strBuffer, strOutputString, vlArgs);
+	va_end(vlArgs);
+	strcat(strBuffer, "\r\n");
+	OutputDebugStringA(strBuffer);
+	
+#endif //  _WIN32
+
 }
 
 ISrsThreadContext::ISrsThreadContext()

@@ -164,7 +164,9 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,T
 
 		FILE* f = fopen(mfile.c_str(), "rb");//, SH_DENYNO);
 		if (f == nullptr) {
-			WCLOG(LS_ERROR) << "_fsopen error:" << mfile << " error:" << errno;
+			//WCLOG(LS_ERROR) << "_fsopen error:" << mfile << " error:" << errno;
+			std::this_thread::sleep_for(std::chrono::seconds(2));
+			
 			break;
 		}
         //WCLOG(LS_ERROR) << "_fsopen success:" << mfile << " error:" << errno;
