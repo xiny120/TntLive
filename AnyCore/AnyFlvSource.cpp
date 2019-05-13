@@ -143,6 +143,7 @@ uint32_t AnyFlvSource::SeekTo(uint32_t pos,double totaltime) {
 // timestamp ʱ���
 // data ���ݻ���
 // size ���ݻ����С��
+// ffmpeg -i gp20190513.avi -pix_fmt yuv420p  -c:v libx264 -c:a aac -max_interleave_delta 0 test.flv
 int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,TAG_HEADER& tagout) {
 	static std::thread::id idt = std::this_thread::get_id();
 	if (idt != std::this_thread::get_id()) {
@@ -198,14 +199,14 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,T
 					WCLOG(LS_ERROR) << "first fread buffer not enough:" << mbufv.size() << "(need 1024)";
 					break;
 				}
-				char s = 1;
+				char s = -1;
 				for (i = mfile.length() - 1; i >= 0; i--) {
 					if (mfile[i] == '\\' || mfile[i] == '/') {
 						s = mfile.substr(i + 1)[5];
 						break;
 					}
 				}
-				if (s == 1)
+				if (s == -1)
 					s = mfile[5];
 				if (s == 0) s = 1;
 				for (i = 0; i < 1024; i++) {
@@ -333,6 +334,7 @@ bool AnyFlvSource::onMetaData(char type_, char* data, int size) {
 			len = len << 8 | *pcur;
 			pcur++;
 			val.assign(pcur, len);
+			pcur += len;
 			break;
 		case 0x03:
 			end = false;
@@ -388,7 +390,7 @@ bool AnyFlvSource::onMetaData(char type_, char* data, int size) {
 		case 0x06:
 		case 0x07:
 			break;
-		case 0x08:
+		case 0x08: // ECMA Array + 4byte(uint32) array len;
 			arrlen = *pcur;
 			pcur++;
 			arrlen = arrlen << 8 | *pcur;
@@ -397,6 +399,51 @@ bool AnyFlvSource::onMetaData(char type_, char* data, int size) {
 			pcur++;
 			arrlen = arrlen << 24 | *pcur;
 			pcur++;
+			end = false;
+			while (!end && (pcur - data) < size) {
+				len = *pcur;
+				pcur++;
+				len = len << 8 | *pcur;
+				pcur++;
+				key.assign(pcur, len);
+				pcur += len;
+				type = *pcur;
+				pcur++;
+				switch (type)
+				{
+				case 0x00:
+					for (i = 0; i < 8; i++) {
+						((char*)&dbl)[7 - i] = *pcur++;
+					}
+					propdbl[key] = dbl;
+					if (key == "duration") {
+						mduration = dbl;
+					}
+					WCLOG(LS_WARNING) << key << ":" << dbl << "(double)";
+					break;
+				case 0x01:
+					b = *pcur++;
+					WCLOG(LS_WARNING) << key << ":" << ((b != 0) ? "true" : "false");
+					propbool[key] = (b != 0) ? true : false;
+					break;
+				case 0x02: // String type ����2���ֽ�Ϊ���� 
+					len = *pcur;
+					pcur++;
+					len = len << 8 | *pcur;
+					pcur++;
+					val.assign(pcur, len);
+					pcur += len;
+					WCLOG(LS_WARNING) << key << ":" << val;
+					propstr[key] = val;
+					break;
+				case 0x09:
+					end = true;
+					break;
+				default:
+					printf("");
+					break;
+				}
+			}
 			break;
 		default:
 			break;
