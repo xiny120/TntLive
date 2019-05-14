@@ -60,8 +60,14 @@ public:
 	virtual void OnRtmplayerConnectionFailed(int a);
 
 	virtual void OnGetPcmData(const void * pcm, const int len, const int rate, const int channels) {
+		//CFile f;
+		//if (f.Open(L"d:/test.pcm", CFile::modeCreate | CFile::modeNoTruncate | CFile::modeReadWrite, NULL)) {
+		//	f.SeekToEnd();
+		//	f.Write(pcm, len);
+		//	f.Close();
+		//}
 		short* p = (short*)pcm;
-		//return;
+		return;
 
 		if (m_pAudioMarketOut >= ((short*)m_pAudioMarker + m_iAudioMarker / 2)) {
 			m_pAudioMarketOut = (short*)m_pAudioMarker;

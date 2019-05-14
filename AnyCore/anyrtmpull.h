@@ -74,7 +74,7 @@ public:
 class AnyRtmpPull : public rtc::Thread
 {
 public:
-	AnyRtmpPull(AnyRtmpPullCallback&callback, const char* url, const char* type,const char* dir);// AnyBaseSource*);
+	AnyRtmpPull(AnyRtmpPullCallback&callback, const char* url, const char* type,const char* dir,int32_t);// AnyBaseSource*);
 	virtual ~AnyRtmpPull(void);
 
 	double GetTotalTime() { return mtotaltime; };

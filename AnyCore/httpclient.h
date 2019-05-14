@@ -55,6 +55,7 @@ struct pullitem {
 	std::string filepeer;
 	std::string filelocal;
 	std::string pathlocal;
+	int32_t		encryption;
 	urlitem ui;
 };
 
@@ -68,7 +69,7 @@ private:
 public:
 	static httpclient* me();
 	virtual int Init();
-	bool get(const std::string url, std::string& file,const std::string dir);
+	bool get(const std::string url, std::string& file,const std::string dir,int32_t);
 	void pause() { mpause = true; };
 	void start() { mpause = false; };
 private:

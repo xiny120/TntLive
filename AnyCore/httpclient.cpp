@@ -479,10 +479,11 @@ bool httpclient::urlparse(std::string urlin, urlitem & out) {
 }
 
 // url Ҫ���ص��ļ���url, localfile ���غ󱾵ر�����ļ��������Ϊ�գ����ؾͷ���url�е��ļ����� localpath,���ر����Ŀ¼��
-bool httpclient::get(const std::string url, std::string& localfile_,const std::string localpath) {
+bool httpclient::get(const std::string url, std::string& localfile_,const std::string localpath, int32_t encryption) {
 	mpause = false;
 	bool ret = false;
 	pullitem *pi = new pullitem();
+	pi->encryption = encryption;
 	pi->filepeer = url;
 	pi->filelocal = localfile_.c_str();
 	pi->pathlocal = localpath.c_str();

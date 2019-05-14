@@ -215,7 +215,7 @@ void DlgRtmpPull::Start(){
 			url =  m_strUri;//mrtmpurl;//
 		m_pAVRtmplayer = RTMPGuester::Create(*this);
 		UpdateData(TRUE);
-		m_pAVRtmplayer->StartRtmpPlay(url.c_str(),m_myStatic.GetSafeHwnd() /*m_pDlgVideoMain->m_hWnd*/, "rtmp","");
+		m_pAVRtmplayer->StartRtmpPlay(url.c_str(),m_myStatic.GetSafeHwnd() /*m_pDlgVideoMain->m_hWnd*/, "rtmp","",1);
 		m_btnRtmp.SetWindowTextW(L"½áÊø");
 		this->ShowWindow(SW_SHOWNORMAL);
 	}

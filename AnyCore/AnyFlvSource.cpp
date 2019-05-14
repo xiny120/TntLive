@@ -7,10 +7,11 @@
 AnyFlvSource::AnyFlvSource(){
 }
 
-AnyFlvSource::AnyFlvSource(const std::string _file, const std::string _dir):
+AnyFlvSource::AnyFlvSource(const std::string _file, const std::string _dir,int32_t encry):
 	mfile(_file),
 	mdir(_dir),
 	mb(nullptr),
+	mencryption(encry),
 	mblen(102400){
 }
 
@@ -199,19 +200,22 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,T
 					WCLOG(LS_ERROR) << "first fread buffer not enough:" << mbufv.size() << "(need 1024)";
 					break;
 				}
-				char s = -1;
-				for (i = mfile.length() - 1; i >= 0; i--) {
-					if (mfile[i] == '\\' || mfile[i] == '/') {
-						s = mfile.substr(i + 1)[5];
-						break;
+				if (mencryption != 0) {
+					char s = -1;
+					for (i = mfile.length() - 1; i >= 0; i--) {
+						if (mfile[i] == '\\' || mfile[i] == '/') {
+							s = mfile.substr(i + 1)[5];
+							break;
+						}
+					}
+					if (s == -1)
+						s = mfile[5];
+					if (s == 0) s = 1;
+					for (i = 0; i < 1024; i++) {
+						mbufv[i] = mbufv[i] ^ s;
 					}
 				}
-				if (s == -1)
-					s = mfile[5];
-				if (s == 0) s = 1;
-				for (i = 0; i < 1024; i++) {
-					mbufv[i] = mbufv[i] ^ s;
-				}
+
 				len = 0;
 				char* p0 = &mbufv[0];
 				FLV_HEADER* ph = (FLV_HEADER*)p0;

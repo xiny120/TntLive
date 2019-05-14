@@ -133,6 +133,7 @@ BOOL CDlgFlvPlayer::OnInitDialog(){
 				CefString createdate = data->GetString("CreateDate");
 				CefString id = data->GetString("Id");
 				CefString filepath = data->GetString("FilePath");
+				int32_t enc = data->GetInt("Encryptioned");
 				std::string fp(filepath);
 				int lasti = fp.length();
 				std::string parts[5];
@@ -172,7 +173,7 @@ BOOL CDlgFlvPlayer::OnInitDialog(){
 				m_pPlayer = RTMPGuester::Create(*this);
 				std::string url = "http://gpk01.gwgz.com:8862/";
 				url = url + std::string(filepath);
-				m_pPlayer->StartRtmpPlay(url.c_str(), GetDlgItem(IDC_STATIC_VIDEO)->GetSafeHwnd(), "flv", "");
+				m_pPlayer->StartRtmpPlay(url.c_str(), GetDlgItem(IDC_STATIC_VIDEO)->GetSafeHwnd(), "flv", "", enc);
 			}
 		}
 	}

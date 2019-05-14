@@ -30,7 +30,7 @@
 static u_int8_t fresh_nalu_header[] = { 0x00, 0x00, 0x00, 0x01 };
 static u_int8_t cont_nalu_header[] = { 0x00, 0x00, 0x01 };
 
-AnyRtmpPull::AnyRtmpPull(AnyRtmpPullCallback&callback, const char* url, const char* type,const char* dir)// AnyBaseSource* abs)
+AnyRtmpPull::AnyRtmpPull(AnyRtmpPullCallback&callback, const char* url, const char* type,const char* dir,int32_t encryption)// AnyBaseSource* abs)
 	: callback_(callback)
 	, srs_codec_(NULL)
 	, running_(false)
@@ -47,8 +47,8 @@ AnyRtmpPull::AnyRtmpPull(AnyRtmpPullCallback&callback, const char* url, const ch
 	}
 	else if (strcmp(type, "flv") == 0) {
 		std::string localfile = "";
-		monsterlive::net::httpclient::me()->get(url, localfile,dir );
-		mrtmp = new AnyFlvSource(localfile,dir);
+		monsterlive::net::httpclient::me()->get(url, localfile,dir, encryption);
+		mrtmp = new AnyFlvSource(localfile,dir,encryption);
 
 	}
 	mrtmp->Create(url);
