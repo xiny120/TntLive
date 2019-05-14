@@ -191,7 +191,6 @@ int32_t AnyRtmpCore::RecordedDataIsAvailable(const void* audioSamples, const siz
 int32_t AnyRtmpCore::NeedMorePlayData(const size_t nSamples, const size_t nBytesPerSample, const size_t nChannels,
 	const uint32_t samplesPerSec, void* audioSamples, size_t& nSamplesOut, int64_t* elapsed_time_ms, int64_t* ntp_time_ms)
 {
-
 	rtc::CritScope cs(&cs_audio_track_);
 	if (audio_track_callback_ != NULL) {
 		char aac_buf[kMaxAacSizeSamples * 2];
