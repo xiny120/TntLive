@@ -129,6 +129,10 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
 
         String rtmpUrl = getIntent().getExtras().getString("rtmp_url");
         mGuest = new RTMPGuestKit(this, this);
+        short [][] pp = new short[10][];
+        int [] len = new int[10];
+
+
         mGuest.StartRtmpPlay(rtmpUrl, mRenderer.GetRenderPointer(),"rtmp","");
         initView();
         initWebView();

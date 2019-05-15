@@ -80,46 +80,6 @@ BOOL CDlgFlvPlayer::OnInitDialog(){
 	m_playerBar->Create(IDD_DLG_PLAYERBAR, this);
 	m_playerBar->ShowWindow(SW_HIDE);
 
-	delete[] m_pAudioMarker;
-	CString strId;
-	int id = 0;
-	m_iAudioMarker = 0;
-	strId.Format(_T("%d"), gUserId);
-	TRACE(strId);
-	TRACE("\r\n");
-	for (int i = 0; i < strId.GetLength(); i++)
-	{
-		id = _tstoi(strId.Mid(i, 1));
-		m_iAudioMarker += theApp.m_iSoundMarker[id] + 12000;
-	}
-
-	int RANGE_MIN = 200;
-	int RANGE_MAX = 240;
-	srand(time(NULL));
-	m_iAudioMarketId = 0;
-	m_iAudioMarketIdNew = 0;
-	m_iAudioMarketLast = time(NULL);
-	m_iAudioMarketStart[0] = (((double)rand() / (double)(RAND_MAX + 1)) * (RANGE_MAX - RANGE_MIN) + RANGE_MIN);
-	m_iAudioMarketStart[0] -= 200;
-	if (m_iAudioMarketStart[0] <= 20)
-		m_iAudioMarketStart[0] = 20;
-	for (int i = 1; i < _countof(m_iAudioMarketStart); i++)
-	{
-		m_iAudioMarketStart[i] = m_iAudioMarketStart[i - 1] + m_iAudioMarketStart[i - 1] + (((double)rand() / (double)RAND_MAX) * RANGE_MAX + RANGE_MIN);
-	}
-
-	m_pAudioMarker = new char[m_iAudioMarker];
-	m_pAudioMarketOut = (short*)m_pAudioMarker;
-	memset(m_pAudioMarker, 0, m_iAudioMarker);
-	char* pCur = m_pAudioMarker;
-	for (int i = 0; i < strId.GetLength(); i++)
-	{
-		id = _tstoi(strId.Mid(i, 1));
-		memcpy(pCur, theApp.m_soundMarker[id], theApp.m_iSoundMarker[id]);
-		pCur += theApp.m_iSoundMarker[id] + 12000;
-	}
-
-
 
 	// TODO:  在此添加额外的初始化
 	if (!minfo.empty()) {
@@ -170,10 +130,14 @@ BOOL CDlgFlvPlayer::OnInitDialog(){
 				data = dict->GetDictionary("ui");
 				CefString sessionid = data->GetString("SessionId");
 				CefString token = data->GetString("Token");
+				gUserId = data->GetInt("UserId");
+				CStringA strId;
+				strId.Format("%d",gUserId);
 				m_pPlayer = RTMPGuester::Create(*this);
 				std::string url = "http://gpk01.gwgz.com:8862/";
 				url = url + std::string(filepath);
-				m_pPlayer->StartRtmpPlay(url.c_str(), GetDlgItem(IDC_STATIC_VIDEO)->GetSafeHwnd(), "flv", "", enc);
+				
+				m_pPlayer->StartRtmpPlay(url.c_str(), GetDlgItem(IDC_STATIC_VIDEO)->GetSafeHwnd(), "flv", "", enc,strId.GetBuffer(),(const short**)theApp.m_soundMarker,theApp.m_iSoundMarker);
 			}
 		}
 	}

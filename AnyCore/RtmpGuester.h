@@ -23,12 +23,8 @@
 #include "RTMPCommon.h"
 #include "AnyBaseSource.h"
 
-/**
- * 计划支持RTSP播放，接口如何改动?  
- * 建议: 另外启用一个RTSPGuester
- */
-class RTMPGuesterEvent
-{
+
+class RTMPGuesterEvent{
 public:
 	RTMPGuesterEvent(void) {};
 	virtual ~RTMPGuesterEvent(void) {};
@@ -45,14 +41,12 @@ public:
 	virtual void OnRtmplayerConnectionFailed(int a) = 0;
 };
 
-class LIV_API RTMPGuester
-{
+class LIV_API RTMPGuester{
 public:
 	static RTMPGuester* Create(RTMPGuesterEvent&callback);
 	static void Destory(RTMPGuester*guester);
 
-	//* Rtmp function for pull rtmp stream 
-	virtual void StartRtmpPlay(const char* url, void* render, const char* sourcetype, const char* datadir,int32_t) = 0;
+	virtual void StartRtmpPlay(const char* url, void* render, const char* sourcetype, const char* datadir,int32_t, const char*, const short**, const int*) = 0;
 	virtual uint32_t SeekTo(uint32_t, double) = 0;
 	virtual void StopRtmpPlay() = 0;
 

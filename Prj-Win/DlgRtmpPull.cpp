@@ -36,13 +36,14 @@ DlgRtmpPull::DlgRtmpPull(const char* rtmpurl,const char* medialisturl)
 	, m_strUrl(_T("rtmp://www.pic98.com/live/livestream"))
 	, m_pAVRtmplayer(NULL)
 //	, m_pDlgVideoMain(NULL)
+	//, m_pAudioMarker(NULL)
 	, m_nVideoWidth(720)
 	, m_nVideoHeight(576)
 	, m_nChatroomWidth(420)
 	, m_nListHeight(220)
 	, mrtmpurl(rtmpurl)
 	, mmedialisturl(medialisturl)
-	, m_pAudioMarker(NULL){
+	{
 }
 
 DlgRtmpPull::~DlgRtmpPull(){
@@ -175,13 +176,14 @@ void DlgRtmpPull::Start(){
 	Stop();
 	ShowWindow(SW_SHOW);
 	if (m_pAVRtmplayer == NULL) {
-		delete[] m_pAudioMarker;
-		CString strId;
+		//delete[] m_pAudioMarker;
+		CStringA strId;
 		int id = 0;
-		m_iAudioMarker = 0;
-		strId.Format(_T("%d"), gUserId);
+		//m_iAudioMarker = 0;
+		strId.Format(("%d"), gUserId);
 		TRACE(strId);
 		TRACE("\r\n");
+		/*
 		for (int i = 0; i < strId.GetLength(); i++)	{
 			id = _tstoi(strId.Mid(i, 1));
 			m_iAudioMarker += theApp.m_iSoundMarker[id] + 12000;
@@ -210,12 +212,13 @@ void DlgRtmpPull::Start(){
 			memcpy(pCur, theApp.m_soundMarker[id], theApp.m_iSoundMarker[id]);
 			pCur += theApp.m_iSoundMarker[id] + 12000;
 		}
+		*/
 		std::string url;
 		if (url.empty())
-			url =  m_strUri;//mrtmpurl;//
+			url =  m_strUri;
 		m_pAVRtmplayer = RTMPGuester::Create(*this);
 		UpdateData(TRUE);
-		m_pAVRtmplayer->StartRtmpPlay(url.c_str(),m_myStatic.GetSafeHwnd() /*m_pDlgVideoMain->m_hWnd*/, "rtmp","",1);
+		m_pAVRtmplayer->StartRtmpPlay(url.c_str(),m_myStatic.GetSafeHwnd(), "rtmp","",1, strId.GetBuffer(), (const short**)theApp.m_soundMarker,theApp.m_iSoundMarker);
 		m_btnRtmp.SetWindowTextW(L"½áÊø");
 		this->ShowWindow(SW_SHOWNORMAL);
 	}

@@ -260,12 +260,32 @@ JOWW(jlong, RTMPGuestKit_nativeCreate)(JNIEnv* jni, jclass, jobject j_obj)
 	return webrtc_jni::jlongFromPointer(jApp);
 }
 
-JOWW(void, RTMPGuestKit_nativeStartRtmpPlay)(JNIEnv* jni, jobject j_app, jstring j_rtmp_url, jlong j_renderer_pointer,jstring j_type_,jstring j_dir_){
+JOWW(void, RTMPGuestKit_nativeStartRtmpPlay)(JNIEnv* jni, jobject j_app, jstring j_rtmp_url, jlong j_renderer_pointer,jstring j_type_,jstring j_dir_,jint enc,jstring userid_,jobjectArray marker_,jintArray markerlen_){
 	JRTMPGuestImpl* jApp = (JRTMPGuestImpl*)GetJApp(jni, j_app);
 	std::string rtmp_url = JavaToStdString(jni, j_rtmp_url);
 	std::string dir_ = JavaToStdString(jni,j_dir_);
 	std::string type_ = JavaToStdString(jni,j_type_);
-	jApp->Guest()->StartRtmpPlay(rtmp_url.c_str(), reinterpret_cast<rtc::VideoSinkInterface<cricket::VideoFrame>*>(j_renderer_pointer),type_.c_str(),dir_.c_str());
+	std::string userid = JavaToStdString(jni,userid_);
+    jint* arr;
+    jint length;
+    arr = jni->GetIntArrayElements(markerlen_,NULL);
+    length = jni->GetArrayLength(markerlen_);
+    jarray myarray;
+    short* p[10];
+	int len[10];
+	int j = 0;
+	for(int i = 0; i < 10; i++){
+	    len[i] = arr[i];
+	    p[i] = new short[len[i]/2];
+        myarray = (jarray)((jni)->GetObjectArrayElement(marker_, i));
+        jshort *coldata = (jni)->GetShortArrayElements((jshortArray)myarray, 0 );
+        for (j=0; j<arr[i]/2; j++) {
+            p[i][j] = coldata[j]; //取出JAVA类中arrayData的数据,并赋值给JNI中的数组
+        }
+        jni->ReleaseShortArrayElements((jshortArray)myarray, coldata,0 );
+    }
+	jApp->Guest()->StartRtmpPlay(rtmp_url.c_str(), reinterpret_cast<rtc::VideoSinkInterface<cricket::VideoFrame>*>(j_renderer_pointer),type_.c_str(),dir_.c_str(),
+	        enc,userid.c_str(),(const short**)p,len);
 }
 
 JOWW(void, RTMPGuestKit_nativeSeekTo)(JNIEnv* jni, jobject j_app, jlong p1 ,jdouble p2){

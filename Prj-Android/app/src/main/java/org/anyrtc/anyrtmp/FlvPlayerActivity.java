@@ -212,9 +212,11 @@ public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHel
             String cmd = obj.getString("cmd");
             JSONObject objData = obj.getJSONObject("data");
             String pulluri = objData.getString("FilePath");
+            int enc = objData.getInt("Encryptioned");
             objData = obj.getJSONObject("ui");
             String sid = objData.getString("SessionId");
             String tkn = objData.getString("Token");
+            int userid= objData.getInt("UserId");
             String url = getResources().getString(R.string.app_hosthis) +pulluri;
             mGuest = new RTMPGuestKit(this, this);
 
@@ -234,8 +236,10 @@ public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHel
                 String title = String.format("%s年%s月%s日 %s:%s:%s直播录像",lines[2],lines[1],lines[0].substring(0,2),lines[0].substring(2,4),lines[0].substring(4,6),lines[0].substring(6,8));
                 this.setTitle(title);
             }
+            short [][] pp = new short[10][];
+            int [] len = new int[10];
 
-            mGuest.StartRtmpPlay(url, mRenderer.GetRenderPointer(), "flv", getDataPath() );
+            mGuest.StartRtmpPlay(url, mRenderer.GetRenderPointer(), "flv", getDataPath(),enc,String.valueOf(userid),pp,len );
         }catch (Exception e1){
             Log.i("test","");
         }

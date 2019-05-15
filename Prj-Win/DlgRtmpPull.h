@@ -66,26 +66,6 @@ public:
 
 	virtual void OnGetPcmData(const void * pcm, const int len,const int rate, const int channels) {
 		short* p = (short*)pcm;
-		//return;
-		
-		if (m_pAudioMarketOut >= ((short*)m_pAudioMarker + m_iAudioMarker/2)) {
-			m_pAudioMarketOut = (short*)m_pAudioMarker;
-		}
-		for (int i = 0; i < len/ channels; i++) {
-			short val = *m_pAudioMarketOut++;
-			int adj = p[i] * 0.61f + val;// ((p[i] * 0.7f) + val * 0.29f);
-			if (adj > 32767) {
-				//	adj = 32767;
-				TRACE("adj > 32767\r\n");
-			}	else if (adj < -32768) {
-				TRACE("adj < -32768\r\n");
-				//	adj = -32768;
-			}
-			p[i] = adj;
-			i++;
-			p[i] = adj;
-		}
-		//TRACE("len:%d samples:%d channels:%d\r\n",len, rate, channels);
 	}
 
 protected:
@@ -115,13 +95,13 @@ public:
 	int m_nChatroomWidth;
 	int m_nListHeight;
 	int m_iUserId;
-	char*				m_pAudioMarker;
-	short*				m_pAudioMarketOut;
-	volatile int		m_iAudioMarker;
-	volatile int		m_iAudioMarketStart[10];
-	volatile int		m_iAudioMarketId;
-	volatile int		m_iAudioMarketIdNew;
-	volatile time_t		m_iAudioMarketLast;
+	//char*				m_pAudioMarker;
+	//short*				m_pAudioMarketOut;
+	//volatile int		m_iAudioMarker;
+	//volatile int		m_iAudioMarketStart[10];
+	//volatile int		m_iAudioMarketId;
+	//volatile int		m_iAudioMarketIdNew;
+	//volatile time_t		m_iAudioMarketLast;
 
 
 private:

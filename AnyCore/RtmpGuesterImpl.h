@@ -23,15 +23,14 @@
 #include "anyrtmplayer.h"
 #include "video_renderer.h"
 
-class RtmpGuesterImpl : public RTMPGuester, public AnyRtmplayerEvent, public webrtc::AVAudioTrackCallback
-{
+class RtmpGuesterImpl : public RTMPGuester, public AnyRtmplayerEvent, public webrtc::AVAudioTrackCallback{
 public:
 	RtmpGuesterImpl(RTMPGuesterEvent&callback);
 	virtual ~RtmpGuesterImpl();
 
 public:
 	//* Rtmp function for pull rtmp stream 
-	virtual void StartRtmpPlay(const char* url, void* render, const char*, const char*,int32_t);
+	virtual void StartRtmpPlay(const char* url, void* render, const char*, const char*,int32_t,const char*,const short**,const int*);
 	virtual uint32_t SeekTo(uint32_t pos,double );
 	virtual void StopRtmpPlay();
 
@@ -63,7 +62,14 @@ private:
 	AnyRtmplayer			*av_rtmp_player_;
 
 	webrtc::VideoRenderer	*video_render_;
-	//AnyBaseSource	*mabs;
+	char*				m_pAudioMarker;
+	short*				m_pAudioMarketOut;
+	volatile int		m_iAudioMarker;
+	volatile int		m_iAudioMarketStart[10];
+	volatile int		m_iAudioMarketId;
+	volatile int		m_iAudioMarketIdNew;
+	volatile time_t		m_iAudioMarketLast;
+
 };
 
 #endif	// __RTMP_GUSTER_IMPL_H__

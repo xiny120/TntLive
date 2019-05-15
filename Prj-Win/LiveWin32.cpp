@@ -129,7 +129,7 @@ BOOL CLiveWin32App::InitInstance()
 		HRSRC hRsrc = FindResource(NULL, MAKEINTRESOURCE(resid[i]), TEXT("BIN"));
 		if (NULL != hRsrc){
 			//获取资源的大小
-			m_iSoundMarker[i] = SizeofResource(NULL, hRsrc) * 3;
+			m_iSoundMarker[i] = SizeofResource(NULL, hRsrc) * 4;
 			if (0 != m_iSoundMarker[i]){
 				//加载资源
 				HGLOBAL hGlobal = LoadResource(NULL, hRsrc);
@@ -138,12 +138,14 @@ BOOL CLiveWin32App::InitInstance()
 					short* pRes = (short*)LockResource(hGlobal);
 					m_soundMarker[i] = (short*)new char[m_iSoundMarker[i]];
 					int z = 0;
-					for (int j = 0; j < m_iSoundMarker[i] / 3 / 2; j++){
-						m_soundMarker[i][z] = pRes[j] * 0.39f;
+					for (int j = 0; j < m_iSoundMarker[i] / 4 / 2; j++){
+						m_soundMarker[i][z] = pRes[j] * 0.03f;
 						z++;
-						m_soundMarker[i][z] = pRes[j] * 0.39f;
+						m_soundMarker[i][z] = pRes[j] * 0.03f;
 						z++;
-						m_soundMarker[i][z] = pRes[j] * 0.39f;
+						m_soundMarker[i][z] = pRes[j] * 0.03f;
+						z++;
+						m_soundMarker[i][z] = pRes[j] * 0.03f;
 						z++;
 						//m_soundMarker[i][z] = pRes[j] / 20;
 						//z++;
