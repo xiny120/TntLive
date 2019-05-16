@@ -7,11 +7,12 @@
 AnyFlvSource::AnyFlvSource(){
 }
 
-AnyFlvSource::AnyFlvSource(const std::string _file, const std::string _dir,int32_t encry):
+AnyFlvSource::AnyFlvSource(const std::string _file, const std::string _dir,int32_t encry,char enckey):
 	mfile(_file),
 	mdir(_dir),
 	mb(nullptr),
 	mencryption(encry),
+	menckey(enckey),
 	mblen(102400){
 }
 
@@ -139,16 +140,11 @@ uint32_t AnyFlvSource::SeekTo(uint32_t pos,double totaltime) {
 	return ret;
 }
 
-// ��ȡ���ݽӿڡ�����ȫ������rtmpЭ�顣
-// type �������͡�
-// timestamp ʱ���
-// data ���ݻ���
-// size ���ݻ����С��
 // ffmpeg -i gp20190513.avi -pix_fmt yuv420p  -c:v libx264 -c:a aac -max_interleave_delta 0 test.flv
 int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,TAG_HEADER& tagout) {
 	static std::thread::id idt = std::this_thread::get_id();
 	if (idt != std::this_thread::get_id()) {
-		WCLOG(LS_ERROR) << "�����߳�read:" << std::this_thread::get_id();
+		WCLOG(LS_ERROR) << "AnyFlvSource::Read diff threadid:" << std::this_thread::get_id();
 		idt = std::this_thread::get_id();
 	}
 	
@@ -160,21 +156,15 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,T
 	int64_t len = 0;
 	FILE* f = nullptr;
 	do {
-		//FILE* f = _fsopen(mfile.c_str(), "rb", SH_DENYNO);
-		//std::string dir0 = mdir + "/fuck/" + mfile;
-        //WCLOG(LS_ERROR) << "_fsopen funck:" << dir0 << " error:" << errno;
-
-		FILE* f = fopen(mfile.c_str(), "rb");//, SH_DENYNO);
+		FILE* f = fopen(mfile.c_str(), "rb");
 		if (f == nullptr) {
-			//WCLOG(LS_ERROR) << "_fsopen error:" << mfile << " error:" << errno;
 			std::this_thread::sleep_for(std::chrono::seconds(2));
-			
 			break;
 		}
         //WCLOG(LS_ERROR) << "_fsopen success:" << mfile << " error:" << errno;
 		do {
 			fseek(f, mreadpos, SEEK_SET);
-			if (mreadpos == 0) { // ��һ�ο�ʼ��ȡ�ļ�����һ����Ҫ��ȡ����1024�ֽڡ����ҵ�һ�ζ�ȡ�ļ���Ҫ����ͷ������ȡ����һ֡��Ч���ݡ�
+			if (mreadpos == 0) { // first to read 1024 bytes to decode.
 				WCLOG(LS_ERROR) << "first time to read:" << mfile;
 				len = 0;
 				dwDataSizeLast = 0;
@@ -202,6 +192,7 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,T
 				}
 				if (mencryption != 0) {
 					char s = -1;
+					/*
 					for (i = mfile.length() - 1; i >= 0; i--) {
 						if (mfile[i] == '\\' || mfile[i] == '/') {
 							s = mfile.substr(i + 1)[5];
@@ -211,6 +202,8 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,T
 					if (s == -1)
 						s = mfile[5];
 					if (s == 0) s = 1;
+					*/
+					s = menckey;
 					for (i = 0; i < 1024; i++) {
 						mbufv[i] = mbufv[i] ^ s;
 					}
@@ -221,13 +214,19 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,T
 				FLV_HEADER* ph = (FLV_HEADER*)p0;
 				p0 += sizeof(FLV_HEADER);
 				len += sizeof(FLV_HEADER);
-				if (len > mbufv.size()) { // ������̫С��
+				if (len > mbufv.size()) {  // not enough form FLV_HEADER
 					mfirstreadlenmin = len;
 					mreadpos = 0;
 					mbufv.clear();
 					WCLOG(LS_ERROR) << "first fread buffer not enough:" << mbufv.size() << "(need" << len << ")";
 					break;
 				}
+
+				if (!(ph->btSignature[0] == 'F' && ph->btSignature[1] == 'L' && ph->btSignature[2] == 'V')) {
+					fclose(f);
+					return 3;
+				}
+				
 				mbufv.erase(mbufv.begin(), mbufv.begin() + len);
 			}
 			if (mbufv.size() < sizeof(TAG_HEADER)) {

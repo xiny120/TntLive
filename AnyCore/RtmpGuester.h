@@ -46,7 +46,7 @@ public:
 	static RTMPGuester* Create(RTMPGuesterEvent&callback);
 	static void Destory(RTMPGuester*guester);
 
-	virtual void StartRtmpPlay(const char* url, void* render, const char* sourcetype, const char* datadir,int32_t, const char*, const short**, const int*) = 0;
+	virtual void StartRtmpPlay(const char* url, void* render, const char* sourcetype, const char* datadir,int32_t,char, const char*, const short**, const int*) = 0;
 	virtual uint32_t SeekTo(uint32_t, double) = 0;
 	virtual void StopRtmpPlay() = 0;
 

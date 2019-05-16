@@ -73,7 +73,7 @@ uint32_t RtmpGuesterImpl::SeekTo(uint32_t pos,double totaltime) {
 	return 0;
 }
 
-void RtmpGuesterImpl::StartRtmpPlay(const char* url, void* render, const char* sourcetype,const char* dir,int32_t enc, const char* userid, const short** pmarker,const int* lenmarker){
+void RtmpGuesterImpl::StartRtmpPlay(const char* url, void* render, const char* sourcetype,const char* dir,int32_t enc,char enckey, const char* userid, const short** pmarker,const int* lenmarker){
 #ifdef _WIN32
 	assert(threadid == GetCurrentThreadId());
 #endif
@@ -116,10 +116,6 @@ void RtmpGuesterImpl::StartRtmpPlay(const char* url, void* render, const char* s
 		pCur += lenmarker[id] / 2;
 		memset(pCur, 0,12000);
 		pCur += 12000 / 2;
-		//short temp = *(pCur - 1);
-		//for (int j = 0; j < 12000 / 2; j++) {
-		//	(*pCur++) = temp;
-		//}
 	}
 
 	if (!av_rtmp_started_) {
@@ -127,7 +123,7 @@ void RtmpGuesterImpl::StartRtmpPlay(const char* url, void* render, const char* s
 		rtmp_url_ = url;
 		video_render_ = webrtc::VideoRenderer::Create(render, 720, 80);
 		av_rtmp_player_->SetVideoRender(video_render_);
-		av_rtmp_player_->StartPlay(url,sourcetype,dir,enc);// , mabs);
+		av_rtmp_player_->StartPlay(url,sourcetype,dir,enc,enckey);// , mabs);
 		webrtc::AnyRtmpCore::Inst().StartAudioTrack(this);
 	}
 }

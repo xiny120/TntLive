@@ -68,13 +68,14 @@ uint32_t AnyRtmplayerImpl::SeekTo(uint32_t pos,double totaltime) {
 	return 0;
 }
 
-void AnyRtmplayerImpl::StartPlay(const char* url,const char* type,const char* dir,int32_t mencryption){
+void AnyRtmplayerImpl::StartPlay(const char* url,const char* type,const char* dir,int32_t mencryption,char enckey){
 	m1stAudio = true;
 	m1stVideo = true;
 	str_url_ = url;
 	mtype = type;
 	mdir = dir;
 	mmencryption = mencryption;
+	menckey = enckey;
 	rtc::Thread::Post(RTC_FROM_HERE, this, PLY_START);
     rtc::Thread::PostDelayed(RTC_FROM_HERE, 1000, this, PLY_TICK);
 }
@@ -117,7 +118,7 @@ void AnyRtmplayerImpl::OnMessage(rtc::Message* msg){
 				ply_decoder_->SetVideoRender(video_renderer_);
 		}
 		if (rtmp_pull_ == NULL) {
-			rtmp_pull_ = new AnyRtmpPull(*this, str_url_.c_str(), mtype.c_str(),mdir.c_str(),mmencryption);
+			rtmp_pull_ = new AnyRtmpPull(*this, str_url_.c_str(), mtype.c_str(),mdir.c_str(),mmencryption,menckey);
 		}
 		callback_.OnRtmplayerPlayStart();
 	}

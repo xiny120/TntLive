@@ -30,7 +30,7 @@ public:
 
 public:
 	//* Rtmp function for pull rtmp stream 
-	virtual void StartRtmpPlay(const char* url, void* render, const char*, const char*,int32_t,const char*,const short**,const int*);
+	virtual void StartRtmpPlay(const char* url, void* render, const char*, const char*,int32_t,char,const char*,const short**,const int*);
 	virtual uint32_t SeekTo(uint32_t pos,double );
 	virtual void StopRtmpPlay();
 

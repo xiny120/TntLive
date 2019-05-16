@@ -93,40 +93,47 @@ BOOL CDlgFlvPlayer::OnInitDialog(){
 				CefString createdate = data->GetString("CreateDate");
 				CefString id = data->GetString("Id");
 				CefString filepath = data->GetString("FilePath");
+				CefString nickname = data->GetString("NickName");
+				CefString filename = data->GetString("FileName");
+				std::wstring nn = nickname.ToWString();
+				std::wstring fn = filename.ToWString();
+				nn.erase(nn.find_last_not_of(' ') + 1);
 				int32_t enc = data->GetInt("Encryptioned");
-				std::string fp(filepath);
-				int lasti = fp.length();
-				std::string parts[5];
-				int idx = 0;
-				//size_t pos = fp.rfind('\\');
-				//pos = fp.rfind('/');
-				for (int i = fp.length()-1; i>=0; i--) {
-					if (fp[i] == '/' || fp[i] == '\\') {
-						parts[idx] = fp.substr(i+1, lasti - i-1);
-						lasti = i;
-						idx++;
-						if (idx > 4)
-							break;
-					}
-				}
-
+				char enckey = 0;
 				std::string title;
-				title.append(parts[2]);
-				title.append("年");
-				title.append(parts[1]);
-				title.append("月");
-				title.append(parts[0].substr(0, 2));
-				title.append("日");
-				title.append(parts[0].substr(2, 2));
-				title.append("时");
-				title.append(parts[0].substr(4, 2));
-				title.append("分");
-				title.append(parts[0].substr(6, 2));
-				title.append("秒 - 直播录像");
+				if (fn == nn) {
+					std::string fp(filepath);
+					int lasti = fp.length();
+					std::string parts[5];
+					int idx = 0;
+					for (int i = fp.length() - 1; i >= 0; i--) {
+						if (fp[i] == '/' || fp[i] == '\\') {
+							parts[idx] = fp.substr(i + 1, lasti - i - 1);
+							lasti = i;
+							idx++;
+							if (idx > 4)
+								break;
+						}
+					}
 
+					
+					title.append(parts[2]);
+					title.append("年");
+					title.append(parts[1]);
+					title.append("月");
+					title.append(parts[0].substr(0, 2));
+					title.append("日");
+					title.append(parts[0].substr(2, 2));
+					title.append("时");
+					title.append(parts[0].substr(4, 2));
+					title.append("分");
+					title.append(parts[0].substr(6, 2));
+					title.append("秒 - 直播录像");
 				this->SetWindowText(CA2W(title.c_str()));
-
-
+				}
+				else {
+					SetWindowText(nickname.ToWString().c_str());
+				}
 				data = dict->GetDictionary("ui");
 				CefString sessionid = data->GetString("SessionId");
 				CefString token = data->GetString("Token");
@@ -137,7 +144,7 @@ BOOL CDlgFlvPlayer::OnInitDialog(){
 				std::string url = "http://gpk01.gwgz.com:8862/";
 				url = url + std::string(filepath);
 				
-				m_pPlayer->StartRtmpPlay(url.c_str(), GetDlgItem(IDC_STATIC_VIDEO)->GetSafeHwnd(), "flv", "", enc,strId.GetBuffer(),(const short**)theApp.m_soundMarker,theApp.m_iSoundMarker);
+				m_pPlayer->StartRtmpPlay(url.c_str(), GetDlgItem(IDC_STATIC_VIDEO)->GetSafeHwnd(), "flv", "", enc,enckey,strId.GetBuffer(),(const short**)theApp.m_soundMarker,theApp.m_iSoundMarker);
 			}
 		}
 	}
