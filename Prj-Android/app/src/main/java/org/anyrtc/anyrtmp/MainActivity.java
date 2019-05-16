@@ -19,6 +19,7 @@
 package org.anyrtc.anyrtmp;
 
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.support.v7.app.AlertDialog;
@@ -74,6 +75,11 @@ public class MainActivity extends AppCompatActivity {
 
         WebSettings webSettings=webView.getSettings();
         webSettings.setJavaScriptEnabled(true);//允许使用js
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            if (0 != (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE))
+            { webView.setWebContentsDebuggingEnabled(true); }
+        }
 
         /**
          * LOAD_CACHE_ONLY: 不使用网络，只读取本地缓存数据
@@ -176,12 +182,17 @@ public class MainActivity extends AppCompatActivity {
                 }else {
                     JSONObject objData = obj.getJSONObject("data");
                     String pulluri = objData.getString("pulluri");
+                    int enc = objData.getInt("Encryptioned");
                     objData = obj.getJSONObject("ui");
                     String sid = objData.getString("SessionId");
                     String tkn = objData.getString("Token");
+                    int userid= objData.getInt("UserId");
+
                     Intent it = new Intent(getApplicationContext(), GuestActivity.class);
                     Bundle bd = new Bundle();
                     bd.putString("rtmp_url", pulluri + "?sessionid=" + sid + "&token=" + tkn);
+                    bd.putInt("Encryptioned",enc);
+                    bd.putInt("UserId",userid);
                     it.putExtras(bd);
                     startActivity(it);
                 }

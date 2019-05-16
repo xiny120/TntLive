@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.os.Build;
@@ -54,6 +55,9 @@ import org.json.JSONObject;
 import org.webrtc.RendererCommon;
 import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoRenderer;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 import static android.content.ContentValues.TAG;
 
@@ -126,27 +130,79 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
             });
             mRenderer = new VideoRenderer(mSurfaceView);
         }
-
         String rtmpUrl = getIntent().getExtras().getString("rtmp_url");
+        int enc = getIntent().getExtras().getInt("Encryptioned");
+        int userid = getIntent().getExtras().getInt("UserId");
         mGuest = new RTMPGuestKit(this, this);
+        /*
         short [][] pp = new short[10][];
         int [] len = new int[10];
-
-
-        mGuest.StartRtmpPlay(rtmpUrl, mRenderer.GetRenderPointer(),"rtmp","");
+        int [] resids = {R.raw.a0_192k, R.raw.a1_192k, R.raw.a2_192k, R.raw.a3_192k, R.raw.a4_192k, R.raw.a5_192k,
+                R.raw.a6_192k, R.raw.a7_192k, R.raw.a8_192k, R.raw.a9_192k};
+        for(int i = 0; i < 10; i++){
+            pp[i] = readRawFile(resids[i]);
+            len[i] = readRawFileLen(resids[i]);
+        }
+        */
+        MyApplication myApp = (MyApplication) getApplication();
+        mGuest.StartRtmpPlay(rtmpUrl, mRenderer.GetRenderPointer(),"rtmp","",enc,String.valueOf(userid),myApp.pp,myApp.len);
         initView();
         initWebView();
     }
+
+    public int readRawFileLen(int id){
+        Resources resources=this.getResources();
+        InputStream is=null;
+        int ret = 0;
+        try{
+            is=resources.openRawResource(id);
+            ret = is.available();
+        }catch(IOException e){
+            Log.e(TAG, "write file",e);
+        }
+        if(is!=null) {
+            try {
+                is.close();
+            } catch (IOException e) {
+                Log.e(TAG, "close file", e);
+            }
+        }
+        return ret;
+    }
+
+    public short[] readRawFile(int id){
+        Resources resources=this.getResources();
+        InputStream is=null;
+        short [] ret = null;
+        try{
+            is=resources.openRawResource(id);
+            byte buffer[]=new byte[is.available()];
+            is.read(buffer);
+            ret = BytesTransUtil.getInstance().Bytes2Shorts(buffer);
+        }catch(IOException e){
+            Log.e(TAG, "write file",e);
+        }
+        if(is!=null) {
+            try {
+                is.close();
+            } catch (IOException e) {
+                Log.e(TAG, "close file", e);
+            }
+        }
+        return ret;
+    }
+
+
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         Point pt = mSurfaceView.getVideoSize();
-        Log.i("Tag",pt.toString());
+        Log.i(TAG,pt.toString());
     }
     @Override
     public void surfaceChanged(SurfaceHolder holder
             , int format, int width, int height) {
         Point pt = mSurfaceView.getVideoSize();
-        Log.i("Tag",pt.toString());
+        Log.i(TAG,pt.toString());
     }
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {

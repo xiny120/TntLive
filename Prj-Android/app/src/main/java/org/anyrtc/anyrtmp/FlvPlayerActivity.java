@@ -1,6 +1,7 @@
 package org.anyrtc.anyrtmp;
 
 import android.annotation.SuppressLint;
+import android.content.res.Resources;
 import android.graphics.Point;
 import android.os.Environment;
 import android.os.Message;
@@ -30,6 +31,10 @@ import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoRenderer;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -236,10 +241,18 @@ public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHel
                 String title = String.format("%s年%s月%s日 %s:%s:%s直播录像",lines[2],lines[1],lines[0].substring(0,2),lines[0].substring(2,4),lines[0].substring(4,6),lines[0].substring(6,8));
                 this.setTitle(title);
             }
+            /*
             short [][] pp = new short[10][];
             int [] len = new int[10];
-
-            mGuest.StartRtmpPlay(url, mRenderer.GetRenderPointer(), "flv", getDataPath(),enc,String.valueOf(userid),pp,len );
+            int [] resids = {R.raw.a0_192k, R.raw.a1_192k, R.raw.a2_192k, R.raw.a3_192k, R.raw.a4_192k, R.raw.a5_192k,
+                    R.raw.a6_192k, R.raw.a7_192k, R.raw.a8_192k, R.raw.a9_192k};
+            for(i = 0; i < 10; i++){
+                pp[i] = readRawFile(resids[i]);
+                len[i] = readRawFileLen(resids[i]);
+            }
+            */
+            MyApplication myApp = (MyApplication) getApplication();
+            mGuest.StartRtmpPlay(url, mRenderer.GetRenderPointer(), "flv", getDataPath(),enc,String.valueOf(userid),myApp.pp,myApp.len );
         }catch (Exception e1){
             Log.i("test","");
         }
@@ -250,6 +263,50 @@ public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHel
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
     }
+
+
+    public int readRawFileLen(int id){
+        Resources resources=this.getResources();
+        InputStream is=null;
+        int ret = 0;
+        try{
+            is=resources.openRawResource(id);
+            ret = is.available();
+        }catch(IOException e){
+            Log.e(TAG, "write file",e);
+        }
+        if(is!=null) {
+            try {
+                is.close();
+            } catch (IOException e) {
+                Log.e(TAG, "close file", e);
+            }
+        }
+        return ret;
+    }
+
+    public short[] readRawFile(int id){
+        Resources resources=this.getResources();
+        InputStream is=null;
+        short [] ret = null;
+        try{
+            is=resources.openRawResource(id);
+            byte buffer[]=new byte[is.available()];
+            is.read(buffer);
+            ret = BytesTransUtil.getInstance().Bytes2Shorts(buffer);
+        }catch(IOException e){
+            Log.e(TAG, "write file",e);
+        }
+        if(is!=null) {
+            try {
+                is.close();
+            } catch (IOException e) {
+                Log.e(TAG, "close file", e);
+            }
+        }
+        return ret;
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
