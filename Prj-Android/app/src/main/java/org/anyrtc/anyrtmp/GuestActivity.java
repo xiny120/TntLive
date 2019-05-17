@@ -132,6 +132,7 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         }
         String rtmpUrl = getIntent().getExtras().getString("rtmp_url");
         int enc = getIntent().getExtras().getInt("Encryptioned");
+        int enckey = 0;
         int userid = getIntent().getExtras().getInt("UserId");
         mGuest = new RTMPGuestKit(this, this);
         /*
@@ -145,7 +146,7 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         }
         */
         MyApplication myApp = (MyApplication) getApplication();
-        mGuest.StartRtmpPlay(rtmpUrl, mRenderer.GetRenderPointer(),"rtmp","",enc,String.valueOf(userid),myApp.pp,myApp.len);
+        mGuest.StartRtmpPlay(rtmpUrl, mRenderer.GetRenderPointer(),"rtmp","",enc,enckey,String.valueOf(userid),myApp.pp,myApp.len);
         initView();
         initWebView();
     }

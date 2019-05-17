@@ -260,7 +260,7 @@ JOWW(jlong, RTMPGuestKit_nativeCreate)(JNIEnv* jni, jclass, jobject j_obj)
 	return webrtc_jni::jlongFromPointer(jApp);
 }
 
-JOWW(void, RTMPGuestKit_nativeStartRtmpPlay)(JNIEnv* jni, jobject j_app, jstring j_rtmp_url, jlong j_renderer_pointer,jstring j_type_,jstring j_dir_,jint enc,jstring userid_,jobjectArray marker_,jintArray markerlen_){
+JOWW(void, RTMPGuestKit_nativeStartRtmpPlay)(JNIEnv* jni, jobject j_app, jstring j_rtmp_url, jlong j_renderer_pointer,jstring j_type_,jstring j_dir_,jint enc,jint enckey,jstring userid_,jobjectArray marker_,jintArray markerlen_){
 	JRTMPGuestImpl* jApp = (JRTMPGuestImpl*)GetJApp(jni, j_app);
 	std::string rtmp_url = JavaToStdString(jni, j_rtmp_url);
 	std::string dir_ = JavaToStdString(jni,j_dir_);
@@ -285,7 +285,7 @@ JOWW(void, RTMPGuestKit_nativeStartRtmpPlay)(JNIEnv* jni, jobject j_app, jstring
         jni->ReleaseShortArrayElements((jshortArray)myarray, coldata,0 );
     }
 	jApp->Guest()->StartRtmpPlay(rtmp_url.c_str(), reinterpret_cast<rtc::VideoSinkInterface<cricket::VideoFrame>*>(j_renderer_pointer),type_.c_str(),dir_.c_str(),
-	        enc,userid.c_str(),(const short**)p,len);
+	        enc,enckey,userid.c_str(),(const short**)p,len);
 }
 
 JOWW(void, RTMPGuestKit_nativeSeekTo)(JNIEnv* jni, jobject j_app, jlong p1 ,jdouble p2){

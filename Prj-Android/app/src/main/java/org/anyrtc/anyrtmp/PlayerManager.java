@@ -37,6 +37,7 @@ public class PlayerManager {
         if (playerManager == null){
             synchronized (PlayerManager.class){
                 playerManager = new PlayerManager();
+
             }
         }
         return playerManager;
@@ -138,7 +139,7 @@ public class PlayerManager {
         }
         int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
         if(volume>=0 && volume<=maxVolume){
-            //audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, FLAG_SHOW_UI);
+            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.FLAG_SHOW_UI);
             //LogUtils.e(String.format("%s->volume:%d,maxVolume:%d",(upVolume?"upVolume":"downVolume"),volume,maxVolume));
         }
     }

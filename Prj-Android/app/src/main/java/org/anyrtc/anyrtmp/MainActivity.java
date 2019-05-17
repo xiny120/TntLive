@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.graphics.Bitmap;
 import android.os.Build;
+import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -41,6 +42,15 @@ import android.widget.Toast;
 
 import org.anyrtc.core.AnyRTMP;
 import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -164,22 +174,27 @@ public class MainActivity extends AppCompatActivity {
            // localBuilder.setCancelable(false);
             //localBuilder.create().show();
             try {
+                //final String msg = message;
                 JSONObject obj = new JSONObject(message);
                 String cmd = obj.getString("cmd");
-
-
-                if(cmd.equals("pulldlghis117") || cmd.equals("pulldlghisgp")){
+                if(cmd.equals("pulldlghis117") || cmd.equals("pulldlghisgp")){ // history
+                    //JSONObject objData = obj.getJSONObject("data");
+                    //String pulluri = objData.getString("pulluri");
+                    //final String id = objData.getString("Id");
+                    //int enc = objData.getInt("Encryptioned");
+                    //objData = obj.getJSONObject("ui");
+                    //final String sid = objData.getString("SessionId");
                     try {
                         Intent it = new Intent(getApplicationContext(), FlvPlayerActivity.class);
                         Bundle bd = new Bundle();
                         bd.putString("minfo", message);
                         it.putExtras(bd);
                         startActivity(it);
-
                     }catch (Exception e1){
                         Log.i("",e1.toString());
                     }
-                }else {
+
+                }else { //living
                     JSONObject objData = obj.getJSONObject("data");
                     String pulluri = objData.getString("pulluri");
                     int enc = objData.getInt("Encryptioned");

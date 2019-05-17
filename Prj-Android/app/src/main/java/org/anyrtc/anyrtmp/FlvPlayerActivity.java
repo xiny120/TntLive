@@ -1,6 +1,7 @@
 package org.anyrtc.anyrtmp;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Point;
 import android.os.Environment;
@@ -21,18 +22,26 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.anyrtc.core.AnyRTMP;
 import org.anyrtc.core.RTMPGuestHelper;
 import org.anyrtc.core.RTMPGuestKit;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.RendererCommon;
 import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoRenderer;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import static android.content.ContentValues.TAG;
 
@@ -138,7 +147,7 @@ public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHel
     Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            mTxtStatus.setVisibility(View.VISIBLE);//(View.GONE);
+            //mTxtStatus.setVisibility(View.VISIBLE);//(View.GONE);
         }
     };
     @Override
@@ -211,51 +220,115 @@ public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHel
             };
         });
         mRenderer = new VideoRenderer(mSurfaceView);
-        try {
-            String info = getIntent().getExtras().getString("minfo");
-            JSONObject obj = new JSONObject(info);
-            String cmd = obj.getString("cmd");
-            JSONObject objData = obj.getJSONObject("data");
-            String pulluri = objData.getString("FilePath");
-            int enc = objData.getInt("Encryptioned");
-            objData = obj.getJSONObject("ui");
-            String sid = objData.getString("SessionId");
-            String tkn = objData.getString("Token");
-            int userid= objData.getInt("UserId");
-            String url = getResources().getString(R.string.app_hosthis) +pulluri;
-            mGuest = new RTMPGuestKit(this, this);
+        final  FlvPlayerActivity that = this;
+        final String info1 = getIntent().getExtras().getString("minfo");
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONObject obj = new JSONObject(info1);
+                    JSONObject objData = obj.getJSONObject("data");
+                    String id = objData.getString("Id");
+                    String pulluri = objData.getString("FilePath");
+                    int enc = objData.getInt("Encryptioned");
+                    char enckey = 0;
+                    objData = obj.getJSONObject("ui");
+                    int userid = objData.getInt("UserId");
+                    String sid = objData.getString("SessionId");
 
-            String [] lines = new String[10];
-            int pos,lastpos = pulluri.length();
-            int i = 0;
-            for(i = 0; i <10; i++){
-                pos = pulluri.lastIndexOf('/',lastpos-1);
-                if(pos <0)
-                    break;
-                lines[i] = pulluri.substring(pos+1,lastpos);
-                lastpos = pos;
-                if(i >=2)
-                    break;
+                    JSONObject data = new JSONObject();
+                    try {
+                        data.put("action", "caniplay");
+                        data.put("id", id);
+                    } catch (Exception e) {
+
+                    }
+                    URL url = new URL(MyApplication.apiServer + "/api/1.00/private");//放网站
+                    HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+                    httpURLConnection.setRequestMethod("POST");
+                    httpURLConnection.setRequestProperty("Content-Type", "application/json");
+                    httpURLConnection.setRequestProperty("mster-token", sid);
+                    OutputStream ots = httpURLConnection.getOutputStream();
+                    ots.write(data.toString().getBytes());
+                    InputStream inputStream = httpURLConnection.getInputStream();
+                    InputStreamReader reader = new InputStreamReader(inputStream, "UTF-8");
+                    BufferedReader bufferedReader = new BufferedReader(reader);
+                    final StringBuffer buffer = new StringBuffer();
+                    String temp = null;
+                    while ((temp = bufferedReader.readLine()) != null) {
+                        buffer.append(temp);
+                    }
+                    bufferedReader.close();//记得关闭
+                    reader.close();
+                    inputStream.close();
+                    Log.e("MAIN", buffer.toString());//打印结果
+                    runOnUiThread(new Runnable() {
+                        public void run() {
+                            try {
+                                JSONObject res = new JSONObject(buffer.toString());
+                                JSONObject resdata = res.getJSONObject("data");
+                                if (res.getInt("status") == 0 && resdata != null) {
+                                    try {
+                                        String info = getIntent().getExtras().getString("minfo");
+                                        JSONObject obj = new JSONObject(info);
+                                        JSONObject objData = obj.getJSONObject("data");
+                                        String pulluri = objData.getString("FilePath");
+                                        String filename = objData.getString("FileName").trim();
+                                        String nickname = objData.getString("NickName").trim();
+                                        int enc = objData.getInt("Encryptioned");
+                                        char enckey = (char)resdata.getInt("EncKey");
+                                        objData = obj.getJSONObject("ui");
+                                        int userid= objData.getInt("UserId");
+                                        String url = getResources().getString(R.string.app_hosthis) +pulluri;
+                                        mGuest = new RTMPGuestKit(that, that);
+
+                                        if(filename.compareTo(nickname) == 0) {
+                                            String[] lines = new String[10];
+                                            int pos, lastpos = pulluri.length();
+                                            int i = 0;
+                                            for (i = 0; i < 10; i++) {
+                                                pos = pulluri.lastIndexOf('/', lastpos - 1);
+                                                if (pos < 0)
+                                                    break;
+                                                lines[i] = pulluri.substring(pos + 1, lastpos);
+                                                lastpos = pos;
+                                                if (i >= 2)
+                                                    break;
+                                            }
+                                            if (i >= 2) {
+                                                String title = String.format("%s年%s月%s日 %s:%s:%s直播录像", lines[2], lines[1], lines[0].substring(0, 2), lines[0].substring(2, 4), lines[0].substring(4, 6), lines[0].substring(6, 8));
+                                                that.setTitle(title);
+                                            }
+                                        }else{
+                                            that.setTitle(nickname);
+                                        }
+                                        MyApplication myApp = (MyApplication) getApplication();
+                                        mGuest.StartRtmpPlay(url, mRenderer.GetRenderPointer(), "flv", getDataPath(),enc,enckey,String.valueOf(userid),myApp.pp,myApp.len );
+                                    }catch (Exception e1){
+                                        Log.i("test","");
+                                    }
+
+
+
+
+                                } else {
+                                    Toast.makeText(getApplicationContext(), res.getString("msg"), Toast.LENGTH_LONG).show();
+                                }
+                            } catch (Exception e1) {
+
+                            }
+                        }
+                    });
+                }catch (JSONException je){
+                    je.printStackTrace();
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-            if(i >= 2){
-                String title = String.format("%s年%s月%s日 %s:%s:%s直播录像",lines[2],lines[1],lines[0].substring(0,2),lines[0].substring(2,4),lines[0].substring(4,6),lines[0].substring(6,8));
-                this.setTitle(title);
-            }
-            /*
-            short [][] pp = new short[10][];
-            int [] len = new int[10];
-            int [] resids = {R.raw.a0_192k, R.raw.a1_192k, R.raw.a2_192k, R.raw.a3_192k, R.raw.a4_192k, R.raw.a5_192k,
-                    R.raw.a6_192k, R.raw.a7_192k, R.raw.a8_192k, R.raw.a9_192k};
-            for(i = 0; i < 10; i++){
-                pp[i] = readRawFile(resids[i]);
-                len[i] = readRawFileLen(resids[i]);
-            }
-            */
-            MyApplication myApp = (MyApplication) getApplication();
-            mGuest.StartRtmpPlay(url, mRenderer.GetRenderPointer(), "flv", getDataPath(),enc,String.valueOf(userid),myApp.pp,myApp.len );
-        }catch (Exception e1){
-            Log.i("test","");
-        }
+        }).start();
+
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {

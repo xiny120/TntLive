@@ -12,12 +12,14 @@ import static android.content.ContentValues.TAG;
 
 public class MyApplication extends Application {
     //声明一个变量
+    static public String apiServer = "http://gpk01.gwgz.com:8091";
     public String nameString;
     public short [][] pp = new short[10][];
     public int [] len = new int[10];
     @Override
     public void onCreate() {
         super.onCreate();
+        PlayerManager.getManager().init(this.getApplicationContext());
         int i = 0;
         setname("英雄联盟");
         int [] resids = {R.raw.a0_192k, R.raw.a1_192k, R.raw.a2_192k, R.raw.a3_192k, R.raw.a4_192k, R.raw.a5_192k,
