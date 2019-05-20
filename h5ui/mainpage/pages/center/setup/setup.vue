@@ -107,7 +107,7 @@
 							uni.showToast({
 								title: res.data.msg,
 							});	
-							this.logout();
+							this.logout(this.$serverUrl);
 							setTimeout(() => {
 								uni.navigateBack({
 										delta: 1

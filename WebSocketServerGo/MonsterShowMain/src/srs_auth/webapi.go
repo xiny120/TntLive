@@ -12,6 +12,8 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+
+	//"strconv"
 	"strings"
 	"ucenter"
 )
@@ -70,14 +72,8 @@ func ServeSrs(w http.ResponseWriter, r *http.Request) {
 		case "on_dvr":
 			pars, err := uri2map(data.Param)
 			if err == nil {
-				//log.Println()
 				ui, _ := sign.SessionsGet(pars["sessionid"])
 				if ui.Token == pars["token"] {
-
-					//if TestId, TestOk := pars["TestId"]; !TestOk {
-					//}
-					//log.Println(TestId)
-
 					retstr = "0"
 					RoomId := ""
 					if RoomId0, ok := pars["roomid"]; !ok {
@@ -91,8 +87,8 @@ func ServeSrs(w http.ResponseWriter, r *http.Request) {
 					} else {
 						defer db.Close()
 						OOtmp := strings.Replace(data.File, "/media/share/", "E:/mzgp/share/", 1)
-						log.Println(OOtmp)
-						encoderfile(OOtmp)
+						//log.Println(OOtmp)
+						enckey := encoderfile(OOtmp)
 						BasePath := cfg.SrsDvrBasepath
 						FilePath := strings.Replace(data.File, "/media/share/", "", 1)
 						FileName := filepath.Base(FilePath)
@@ -112,6 +108,7 @@ func ServeSrs(w http.ResponseWriter, r *http.Request) {
 							           ,[FileName]
 							           ,[NickName]
 							           ,[FileSize]
+										,[EncKey]
 							           )
 							     VALUES
 							           (?
@@ -123,6 +120,7 @@ func ServeSrs(w http.ResponseWriter, r *http.Request) {
 							           ,?
 							           ,?
 							           ,?
+										,?
 							           )						
 						`)
 						if err0 != nil {
@@ -131,7 +129,7 @@ func ServeSrs(w http.ResponseWriter, r *http.Request) {
 							defer stmt1.Close()
 
 							r1, err := stmt1.Exec(RoomId, time.Now().Format("2006-01-02 15:04:05"),
-								data.App, data.Stream, ui.UserUuid, FilePath, FileName, NickName, FileSize)
+								data.App, data.Stream, ui.UserUuid, FilePath, FileName, NickName, FileSize, enckey)
 
 							log.Println(r1)
 							if err != nil {
@@ -140,9 +138,7 @@ func ServeSrs(w http.ResponseWriter, r *http.Request) {
 
 							}
 						}
-
 					}
-
 				}
 				log.Println("用户：", pars["sessionid"], "on_dvr", data.App, "/", data.Stream, data.File, " ", retstr)
 			}
@@ -169,11 +165,11 @@ func uri2map(uri string) (map[string]string, error) {
 	return m, nil
 }
 
-func encoderfile(filepath string) {
+func encoderfile(filepath string) byte {
 	Copy(filepath, filepath+".bak")
 	fi, _ := os.Stat(filepath)
-
-	var s byte = (byte)(fi.Size())
+	a1 := []byte(fi.Name())
+	var s byte = (a1[5])
 	if s == 0 {
 		s = 1
 	}
@@ -183,7 +179,6 @@ func encoderfile(filepath string) {
 		log.Println(err)
 	}
 	defer file.Close()
-	// 按字节读取
 	data := make([]byte, 1024)
 	count, err := file.Read(data)
 	log.Println(count, err)
@@ -196,6 +191,7 @@ func encoderfile(filepath string) {
 			file.Write(data)
 		}
 	}
+	return s
 }
 
 func Copy(src, dst string) (int64, error) {

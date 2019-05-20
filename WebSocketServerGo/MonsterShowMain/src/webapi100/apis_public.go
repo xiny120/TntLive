@@ -128,7 +128,7 @@ func f_roomlist(w http.ResponseWriter, r *http.Request, v *map[string]interface{
 		result = "f_roomlist sql open error"
 	} else {
 		defer db.Close()
-		sqlstr := fmt.Sprintf("SELECT TOP (%d) [Id], [Title], [Intro], [Icon], [Corver], [Background], [Follow], [Online],  [Type], [PullUri], [OrderIdx] FROM  [Web2019_roomlist] where [orderidx] >= %d order by [orderidx] asc", per_page, page*per_page)
+		sqlstr := fmt.Sprintf("SELECT TOP (%d) [Id], [Title], [Intro], [Icon], [Corver], [Background], [Follow], [Online],  [Type], [PullUri], [OrderIdx] FROM  [Web2019_roomlist] where [orderidx] >= %d and bDeleted=0 order by [orderidx] asc", per_page, page*per_page)
 		log.Println(sqlstr)
 		stmt, err0 := db.Prepare(sqlstr)
 		if err0 != nil {

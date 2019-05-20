@@ -37,7 +37,7 @@ const store = new Vuex.Store({
             state.hasLogin = 1;
 			uni.setStorage({key: 'userinfo', data: ui});			
         },
-        logout(state) {
+        logout(state,surl) {
 
 			const data = {
 				action:"authout",
@@ -46,7 +46,7 @@ const store = new Vuex.Store({
 			}
 			uni.request({
 				//url: this.$serverUrl + '/api/1.00/auth', //仅为示例，并非真实接口地址。
-				url: this.$serverUrl + '/api/1.00/private', //仅为示例，并非真实接口地址。
+				url: surl + '/api/1.00/private', //仅为示例，并非真实接口地址。
 				method: 'POST',
 				data:data,
 				dataType:'json',  

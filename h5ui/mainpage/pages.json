@@ -1,9 +1,10 @@
 {
-	"pages": [{
+	"pages": [
+		{
 			//pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
-			"path": "pages/new/new",
+			"path": "pages/medialistgp/medialistgp",
 			"style": {
-				"navigationBarTitleText": "最新",
+				"navigationBarTitleText": "光盘课",
 				"enablePullDownRefresh": true
 			}
 		},
@@ -44,7 +45,7 @@
 		{
 			"path": "pages/tag/tag",
 			"style": {
-				"navigationBarTitleText": "商城",
+				"navigationBarTitleText": "公开课",
                 "enablePullDownRefresh": false
 			}
 		},
@@ -107,9 +108,18 @@
         ,{
             "path" : "pages/medialist/medialist",
             "style" : {
-				"navigationStyle":"custom"  
+				"navigationStyle":"custom",
+				"enablePullDownRefresh": true
 			}
-        }        ,{
+        }        
+        ,{
+            "path" : "pages/medialist117/medialist117",
+            "style" : {
+				"navigationBarTitleText": "117节免费课"
+			}
+        }         
+        
+		,{
             "path" : "pages/chatroom02/chatroom02",
             "style" : {
 				"navigationStyle":"custom"  
@@ -127,24 +137,26 @@
 		"selectedColor": "#FF80AB",
 		"borderStyle": "black",
 		"backgroundColor": "#ffffff",
-		"list": [{
-				"pagePath": "pages/new/new",
+		"list": [
+			{
+				"pagePath": "pages/medialistgp/medialistgp",
 				"iconPath": "static/index-0.png",
 				"selectedIconPath": "static/index-1.png",
-				"text": "首页"
+				"text": "光盘课"
+			},
+
+			{
+				"pagePath": "pages/medialist117/medialist117",
+				"iconPath": "static/tag-0.png",
+				"selectedIconPath": "static/tag-1.png",
+				"text": "免费课"
 			},
 			{
 				"pagePath": "pages/hot/hot",
 				"iconPath": "static/hot-0.png",
 				"selectedIconPath": "static/hot-1.png",
 				"text": "直播室"
-			},
-			{
-				"pagePath": "pages/tag/tag",
-				"iconPath": "static/tag-0.png",
-				"selectedIconPath": "static/tag-1.png",
-				"text": "商城"
-			},
+			},			
 			{
 				"pagePath": "pages/center/center",
 				"iconPath": "static/center-0.png",

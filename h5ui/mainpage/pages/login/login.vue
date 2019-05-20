@@ -136,7 +136,7 @@
 				if(checkRes){
 					//uni.showToast({title:"验证通过!", icon:"none"});
 					//console.log("得到账号:"+ e.detail.value.nameValue + ';得到密码:' + e.detail.value.passwordValue)
-					this.logout();
+					this.logout(this.$serverUrl);
 					const data = {
 						action:"auth",
 						account: e.detail.value.nameValue,

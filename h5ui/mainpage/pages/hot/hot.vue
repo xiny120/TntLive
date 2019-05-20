@@ -150,12 +150,18 @@
 				}else{
 					if(this.hasLogin == 1){
 						this.setroomid(e.id);
-						const data ={
-							cmd:"pulldlg",
-							data:e,
-							ui:this.userInfo,
+						if(e.id.toLowerCase()  == "{96518478-be8d-4eee-9fec-69d472ced4dc}"){
+							uni.switchTab({
+								url:"../medialist117/medialist117"
+							})							
+						}else{
+							const data ={
+								cmd:"pulldlg",
+								data:e,
+								ui:this.userInfo,
+							}
+							alert(JSON.stringify(data));
 						}
-						alert(JSON.stringify(data));
 					}else{
 						uni.showModal({
 							title: '请先登录哦！',

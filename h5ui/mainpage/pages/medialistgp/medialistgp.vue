@@ -4,7 +4,24 @@
 			<block v-for="(item, index) in lists" :key="index">
 				<uni-list-item :title="item.RoomName" :note="item.CreateDate" show-extra-icon="true"  @click="goDetail(item)" ></uni-list-item>
 			</block>
+			<!--<uni-list-item title="标题文字" note="描述信息" show-extra-icon="true" :extra-icon="{color: '#4cd964',size: '22',type: 'spinner'}"></uni-list-item>-->
 		</uni-list>		
+		<!--
+		* 
+			<view class="row">
+				<view class="card card-list2"  @click="goDetail(item)" >
+					<image class="card-img card-list2-img" :src="item.img_src"></image>
+                    <text class="card-num-view card-list2-num-view">{{item.img_num}}P</text>
+					<view class="card-bottm row">
+						<view class="car-title-view row">
+							<text class="card-title card-list2-title">{{item.NickName}}</text>
+						</view>
+						<view @click.stop="share(item)" class="card-share-view"></view>
+					</view>
+				</view>
+			</view>
+			-->
+		
 		<text class="loadMore">{{loadMoreText}}</text>
 	</view>
 </template>
@@ -30,17 +47,23 @@
 				lists: [],
 				id: 0,
 				fetchPageNum: 0,
+				roomid:"{2b7e7bfc-2730-49fe-ba43-a3e1043fcc13}"
+				
 			}
 		},
+        onShow: function() {
+            console.log('medialist Show')
+        },
+        onHide: function() {
+		
+        },		
+
 		onLoad(e) {
-			this.getroomid();
-			//uni.setNavigationBarTitle({
-			//	title: "专题：" + e.type
-			//})
+			this.fetchPageNum = 1;
 			this.id = e.id;
 			setTimeout(() => { //防止app里由于渲染导致转场动画卡顿
 				this.getData();
-			}, 300)			
+			}, 150)			
 
 			uni.getProvider({
 				service: "share",
@@ -79,6 +102,8 @@
 		onPullDownRefresh() {
 			console.log("下拉刷新");
 			this.refreshing = true;
+			this.fetchPageNum = 1;
+			//this.lists = [];
 			this.getData();
 		},
 		onReachBottom() {
@@ -89,13 +114,14 @@
 			}
 			this.getData();
 		},
-		computed: mapState(['userInfo','roomid','hasLogin']),
+		computed: mapState(['userInfo','hasLogin']),
 		methods: {
-			...mapMutations(['getroomid','setroomid']),
-			getData(par) {
+			getData(e) {
 				const data = {
 					action:"medialist",
 					roomid:this.roomid,
+					orderby:"CreateDate desc",
+					pageid:this.fetchPageNum
 				}
 				let that = this;
 				uni.request({
@@ -110,6 +136,10 @@
 					success: (ret) => {
 						if (ret.statusCode !== 200) {
 							console.log("请求失败", ret)
+								uni.showToast({
+									title: "请求失败",
+									icon: "none",
+								})							
 						
 						} else {
 							if(ret.data.status != 0){
@@ -118,7 +148,7 @@
 								})
 								return;
 							}
-							if (that.refreshing && ret.medialist[0].id === that.lists[0][0].id) {
+							if (that.refreshing && ret.data.medialist[0].id === that.lists[0].id) {
 								uni.showToast({
 									title: "已经最新",
 									icon: "none",
@@ -128,30 +158,37 @@
 								return;
 							}
 							
-							let lists = ret.data.medialist;
-							console.log("list页面得到lists", lists);
+							
+							let mls = ret.data.medialist;
+							console.log("list页面得到lists", mls);
 							if (that.refreshing) {
 								that.refreshing = false;
-								uni.stopPullDownRefresh()
-								that.lists = lists;
+								uni.stopPullDownRefresh();
+								that.lists = mls;
 								that.fetchPageNum = 2;
 								that.loadMoreText="下拉刷新";
+								
 							} else {
-								that.lists = that.lists.concat(lists);
+								if(mls.length <= 0){
+									uni.showToast({
+										title: '没有更多数据了！',
+										mask: false,
+										duration: 1500
+									});
+								}else{								
+								that.lists = that.lists.concat(mls);
 								that.fetchPageNum += 1;
+								}
 							}
-							that.fetchPageNum += 1;
+							//that.fetchPageNum += 1;
 						}
 					}
 				});
 			},
 			goDetail(e) {
-				//uni.navigateTo({
-				//	url: "../detail/detail?data=" + encodeURIComponent(JSON.stringify(e))
-				//})
 				if(this.hasLogin == 1){
 					const data ={
-						cmd:"pulldlghis",
+						cmd:"pulldlghisgp",
 						data:e,
 						ui:this.userInfo,
 					}
@@ -159,10 +196,8 @@
 				}else{
 					uni.showModal({
 						title: '请先登录哦！',
-						//content: '确定切换账户吗？',
 						success: function (res) {
 							if (res.confirm) {				
-								
 								uni.navigateTo({
 									url:"../login/login"
 								})

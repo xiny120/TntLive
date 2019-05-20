@@ -2,9 +2,26 @@
 	<view class="index">
 		<uni-list>
 			<block v-for="(item, index) in lists" :key="index">
-				<uni-list-item :title="item.RoomName" :note="item.CreateDate" show-extra-icon="true"  @click="goDetail(item)" ></uni-list-item>
+				<uni-list-item :title="item.NickName" :note="item.CreateDate" show-extra-icon="true"  @click="goDetail(item)" ></uni-list-item>
 			</block>
+			<!--<uni-list-item title="标题文字" note="描述信息" show-extra-icon="true" :extra-icon="{color: '#4cd964',size: '22',type: 'spinner'}"></uni-list-item>-->
 		</uni-list>		
+		<!--
+		* 
+			<view class="row">
+				<view class="card card-list2"  @click="goDetail(item)" >
+					<image class="card-img card-list2-img" :src="item.img_src"></image>
+                    <text class="card-num-view card-list2-num-view">{{item.img_num}}P</text>
+					<view class="card-bottm row">
+						<view class="car-title-view row">
+							<text class="card-title card-list2-title">{{item.NickName}}</text>
+						</view>
+						<view @click.stop="share(item)" class="card-share-view"></view>
+					</view>
+				</view>
+			</view>
+			-->
+		
 		<text class="loadMore">{{loadMoreText}}</text>
 	</view>
 </template>
@@ -29,18 +46,24 @@
 				loadMoreText:"",
 				lists: [],
 				id: 0,
-				fetchPageNum: 0,
+				fetchPageNum: 1,
+				roomid:"{96518478-be8d-4eee-9fec-69d472ced4dc}"
+				
 			}
 		},
+        onShow: function() {
+            console.log('medialist Show')
+        },
+        onHide: function() {
+		
+        },		
+
 		onLoad(e) {
-			this.getroomid();
-			//uni.setNavigationBarTitle({
-			//	title: "专题：" + e.type
-			//})
+			//this.fetchPageNum = 1;
 			this.id = e.id;
 			setTimeout(() => { //防止app里由于渲染导致转场动画卡顿
 				this.getData();
-			}, 300)			
+			}, 150)			
 
 			uni.getProvider({
 				service: "share",
@@ -86,16 +109,23 @@
 			if(this.fetchPageNum > 20){
 				this.loadMoreText = "没有更多了"
 				return;
+			}else{
+				uni.showToast({
+					title: "加载中...",
+					icon: "none",
+				})				
 			}
 			this.getData();
 		},
-		computed: mapState(['userInfo','roomid','hasLogin']),
+		computed: mapState(['userInfo','hasLogin']),
 		methods: {
-			...mapMutations(['getroomid','setroomid']),
-			getData(par) {
+			
+			getData(e) {
 				const data = {
 					action:"medialist",
+					orderby:"idx asc",
 					roomid:this.roomid,
+					pageid:this.fetchPageNum
 				}
 				let that = this;
 				uni.request({
@@ -118,7 +148,8 @@
 								})
 								return;
 							}
-							if (that.refreshing && ret.medialist[0].id === that.lists[0][0].id) {
+							if (that.refreshing && ret.medialist[0].id === that.lists[0].id) {
+								
 								uni.showToast({
 									title: "已经最新",
 									icon: "none",
@@ -128,7 +159,14 @@
 								return;
 							}
 							
+							
 							let lists = ret.data.medialist;
+							if(lists.length == 0){
+								uni.showToast({
+									title: "没有更多了！",
+									icon: "none",
+								})								
+							}
 							console.log("list页面得到lists", lists);
 							if (that.refreshing) {
 								that.refreshing = false;
@@ -140,18 +178,15 @@
 								that.lists = that.lists.concat(lists);
 								that.fetchPageNum += 1;
 							}
-							that.fetchPageNum += 1;
+							//that.fetchPageNum += 1;
 						}
 					}
 				});
 			},
 			goDetail(e) {
-				//uni.navigateTo({
-				//	url: "../detail/detail?data=" + encodeURIComponent(JSON.stringify(e))
-				//})
 				if(this.hasLogin == 1){
 					const data ={
-						cmd:"pulldlghis",
+						cmd:"pulldlghis117",
 						data:e,
 						ui:this.userInfo,
 					}
