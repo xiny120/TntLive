@@ -22,6 +22,7 @@
 #include "DlgRtmpPull.h"
 #include "xdefines.h"
 #include "CDlgFlvPlayer.h"
+#include "webapi.h"
 
 // DlgRtmpPull 对话框
 HWND	m_hWndPullDlg;
@@ -97,6 +98,7 @@ void DlgRtmpPull::OnClose() {
 BOOL DlgRtmpPull::OnInitDialog() {
 	CDialog::OnInitDialog();
 	CMenu* pSysMenu = GetSystemMenu(FALSE);
+	webapi::me();
 	if (pSysMenu != NULL){
 #ifdef _DEBUG
 		pSysMenu->AppendMenu(MF_STRING, IDR_MENU_SYS_MORE_SHOWDEVTOOLS, L"开发者工具");
@@ -107,16 +109,6 @@ BOOL DlgRtmpPull::OnInitDialog() {
 	m_hWndPullDlg = GetSafeHwnd();
 	srand(time(NULL));
 	brush.CreateSolidBrush(RGB(0, 0, 0));
-
-	//m_pDlgVideoMain = new DlgVideo(this);
-	//m_pDlgVideoMain->Create(DlgVideo::IDD, this);
-	//m_pDlgVideoMain->ShowWindow(SW_HIDE);
-	//CRect rc;
-	//m_myStatic.GetWindowRect(rc);
-	//m_staticCaptrue.ShowWindow(SW_HIDE);
-	//ScreenToClient(rc);
-	//m_pDlgVideoMain->SetWindowPos(NULL, rc.left, rc.top, rc.Width(), rc.Height(), SWP_SHOWWINDOW);
-
 	CRect rc1;
 	GetClientRect(rc1);
 	m_nVideoWidth = rc1.Width() - m_nChatroomWidth;

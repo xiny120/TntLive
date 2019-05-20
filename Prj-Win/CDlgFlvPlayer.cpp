@@ -7,17 +7,22 @@
 #include "CDlgFlvPlayer.h"
 #include "afxdialogex.h"
 #include "xdefines.h"
+#include <thread>
+#include <wininet.h>
+#include "webapi.h"
 
-
+#pragma warning (disable:4996)
 extern int gUserId;
 extern std::string m_baseurl;
 // CDlgFlvPlayer 对话框
+static std::wstring apiServer = L"http://gpk01.gwgz.com:8091";
 
 IMPLEMENT_DYNAMIC(CDlgFlvPlayer, CDialogEx)
 
 CDlgFlvPlayer::CDlgFlvPlayer(CWnd* pParent /*=nullptr*/,const std::string& info)
 	: CDialogEx(IDD_DLG_FLVPLAYER, pParent)
 	, minfo(info)
+	, mReady(FALSE)
 	, m_pPlayer(NULL)
 {
 
@@ -38,6 +43,7 @@ BEGIN_MESSAGE_MAP(CDlgFlvPlayer, CDialogEx)
 	ON_BN_CLICKED(IDCANCEL, &CDlgFlvPlayer::OnBnClickedCancel)
 	ON_MESSAGE(WM_PULLDLG_RESIZE, &OnPullDlgResize)
 	ON_MESSAGE(WM_PULLDLG_SEEKTO, &CDlgFlvPlayer::OnPullDlgSeekto)
+	ON_MESSAGE(WM_DLGFLVPLAYER_PLAY, OnDlgFlvPlayer_Play)
 	ON_WM_GETMINMAXINFO()
 	ON_WM_SIZE()
 	ON_WM_DWMWINDOWMAXIMIZEDCHANGE()
@@ -72,6 +78,91 @@ void CDlgFlvPlayer::OnBnClickedCancel()
 	}
 }
 
+LRESULT CDlgFlvPlayer::OnDlgFlvPlayer_Play(WPARAM wp,LPARAM lp) {
+	char* pbuf1 = (char*)wp;
+	char* pbuf2 = (char*)lp;
+	CefRefPtr<CefValue> jsonObject = CefParseJSON(pbuf1, JSON_PARSER_ALLOW_TRAILING_COMMAS);
+	if (jsonObject->IsValid()) {
+		CefRefPtr<CefDictionaryValue> dict = jsonObject->GetDictionary();
+		CefString token = dict->GetString("cmd");
+		CefRefPtr<CefDictionaryValue> data = dict->GetDictionary("data");
+		CefString createdate = data->GetString("CreateDate");
+		CefString id = data->GetString("Id");
+		CefString filepath = data->GetString("FilePath");
+		CefString nickname = data->GetString("NickName");
+		CefString filename = data->GetString("FileName");
+		std::wstring nn = nickname.ToWString();
+		std::wstring fn = filename.ToWString();
+		nn.erase(nn.find_last_not_of(' ') + 1);
+		int32_t enc = data->GetInt("Encryptioned");
+		std::string strid = id.ToString();
+		data = dict->GetDictionary("ui");
+		CefString sessionid = data->GetString("SessionId");
+		//CefString token = data->GetString("Token");
+		int userid = gUserId = data->GetInt("UserId");
+		CStringA strId;
+		strId.Format("%d", gUserId);
+
+		char enckey = 0;
+
+		CefRefPtr<CefValue> jsonObject = CefParseJSON(pbuf2, JSON_PARSER_ALLOW_TRAILING_COMMAS);
+		if (jsonObject->IsValid()) {
+			CefRefPtr<CefDictionaryValue> dict = jsonObject->GetDictionary();
+			CefRefPtr<CefDictionaryValue> resdata = dict->GetDictionary("data");
+			enckey = resdata->GetInt("EncKey");
+		}
+
+
+		std::string title;
+		if (fn == nn) {
+			std::string fp(filepath);
+			int lasti = fp.length();
+			std::string parts[5];
+			int idx = 0;
+			for (int i = fp.length() - 1; i >= 0; i--) {
+				if (fp[i] == '/' || fp[i] == '\\') {
+					parts[idx] = fp.substr(i + 1, lasti - i - 1);
+					lasti = i;
+					idx++;
+					if (idx > 4)
+						break;
+				}
+			}
+
+
+			title.append(parts[2]);
+			title.append("年");
+			title.append(parts[1]);
+			title.append("月");
+			title.append(parts[0].substr(0, 2));
+			title.append("日");
+			title.append(parts[0].substr(2, 2));
+			title.append("时");
+			title.append(parts[0].substr(4, 2));
+			title.append("分");
+			title.append(parts[0].substr(6, 2));
+			title.append("秒 - 直播录像");
+			this->SetWindowText(CA2W(title.c_str()));
+		}
+		else {
+			SetWindowText(nickname.ToWString().c_str());
+		}
+
+		m_pPlayer = RTMPGuester::Create(*this);
+		std::string url = "http://gpk01.gwgz.com:8862/";
+		url = url + std::string(filepath);
+
+		m_pPlayer->StartRtmpPlay(url.c_str(), GetDlgItem(IDC_STATIC_VIDEO)->GetSafeHwnd(), "flv", "", enc, enckey, strId.GetBuffer(), (const short**)theApp.m_soundMarker, theApp.m_iSoundMarker);
+
+	}
+
+
+
+	delete[] pbuf1;
+	delete[] pbuf2;
+	return TRUE;
+}
+
 
 BOOL CDlgFlvPlayer::OnInitDialog(){
 	CDialogEx::OnInitDialog();
@@ -79,9 +170,10 @@ BOOL CDlgFlvPlayer::OnInitDialog(){
 	m_playerBar = new CDlgPlayerBar(this);
 	m_playerBar->Create(IDD_DLG_PLAYERBAR, this);
 	m_playerBar->ShowWindow(SW_HIDE);
-
-
 	// TODO:  在此添加额外的初始化
+	std::string str1 = minfo;
+	webapi::me();
+
 	if (!minfo.empty()) {
 		TRACE(minfo.c_str());
 		CefRefPtr<CefValue> jsonObject = CefParseJSON(minfo, JSON_PARSER_ALLOW_TRAILING_COMMAS);
@@ -99,52 +191,72 @@ BOOL CDlgFlvPlayer::OnInitDialog(){
 				std::wstring fn = filename.ToWString();
 				nn.erase(nn.find_last_not_of(' ') + 1);
 				int32_t enc = data->GetInt("Encryptioned");
-				char enckey = 0;
-				std::string title;
-				if (fn == nn) {
-					std::string fp(filepath);
-					int lasti = fp.length();
-					std::string parts[5];
-					int idx = 0;
-					for (int i = fp.length() - 1; i >= 0; i--) {
-						if (fp[i] == '/' || fp[i] == '\\') {
-							parts[idx] = fp.substr(i + 1, lasti - i - 1);
-							lasti = i;
-							idx++;
-							if (idx > 4)
-								break;
-						}
-					}
-
-					
-					title.append(parts[2]);
-					title.append("年");
-					title.append(parts[1]);
-					title.append("月");
-					title.append(parts[0].substr(0, 2));
-					title.append("日");
-					title.append(parts[0].substr(2, 2));
-					title.append("时");
-					title.append(parts[0].substr(4, 2));
-					title.append("分");
-					title.append(parts[0].substr(6, 2));
-					title.append("秒 - 直播录像");
-				this->SetWindowText(CA2W(title.c_str()));
-				}
-				else {
-					SetWindowText(nickname.ToWString().c_str());
-				}
+				std::string strid = id.ToString();
 				data = dict->GetDictionary("ui");
 				CefString sessionid = data->GetString("SessionId");
 				CefString token = data->GetString("Token");
-				gUserId = data->GetInt("UserId");
+				int userid = gUserId = data->GetInt("UserId");
 				CStringA strId;
-				strId.Format("%d",gUserId);
-				m_pPlayer = RTMPGuester::Create(*this);
-				std::string url = "http://gpk01.gwgz.com:8862/";
-				url = url + std::string(filepath);
-				
-				m_pPlayer->StartRtmpPlay(url.c_str(), GetDlgItem(IDC_STATIC_VIDEO)->GetSafeHwnd(), "flv", "", enc,enckey,strId.GetBuffer(),(const short**)theApp.m_soundMarker,theApp.m_iSoundMarker);
+				strId.Format("%d", gUserId);
+				HWND hWndThis = GetSafeHwnd();
+				std::thread t1([hWndThis,str1,strid,sessionid,userid]() {
+					std::string par;
+					std::stringstream ss;
+					ss << "{\"action\":\"caniplay\",\"id\":\"" << strid << "\"}";
+					std::string ret = webapi::me()->post("http://gpk01.gwgz.com:8091/api/1.00/private",(char*)sessionid.ToString().c_str() ,(char*)ss.str().c_str());
+					char* pbuf1 = new char[str1.length() + 1];
+					strcpy(pbuf1, str1.c_str());
+					char* pbuf2 = new char[ret.length() + 1];
+					strcpy(pbuf2, ret.c_str());
+					::PostMessage(hWndThis, WM_DLGFLVPLAYER_PLAY,(WPARAM)pbuf1,(LPARAM)pbuf2);
+				});
+
+				t1.detach();
+
+				if (0) {
+
+					char enckey = 0;
+					std::string title;
+					if (fn == nn) {
+						std::string fp(filepath);
+						int lasti = fp.length();
+						std::string parts[5];
+						int idx = 0;
+						for (int i = fp.length() - 1; i >= 0; i--) {
+							if (fp[i] == '/' || fp[i] == '\\') {
+								parts[idx] = fp.substr(i + 1, lasti - i - 1);
+								lasti = i;
+								idx++;
+								if (idx > 4)
+									break;
+							}
+						}
+
+
+						title.append(parts[2]);
+						title.append("年");
+						title.append(parts[1]);
+						title.append("月");
+						title.append(parts[0].substr(0, 2));
+						title.append("日");
+						title.append(parts[0].substr(2, 2));
+						title.append("时");
+						title.append(parts[0].substr(4, 2));
+						title.append("分");
+						title.append(parts[0].substr(6, 2));
+						title.append("秒 - 直播录像");
+						this->SetWindowText(CA2W(title.c_str()));
+					}
+					else {
+						SetWindowText(nickname.ToWString().c_str());
+					}
+
+					m_pPlayer = RTMPGuester::Create(*this);
+					std::string url = "http://gpk01.gwgz.com:8862/";
+					url = url + std::string(filepath);
+
+					m_pPlayer->StartRtmpPlay(url.c_str(), GetDlgItem(IDC_STATIC_VIDEO)->GetSafeHwnd(), "flv", "", enc, enckey, strId.GetBuffer(), (const short**)theApp.m_soundMarker, theApp.m_iSoundMarker);
+				}
 			}
 		}
 	}
@@ -166,6 +278,7 @@ void CDlgFlvPlayer::OnRtmplayerPlayStop() {
 	TRACE("CDlgFlvPlayer::OnRtmplayerPlayStop\r\n");
 }
 void CDlgFlvPlayer::OnRtmplayer1stVideo() {
+	mReady = TRUE;
 	m_myStatic.SetLiving(99);
 	TRACE("CDlgFlvPlayer::OnRtmplayer1stVideo\r\n");
 }
@@ -234,10 +347,12 @@ void CDlgFlvPlayer::OnTimer(UINT_PTR nIDEvent){
 
 void CDlgFlvPlayer::OnMouseMove(UINT nFlags, CPoint point){
 	static CPoint lastPoint;
-	if (abs(point.x - lastPoint.x) > 5 || abs(point.y - lastPoint.y) > 5) {
-		m_playerBar->ShowWindow(SW_SHOW);
+	if (mReady) {
+		if (abs(point.x - lastPoint.x) > 5 || abs(point.y - lastPoint.y) > 5) {
+			m_playerBar->ShowWindow(SW_SHOW);
+		}
+		lastPoint = point;
 	}
-	lastPoint = point;
 	__super::OnMouseMove(nFlags, point);
 }
 

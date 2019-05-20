@@ -41,6 +41,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import org.anyrtc.core.AnyRTMP;
+import org.anyrtc.core.RTMPGuestKit;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -174,26 +176,87 @@ public class MainActivity extends AppCompatActivity {
            // localBuilder.setCancelable(false);
             //localBuilder.create().show();
             try {
-                //final String msg = message;
                 JSONObject obj = new JSONObject(message);
                 String cmd = obj.getString("cmd");
                 if(cmd.equals("pulldlghis117") || cmd.equals("pulldlghisgp")){ // history
-                    //JSONObject objData = obj.getJSONObject("data");
-                    //String pulluri = objData.getString("pulluri");
-                    //final String id = objData.getString("Id");
-                    //int enc = objData.getInt("Encryptioned");
-                    //objData = obj.getJSONObject("ui");
-                    //final String sid = objData.getString("SessionId");
-                    try {
-                        Intent it = new Intent(getApplicationContext(), FlvPlayerActivity.class);
-                        Bundle bd = new Bundle();
-                        bd.putString("minfo", message);
-                        it.putExtras(bd);
-                        startActivity(it);
-                    }catch (Exception e1){
-                        Log.i("",e1.toString());
-                    }
+                    final String info1 = message;
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                JSONObject obj = new JSONObject(info1);
+                                JSONObject objData = obj.getJSONObject("data");
+                                String id = objData.getString("Id");
+                                String pulluri = objData.getString("FilePath");
+                                int enc = objData.getInt("Encryptioned");
+                                char enckey = 0;
+                                objData = obj.getJSONObject("ui");
+                                int userid = objData.getInt("UserId");
+                                String sid = objData.getString("SessionId");
 
+                                JSONObject data = new JSONObject();
+                                try {
+                                    data.put("action", "caniplay");
+                                    data.put("id", id);
+                                } catch (Exception e) {
+
+                                }
+                                URL url = new URL(MyApplication.apiServer + "/api/1.00/private");//放网站
+                                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+                                httpURLConnection.setRequestMethod("POST");
+                                httpURLConnection.setRequestProperty("Content-Type", "application/json");
+                                httpURLConnection.setRequestProperty("mster-token", sid);
+                                OutputStream ots = httpURLConnection.getOutputStream();
+                                ots.write(data.toString().getBytes());
+                                InputStream inputStream = httpURLConnection.getInputStream();
+                                InputStreamReader reader = new InputStreamReader(inputStream, "UTF-8");
+                                BufferedReader bufferedReader = new BufferedReader(reader);
+                                final StringBuffer buffer = new StringBuffer();
+                                String temp = null;
+                                while ((temp = bufferedReader.readLine()) != null) {
+                                    buffer.append(temp);
+                                }
+                                bufferedReader.close();//记得关闭
+                                reader.close();
+                                inputStream.close();
+                                Log.e("MAIN", buffer.toString());//打印结果
+                                runOnUiThread(new Runnable() {
+                                    public void run() {
+                                        try {
+                                            JSONObject res = new JSONObject(buffer.toString());
+                                            if (res.getInt("status") == 0 ) {
+                                                JSONObject resdata = res.getJSONObject("data");
+                                                if(resdata != null) {
+                                                    try {
+                                                        Intent it = new Intent(getApplicationContext(), FlvPlayerActivity.class);
+                                                        Bundle bd = new Bundle();
+                                                        bd.putString("minfo", info1);
+                                                        bd.putString("res", buffer.toString());
+                                                        it.putExtras(bd);
+                                                        startActivity(it);
+                                                    }catch (Exception e1){
+                                                        Log.i("",e1.toString());
+                                                    }
+                                                }else{
+                                                    Toast.makeText(getApplicationContext(), "播放数据为空！", Toast.LENGTH_LONG).show();
+                                                }
+                                            } else {
+                                                Toast.makeText(getApplicationContext(), res.getString("msg"), Toast.LENGTH_LONG).show();
+                                            }
+                                        } catch (Exception e1) {
+
+                                        }
+                                    }
+                                });
+                            }catch (JSONException je){
+                                je.printStackTrace();
+                            } catch (MalformedURLException e) {
+                                e.printStackTrace();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
                 }else { //living
                     JSONObject objData = obj.getJSONObject("data");
                     String pulluri = objData.getString("pulluri");

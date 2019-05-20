@@ -5,6 +5,8 @@ import android.app.Application;
 import android.content.res.Resources;
 import android.util.Log;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -93,5 +95,10 @@ public class MyApplication extends Application {
     //实现getname()方法，获取变量的值
     public String getname() {
         return nameString;
+    }
+
+    static public String canipaly(String info){
+        String ret = "";
+        return ret;
     }
 }

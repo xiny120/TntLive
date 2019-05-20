@@ -250,6 +250,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="resource.h" />
     <ClInclude Include="simple_app.h" />
     <ClInclude Include="simple_handler.h" />
+    <ClInclude Include="webapi.h" />
     <ClInclude Include="xdefines.h" />
   </ItemGroup>
   <ItemGroup>
@@ -266,6 +267,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="simple_handler_win.cc" />
+    <ClCompile Include="webapi.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="LiveWin32.rc" />

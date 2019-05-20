@@ -340,8 +340,13 @@ void httpclient::run() {
 				WCLOG(LS_ERROR) << "file download part one:" << pi->filelocal << " filesize:" << pi->ui.locallen << "(" << pi->ui.totallen << ")";
 				std::lock_guard<std::recursive_mutex> gs(this->sockmt);
 				_qpull.pop_front();
-				pi->ui.failtimes++;
-				_qpull.push_back(pi);
+				if (mpause) {
+					delete pi;
+				}
+				else {
+					pi->ui.failtimes++;
+					_qpull.push_back(pi);
+				}
 
 			} while (false);
 #ifdef _WIN32
@@ -397,14 +402,14 @@ bool httpclient::urlparse(std::string urlin, urlitem & out) {
 	std::string temp;
 	int idx = 0;
 	out.url = urlin;
-	// ���ҡ�?��
+	//
 	out.fullpath = urlin;
 	pos = urlin.find('?', 0);
 	if (pos >= 0) {
 		out.fullpath = urlin.substr(0, pos);
 		out.query = urlin.substr(pos+1);
 	}
-	// ����query�� & �ָ�����ԣ���=�ָ� k-v
+	//
 	lastpos = 0;
 	for (i = 0; i < out.query.length(); i++) {
 		if (out.query[i] == '&') {
@@ -480,7 +485,7 @@ bool httpclient::urlparse(std::string urlin, urlitem & out) {
 
 // url Ҫ���ص��ļ���url, localfile ���غ󱾵ر�����ļ��������Ϊ�գ����ؾͷ���url�е��ļ����� localpath,���ر����Ŀ¼��
 bool httpclient::get(const std::string url, std::string& localfile_,const std::string localpath, int32_t encryption) {
-	mpause = false;
+	pause();
 	bool ret = false;
 	pullitem *pi = new pullitem();
 	pi->encryption = encryption;
