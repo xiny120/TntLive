@@ -32,7 +32,7 @@ public:
 	uint16_t port; // 8080
 	std::string path; // /file/beautileg/samansha/201901011506.jpg
 	std::string pathdir; // /file/beautileg/samasha
-	std::string file; // 201901011506.jpg #�Ż�û��������������
+	std::string file; // 201901011506.jpg 
 	std::list<std::string> ip;	// dns result for www.pic98.com
 	std::string officalhost;
 	std::list<std::string> aliases;	// dns result for www.pic98.com
@@ -73,7 +73,7 @@ public:
 	void pause() { mpause = true; };
 	void start() { mpause = false; };
 private:
-	//���ݴ��������ڴ�
+	
 	virtual void run();
 	bool mrun;
 	bool mpause;

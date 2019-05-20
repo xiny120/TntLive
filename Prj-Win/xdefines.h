@@ -8,6 +8,7 @@
 #define WM_PULLDLG WM_USER + 0x100
 #define WM_PULLDLG_RESIZE WM_USER + 0x101
 #define WM_PULLDLG_SEEKTO	WM_USER + 0x102
+#define WM_DLGFLVPLAYER_PLAY WM_USER + 0x103
 
 class CPullDlgData {
 private:

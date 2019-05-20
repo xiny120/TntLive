@@ -54,6 +54,9 @@
     <ClInclude Include="DlgPlayerBar.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="webapi.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LiveWin32.cpp">
@@ -87,6 +90,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="DlgPlayerBar.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="webapi.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -27,6 +27,7 @@ public:
 	afx_msg void OnBnClickedCancel();
 	void AdjPlayBarPos(LPRECT pRect);
 private:
+	BOOL mReady;
 	std::string minfo;
 	RTMPGuester		*m_pPlayer;
 	int m_iUserId;
@@ -68,6 +69,7 @@ public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg LRESULT OnPullDlgResize(WPARAM, LPARAM);
 	afx_msg LRESULT OnPullDlgSeekto(WPARAM, LPARAM);
+	afx_msg LRESULT OnDlgFlvPlayer_Play(WPARAM, LPARAM);
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
 	afx_msg void OnWindowMaximizedChange(BOOL bIsMaximized);
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
