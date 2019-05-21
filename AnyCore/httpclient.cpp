@@ -483,7 +483,6 @@ bool httpclient::urlparse(std::string urlin, urlitem & out) {
 	return true;
 }
 
-// url Ҫ���ص��ļ���url, localfile ���غ󱾵ر�����ļ��������Ϊ�գ����ؾͷ���url�е��ļ����� localpath,���ر����Ŀ¼��
 bool httpclient::get(const std::string url, std::string& localfile_,const std::string localpath, int32_t encryption) {
 	pause();
 	bool ret = false;

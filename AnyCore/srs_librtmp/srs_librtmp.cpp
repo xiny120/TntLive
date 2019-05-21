@@ -11639,6 +11639,8 @@ int ISrsLog::initialize()
 
 void ISrsLog::verbose(const char* tag, int context_id, const char* fmt, ...)
 {
+#ifdef _DEBUG
+
 #ifdef  _WIN32
 	char strBuffer[4096] = { 0 };
 	char buf[512] = { 0 };
@@ -11663,10 +11665,12 @@ void ISrsLog::verbose(const char* tag, int context_id, const char* fmt, ...)
 	OutputDebugStringA(strBuffer);
 
 #endif //  _WIN32
+#endif // DEBUG
 }
 
 void ISrsLog::info(const char* tag, int context_id, const char* fmt, ...)
 {
+#ifdef _DEBUG
 #ifdef  _WIN32
 	char strBuffer[4096] = { 0 };
 	char buf[512] = { 0 };
@@ -11691,10 +11695,12 @@ void ISrsLog::info(const char* tag, int context_id, const char* fmt, ...)
 	OutputDebugStringA(strBuffer);
 
 #endif //  _WIN32
+#endif
 }
 
 void ISrsLog::trace(const char* tag, int context_id, const char* fmt, ...)
 {
+#ifdef _DEBUG
 #ifdef  _WIN32
 	char strBuffer[4096] = { 0 };
 	char buf[512] = { 0 };
@@ -11719,10 +11725,12 @@ void ISrsLog::trace(const char* tag, int context_id, const char* fmt, ...)
 	OutputDebugStringA(strBuffer);
 
 #endif //  _WIN32
+#endif
 }
 
 void ISrsLog::warn(const char* tag, int context_id, const char* fmt, ...)
 {
+#ifdef _DEBUG
 #ifdef  _WIN32
 	char strBuffer[4096] = { 0 };
 	char buf[512] = { 0 };
@@ -11747,10 +11755,12 @@ void ISrsLog::warn(const char* tag, int context_id, const char* fmt, ...)
 	OutputDebugStringA(strBuffer);
 
 #endif //  _WIN32	
+#endif
 }
 
 void ISrsLog::error(const char* tag, int context_id, const char* fmt, ...)
 {
+#ifdef _DEBUG
 #ifdef  _WIN32
 	char strBuffer[4096] = { 0 };
 	char buf[512] = { 0 };
@@ -11775,6 +11785,7 @@ void ISrsLog::error(const char* tag, int context_id, const char* fmt, ...)
 	OutputDebugStringA(strBuffer);
 	
 #endif //  _WIN32
+#endif
 
 }
 

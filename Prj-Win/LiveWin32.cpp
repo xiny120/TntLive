@@ -65,7 +65,8 @@ CLiveWin32App::CLiveWin32App():CWinApp(L"怪秀直播"){
 // 唯一的一个 CLiveWin32App 对象
 
 CLiveWin32App theApp;
-std::string m_baseurl = "http://210.192.107.62:8080/";
+std::string m_baseurl = "http://gpk01.gwgz.com/";
+std::string m_apiurl = "http://gpk01.gwgz.com:8092/";
 
 
 CString GetModuleDir()

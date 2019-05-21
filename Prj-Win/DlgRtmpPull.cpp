@@ -364,7 +364,8 @@ LRESULT DlgRtmpPull::OnPullDlg(WPARAM, LPARAM) {
 					return TRUE;
 				}
 				Stop();
-				CDlgFlvPlayer dlg(this, str);
+				CWnd* pWnd = AfxGetMainWnd();
+				CDlgFlvPlayer dlg(NULL, str);
 				dlg.DoModal();
 				Start();
 			}
@@ -374,8 +375,9 @@ LRESULT DlgRtmpPull::OnPullDlg(WPARAM, LPARAM) {
 					AfxMessageBox(L"直播进行中，不能查看直播录像！请直播完毕后查看！");
 					return TRUE;
 				}
+				CWnd* pWnd = AfxGetMainWnd();
 				//Stop();
-				CDlgFlvPlayer dlg(this, str);
+				CDlgFlvPlayer dlg(NULL, str);
 				dlg.DoModal();
 				//Start();
 			}

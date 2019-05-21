@@ -151,8 +151,16 @@ LRESULT CDlgFlvPlayer::OnDlgFlvPlayer_Play(WPARAM wp,LPARAM lp) {
 		m_pPlayer = RTMPGuester::Create(*this);
 		std::string url = "http://gpk01.gwgz.com:8862/";
 		url = url + std::string(filepath);
+		char path[1024] = { 0 };
+		::GetModuleFileNameA(NULL, path, sizeof(path));
+		for (int i = strlen(path); i >= 0; i--) {
+			if (path[i] == '/' || path[i] == '\\') {
+				path[i] = 0;
+				break;
+			}
+		}
 
-		m_pPlayer->StartRtmpPlay(url.c_str(), GetDlgItem(IDC_STATIC_VIDEO)->GetSafeHwnd(), "flv", "", enc, enckey, strId.GetBuffer(), (const short**)theApp.m_soundMarker, theApp.m_iSoundMarker);
+		m_pPlayer->StartRtmpPlay(url.c_str(), GetDlgItem(IDC_STATIC_VIDEO)->GetSafeHwnd(), "flv", path, enc, enckey, strId.GetBuffer(), (const short**)theApp.m_soundMarker, theApp.m_iSoundMarker);
 
 	}
 
@@ -180,7 +188,7 @@ BOOL CDlgFlvPlayer::OnInitDialog(){
 		if (jsonObject->IsValid()){
 			CefRefPtr<CefDictionaryValue> dict = jsonObject->GetDictionary();
 			CefString token = dict->GetString("cmd");
-			if (token == "pulldlghis117" || token == "pulldlghisgp") {
+			if (token == "pulldlghis117" || token == "pulldlghisgp" || token == "pulldlghis" ) {
 				CefRefPtr<CefDictionaryValue> data = dict->GetDictionary("data");
 				CefString createdate = data->GetString("CreateDate");
 				CefString id = data->GetString("Id");
@@ -203,7 +211,7 @@ BOOL CDlgFlvPlayer::OnInitDialog(){
 					std::string par;
 					std::stringstream ss;
 					ss << "{\"action\":\"caniplay\",\"id\":\"" << strid << "\"}";
-					std::string ret = webapi::me()->post("http://gpk01.gwgz.com:8091/api/1.00/private",(char*)sessionid.ToString().c_str() ,(char*)ss.str().c_str());
+					std::string ret = webapi::me()->post("http://gpk01.gwgz.com:8092/api/1.00/private",(char*)sessionid.ToString().c_str() ,(char*)ss.str().c_str());
 					char* pbuf1 = new char[str1.length() + 1];
 					strcpy(pbuf1, str1.c_str());
 					char* pbuf2 = new char[ret.length() + 1];

@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "RtmpGuester.h"
-#include "CMyStatic.h"
+#include "CMyStaticHis.h"
 #include "DlgPlayerBar.h"
 
 // CDlgFlvPlayer 对话框
@@ -31,7 +31,7 @@ private:
 	std::string minfo;
 	RTMPGuester		*m_pPlayer;
 	int m_iUserId;
-	CMyStatic	m_myStatic;
+	CMyStaticHis	m_myStatic;
 	CDlgPlayerBar	*m_playerBar;
 	//char*				m_pAudioMarker;
 	//short*				m_pAudioMarketOut;
