@@ -46,7 +46,7 @@
 				loadMoreText:"",
 				lists: [],
 				id: 0,
-				fetchPageNum: 0,
+				fetchPageNum: 1,
 				roomid:"{2b7e7bfc-2730-49fe-ba43-a3e1043fcc13}"
 				
 			}

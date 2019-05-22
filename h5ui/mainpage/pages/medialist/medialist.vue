@@ -29,18 +29,15 @@
 				loadMoreText:"",
 				lists: [],
 				id: 0,
-				fetchPageNum: 0,
+				fetchPageNum: 1,
 			}
 		},
 		onLoad(e) {
 			this.getroomid();
-			//uni.setNavigationBarTitle({
-			//	title: "专题：" + e.type
-			//})
 			this.id = e.id;
 			setTimeout(() => { //防止app里由于渲染导致转场动画卡顿
 				this.getData();
-			}, 300)			
+			}, 150)			
 
 			uni.getProvider({
 				service: "share",
@@ -118,7 +115,7 @@
 								})
 								return;
 							}
-							if (that.refreshing && ret.medialist[0].id === that.lists[0][0].id) {
+							if (that.refreshing && ret.medialist[0].id === that.lists[0].id) {
 								uni.showToast({
 									title: "已经最新",
 									icon: "none",
@@ -140,7 +137,7 @@
 								that.lists = that.lists.concat(lists);
 								that.fetchPageNum += 1;
 							}
-							that.fetchPageNum += 1;
+							
 						}
 					}
 				});

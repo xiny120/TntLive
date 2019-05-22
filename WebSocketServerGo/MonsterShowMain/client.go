@@ -274,4 +274,6 @@ func initDB() {
 
 	//cfg.Cfg["tidb"] = "pic98:" + conf[5] + "@tcp(106.14.145.51:4000)/Pic98"
 	cfg.Cfg["mssql"] = connString
+	cfg.Cfg["appid"] = conf[6]
+	cfg.Cfg["secret"] = conf[7]
 }

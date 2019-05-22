@@ -17,6 +17,7 @@ var (
 	actions = map[string](func(http.ResponseWriter, *http.Request, *map[string]interface{})){
 		"auth":     f_auth,
 		"roomlist": f_roomlist,
+		"wxjsinit": f_wxjsinit,
 	}
 )
 
@@ -64,6 +65,30 @@ func Public(w http.ResponseWriter, r *http.Request) {
 		} else {
 			http.Error(w, "NotFound", http.StatusNotFound)
 		}
+	}
+}
+
+type wxjsinit struct {
+	AppId     string //`json:"appId"`
+	Timestamp string //`json:"timestamp"`
+	NonceStr  string //`json:"nonceStr"`
+	Signature string //`json:"signature"`
+}
+
+func f_wxjsinit(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
+	log.Println("f_wxjsinit", *v)
+	res := make(map[string]interface{})
+	res["t"] = "wxjsinit"
+	res["status"] = 0
+	//at := GetAccessToken()
+	//tkt := GetWeiXinJsapi_Ticket()
+	//nostr := CreatenNonce_str()
+	//ts := CreatenTimestamp()
+
+	res["msg"] = "注销成功！"
+	rmsg, err := json.Marshal(res)
+	if err == nil {
+		w.Write(rmsg)
 	}
 }
 

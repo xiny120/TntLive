@@ -7,7 +7,7 @@ import store from './store'
 Vue.config.productionTip = false
 
 Vue.prototype.$store = store
-Vue.prototype.$baseUrl = 'gpk01.gwgz.com:8091';
+Vue.prototype.$baseUrl = 'gpk01.gwgz.com:8092';
 Vue.prototype.$serverUrl = 'http://'+Vue.prototype.$baseUrl;
 Vue.prototype.$wssUrl = 'ws://'+Vue.prototype.$baseUrl;
 
@@ -24,13 +24,14 @@ app.$mount()
 var jweixin = require('jweixin-module');
 //获取微信公众号的配置
 var jweixin_url = Vue.prototype.$serverUrl + "/api/1.00/public"
+var link = location.href;
 uni.request({
 	url: jweixin_url,
 	method: 'POST',
 	dataType:'json',
 	data: {
-		action:"wxjs",
-		url: "",
+		action:"wxjsinit",
+		url: link,
 	},
 	header:{  
 		'content-type':'application/json',

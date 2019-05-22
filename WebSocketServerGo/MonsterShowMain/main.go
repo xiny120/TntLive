@@ -13,7 +13,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var addr = flag.String("addr", ":8091", "http service address")
+var addr = flag.String("addr", ":8092", "http service address")
 
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
