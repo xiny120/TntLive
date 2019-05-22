@@ -64,9 +64,7 @@ void CDlgFlvPlayer::OnBnClickedOk()
 }
 
 
-void CDlgFlvPlayer::OnBnClickedCancel()
-{
-	// TODO: 在此添加控件通知处理程序代码
+void CDlgFlvPlayer::OnBnClickedCancel(){
 	if (AfxMessageBox(L"退出播放？", MB_YESNO) == IDYES) {
 		if (m_pPlayer != nullptr) {
 			m_pPlayer->StopRtmpPlay();
@@ -74,7 +72,6 @@ void CDlgFlvPlayer::OnBnClickedCancel()
 			m_pPlayer = NULL;
 		}
 		CDialogEx::OnCancel();
-		
 	}
 }
 
@@ -111,8 +108,6 @@ LRESULT CDlgFlvPlayer::OnDlgFlvPlayer_Play(WPARAM wp,LPARAM lp) {
 			CefRefPtr<CefDictionaryValue> resdata = dict->GetDictionary("data");
 			enckey = resdata->GetInt("EncKey");
 		}
-
-
 		std::string title;
 		if (fn == nn) {
 			std::string fp(filepath);
@@ -128,8 +123,6 @@ LRESULT CDlgFlvPlayer::OnDlgFlvPlayer_Play(WPARAM wp,LPARAM lp) {
 						break;
 				}
 			}
-
-
 			title.append(parts[2]);
 			title.append("年");
 			title.append(parts[1]);
@@ -159,13 +152,8 @@ LRESULT CDlgFlvPlayer::OnDlgFlvPlayer_Play(WPARAM wp,LPARAM lp) {
 				break;
 			}
 		}
-
 		m_pPlayer->StartRtmpPlay(url.c_str(), GetDlgItem(IDC_STATIC_VIDEO)->GetSafeHwnd(), "flv", path, enc, enckey, strId.GetBuffer(), (const short**)theApp.m_soundMarker, theApp.m_iSoundMarker);
-
 	}
-
-
-
 	delete[] pbuf1;
 	delete[] pbuf2;
 	return TRUE;
@@ -178,10 +166,8 @@ BOOL CDlgFlvPlayer::OnInitDialog(){
 	m_playerBar = new CDlgPlayerBar(this);
 	m_playerBar->Create(IDD_DLG_PLAYERBAR, this);
 	m_playerBar->ShowWindow(SW_HIDE);
-	// TODO:  在此添加额外的初始化
 	std::string str1 = minfo;
 	webapi::me();
-
 	if (!minfo.empty()) {
 		TRACE(minfo.c_str());
 		CefRefPtr<CefValue> jsonObject = CefParseJSON(minfo, JSON_PARSER_ALLOW_TRAILING_COMMAS);
@@ -239,8 +225,6 @@ BOOL CDlgFlvPlayer::OnInitDialog(){
 									break;
 							}
 						}
-
-
 						title.append(parts[2]);
 						title.append("年");
 						title.append(parts[1]);
@@ -258,20 +242,15 @@ BOOL CDlgFlvPlayer::OnInitDialog(){
 					else {
 						SetWindowText(nickname.ToWString().c_str());
 					}
-
 					m_pPlayer = RTMPGuester::Create(*this);
 					std::string url = "http://gpk01.gwgz.com:8862/";
 					url = url + std::string(filepath);
-
 					m_pPlayer->StartRtmpPlay(url.c_str(), GetDlgItem(IDC_STATIC_VIDEO)->GetSafeHwnd(), "flv", "", enc, enckey, strId.GetBuffer(), (const short**)theApp.m_soundMarker, theApp.m_iSoundMarker);
 				}
 			}
 		}
 	}
-
-
 	return TRUE;  // return TRUE unless you set the focus to a control
-				  // 异常: OCX 属性页应返回 FALSE
 }
 
 
@@ -313,7 +292,6 @@ void CDlgFlvPlayer::OnRtmplayerClosed(int errcode) {
 
 
 void CDlgFlvPlayer::OnGetMinMaxInfo(MINMAXINFO* lpMMI) {
-	//设置对话框最小宽度与高度
 	lpMMI->ptMinTrackSize.x = m_nVideoWidth + 40 +  GetSystemMetrics(SM_CXFRAME) * 2;
 	lpMMI->ptMinTrackSize.y = m_nVideoHeight + 20 + GetSystemMetrics(SM_CYSIZE) + GetSystemMetrics(SM_CYFRAME) * 2;
 	__super::OnGetMinMaxInfo(lpMMI);
@@ -327,7 +305,6 @@ LRESULT CDlgFlvPlayer::OnPullDlgSeekto(WPARAM wp, LPARAM lp) {
 LRESULT CDlgFlvPlayer::OnPullDlgResize(WPARAM wp, LPARAM lp) {
 	m_nVideoWidth = wp;
 	m_nVideoHeight = lp;
-	//PostMessage(WM_SIZE, 0, 0);
 	CRect rc;
 	GetClientRect(rc);
 	if (rc.Width() < m_nVideoWidth + 40 + GetSystemMetrics(SM_CXFRAME) * 2) {
@@ -342,8 +319,6 @@ LRESULT CDlgFlvPlayer::OnPullDlgResize(WPARAM wp, LPARAM lp) {
 
 
 void CDlgFlvPlayer::OnWindowMaximizedChange(BOOL bIsMaximized){
-	// 此功能要求 Windows Vista 或更高版本。
-	// _WIN32_WINNT 符号必须 >= 0x0600。
 	__super::OnWindowMaximizedChange(bIsMaximized);
 }
 
