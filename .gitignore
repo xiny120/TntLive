@@ -24,3 +24,6 @@ Prj-Android/app/debug/
 Prj-Android/app/release/
 third_party/openh264/src/test/build/win32/codec_ut/Codec_UT.sln
 out/Win32/Release/
+MediaEnc/MediaEnc/Debug/
+MediaEnc/MediaEnc/temp/
+MediaEnc/Debug/
