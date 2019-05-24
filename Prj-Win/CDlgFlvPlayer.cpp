@@ -23,17 +23,13 @@ CDlgFlvPlayer::CDlgFlvPlayer(CWnd* pParent /*=nullptr*/,const std::string& info)
 	: CDialogEx(IDD_DLG_FLVPLAYER, pParent)
 	, minfo(info)
 	, mReady(FALSE)
-	, m_pPlayer(NULL)
-{
-
+	, m_pPlayer(NULL){
 }
 
-CDlgFlvPlayer::~CDlgFlvPlayer()
-{
+CDlgFlvPlayer::~CDlgFlvPlayer(){
 }
 
-void CDlgFlvPlayer::DoDataExchange(CDataExchange* pDX)
-{
+void CDlgFlvPlayer::DoDataExchange(CDataExchange* pDX){
 	CDialogEx::DoDataExchange(pDX);
 }
 
@@ -53,13 +49,7 @@ BEGIN_MESSAGE_MAP(CDlgFlvPlayer, CDialogEx)
 	ON_WM_MOVING()
 END_MESSAGE_MAP()
 
-
-// CDlgFlvPlayer 消息处理程序
-
-
-void CDlgFlvPlayer::OnBnClickedOk()
-{
-	// TODO: 在此添加控件通知处理程序代码
+void CDlgFlvPlayer::OnBnClickedOk(){
 	//CDialogEx::OnOK();
 }
 
@@ -106,7 +96,8 @@ LRESULT CDlgFlvPlayer::OnDlgFlvPlayer_Play(WPARAM wp,LPARAM lp) {
 		if (jsonObject->IsValid()) {
 			CefRefPtr<CefDictionaryValue> dict = jsonObject->GetDictionary();
 			CefRefPtr<CefDictionaryValue> resdata = dict->GetDictionary("data");
-			enckey = resdata->GetInt("EncKey");
+			if(resdata != nullptr)
+				enckey = resdata->GetInt("EncKey");
 		}
 		std::string title;
 		if (fn == nn) {
@@ -174,6 +165,7 @@ BOOL CDlgFlvPlayer::OnInitDialog(){
 		if (jsonObject->IsValid()){
 			CefRefPtr<CefDictionaryValue> dict = jsonObject->GetDictionary();
 			CefString token = dict->GetString("cmd");
+			
 			if (token == "pulldlghis117" || token == "pulldlghisgp" || token == "pulldlghis" ) {
 				CefRefPtr<CefDictionaryValue> data = dict->GetDictionary("data");
 				CefString createdate = data->GetString("CreateDate");
@@ -193,11 +185,15 @@ BOOL CDlgFlvPlayer::OnInitDialog(){
 				CStringA strId;
 				strId.Format("%d", gUserId);
 				HWND hWndThis = GetSafeHwnd();
-				std::thread t1([hWndThis,str1,strid,sessionid,userid]() {
+				std::thread t1([hWndThis,str1,strid,sessionid,userid, token]() {
+					std::string posturl = "http://gpk01.gwgz.com:8092/api/1.00/private";
+					if (token == "pulldlghis117") {
+						posturl = "http://gpk01.gwgz.com:8092/api/1.00/public";
+					}
 					std::string par;
 					std::stringstream ss;
 					ss << "{\"action\":\"caniplay\",\"id\":\"" << strid << "\"}";
-					std::string ret = webapi::me()->post("http://gpk01.gwgz.com:8092/api/1.00/private",(char*)sessionid.ToString().c_str() ,(char*)ss.str().c_str());
+					std::string ret = webapi::me()->post((char*)posturl.c_str(),(char*)sessionid.ToString().c_str() ,(char*)ss.str().c_str());
 					char* pbuf1 = new char[str1.length() + 1];
 					strcpy(pbuf1, str1.c_str());
 					char* pbuf2 = new char[ret.length() + 1];

@@ -7,6 +7,8 @@
 #include "MediaEncDlg.h"
 #include "afxdialogex.h"
 #include <versionhelpers.h>
+
+
 #ifdef __cplusplus  
 extern "C" {
 #endif  
@@ -232,7 +234,10 @@ void CMediaEncDlg::OnBnClickedOk(){
 		m_curTime.GetTime(tNow);
 		CString strNow = tNow.Format(L"%d%H%M%S");
 		
-		strTemp0 = L"./temp/"+ strNow + L"000.flv";
+		CString strFileName = tNow.Format(L"%d%H%M%S000.flv");
+		CString strFilePath = tNow.Format(L"live/livestream/%Y/%m/") + strFileName;
+		strTemp0 = L"./temp/"+ strFileName;
+
 		RunExe(strTemp1, L" -vcodec copy -c:a aac -ar 12000 ", strTemp0);
 		::DeleteFile(strTemp1);
 		::CopyFile(strTemp0, strTemp0 + ".bak", FALSE);
@@ -257,10 +262,38 @@ void CMediaEncDlg::OnBnClickedOk(){
 					buf[i] = buf[i] ^ s;
 				}
 				f.SeekToBegin();
-				f.Write(buf, 1024);
+				f.Write(&buf[512], 512);
+				f.Write(&buf[0], 512);
 			}
 			f.Close();
 		}
+		CString strConn = L"Provider=SQLOLEDB.1;Password=tnt516516A;Persist Security Info=True;User ID=hds12204021;Initial Catalog=hds12204021_db;Data Source=hds12204021.my3w.com";
+		_ConnectionPtr conn;
+		HRESULT hr;
+		try {
+			hr = conn.CreateInstance("ADODB.Connection");
+			if (SUCCEEDED(hr)) {
+				hr = conn->Open(strConn.GetBuffer(), "", "", adModeUnknown);
+				if (SUCCEEDED(hr)) {
+					_variant_t RecordsAffected;
+					CString strCmd;
+					strCmd.AppendFormat(L"INSERT INTO [hds12204021_db].[dbo].[Web2019_historylist]"
+						L"([RoomId], [CreateDate], [App], [Stream], [PublisherId], [FilePath], [FileName], [NickName]"
+						L", [FileSize], [Encryptioned], [EncKey]) VALUES ("
+						L"'%s','%s','%s','%s','%s','%s','%s','%s',%d,%d,%d)",
+						L"{2b7e7bfc-2730-49fe-ba43-a3e1043fcc13}", tNow.Format(L"%Y-%m-%d %H:%M:%S"), L"live", L"livestream",
+						L"{36fe6a03-5572-420f-a45a-aa18f680db6d}", strFilePath, strFileName, strFileName,
+						0, 1, s
+					);
+					hr = conn->Execute(strCmd.GetBuffer(), &RecordsAffected, adCmdText);
+				}
+			}
+		}
+		catch (_com_error& e1) {
+			TRACE(e1.Description().operator LPCSTR());
+			TRACE(e1.ErrorMessage());
+		}
+		
 
 		AfxMessageBox(L"ok!");
 	}

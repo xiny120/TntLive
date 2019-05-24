@@ -145,12 +145,6 @@ BOOL DlgRtmpPull::DestroyWindow(){
 		RTMPGuester::Destory(m_pAVRtmplayer);
 		m_pAVRtmplayer = NULL;
 	}
-	//if (m_pDlgVideoMain) {
-	//	m_pDlgVideoMain->DestroyWindow();
-	//	delete m_pDlgVideoMain;
-	//	m_pDlgVideoMain = NULL;
-	//}
-
 	return CDialog::DestroyWindow();
 }
 
@@ -161,8 +155,6 @@ BOOL DlgRtmpPull::OnEraseBkgnd(CDC* pDC){
 void DlgRtmpPull::OnLButtonDblClk(UINT nFlags, CPoint point){
 	CDialog::OnLButtonDblClk(nFlags, point);
 }
-
-
 
 void DlgRtmpPull::Start(){
 	Stop();
@@ -193,20 +185,12 @@ void DlgRtmpPull::Stop(){
 	}
 }
 void DlgRtmpPull::OnGetMinMaxInfo(MINMAXINFO* lpMMI) {
-	//设置对话框最小宽度与高度
-	//RECT rc;
-	//if (m_pDlgVideoMain != NULL) {
-		//if (IsWindow(m_pDlgVideoMain->GetSafeHwnd())) {
-			//m_pDlgVideoMain->GetWindowRect(&rc);
-			//ScreenToClient(&rc);
-			lpMMI->ptMinTrackSize.x = m_nVideoWidth + 40 + m_nChatroomWidth + GetSystemMetrics(SM_CXFRAME) * 2;
-			lpMMI->ptMinTrackSize.y = m_nVideoHeight + 20 + m_nListHeight + GetSystemMetrics(SM_CYSIZE) + GetSystemMetrics(SM_CYFRAME) * 2;
-		//}
-	//}
+	lpMMI->ptMinTrackSize.x = m_nVideoWidth + 40 + m_nChatroomWidth + GetSystemMetrics(SM_CXFRAME) * 2;
+	lpMMI->ptMinTrackSize.y = m_nVideoHeight + 20 + m_nListHeight + GetSystemMetrics(SM_CYSIZE) + GetSystemMetrics(SM_CYFRAME) * 2;
 	__super::OnGetMinMaxInfo(lpMMI);
 }
 
-void DlgRtmpPull::OnSize(UINT nType, int cx, int cy){
+void DlgRtmpPull::OnSize(UINT nType, int cx, int cy) {
 	__super::OnSize(nType, cx, cy);
 	CRect rcClient, rcVideo, rcChatroom, rcStatic, rcList;
 	GetClientRect(rcClient);
@@ -261,37 +245,15 @@ void DlgRtmpPull::OnSize(UINT nType, int cx, int cy){
 			}
 		}
 	}
-	// 播放主窗口大小。
-	/*
-	if (m_pDlgVideoMain != NULL) {
-		int x = 0;
-		int y = 0;
-		if (rcStatic.Height() > rcVideo.Height()) {
-			y = (rcStatic.Height() - rcVideo.Height()) / 2;
-		}
-		if (rcStatic.Width() > rcVideo.Width()) {
-			x = (rcStatic.Width() - rcVideo.Width()) / 2;
-		}
-		if (IsWindow(m_pDlgVideoMain->GetSafeHwnd())) {
-			m_pDlgVideoMain->SetWindowPos(NULL, x, y, rcVideo.Width(), rcVideo.Height(), SWP_NOZORDER);
-		}
-	}
-	*/
 	return;
 }
 
 HBRUSH DlgRtmpPull::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor){
 	HBRUSH hbr = __super::OnCtlColor(pDC, pWnd, nCtlColor);
-	/*
-	if (pWnd->GetDlgCtrlID() == IDC_STATIC_CAPTRUE) {
-		return (HBRUSH)brush.GetSafeHandle();
-	}
-	*/
 	return hbr;
 }
 
 void DlgRtmpPull::OnSysCommand(UINT nID, LPARAM lParam){
-	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	CWnd* pWnd = this->GetDlgItem(IDC_STATIC_LIST);
 	if ((nID) == IDR_MENU_SYS_MORE_REFRESH) {
 		CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
@@ -314,8 +276,6 @@ void DlgRtmpPull::OnSysCommand(UINT nID, LPARAM lParam){
 }
 
 LRESULT DlgRtmpPull::OnPullDlg(WPARAM, LPARAM) {
-	//Start();
-	//return TRUE;
 	std::string url = "";
 	CefString str = CPullDlgData::me()->pop();
 	if (!str.empty()) {

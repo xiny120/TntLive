@@ -168,46 +168,35 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,T
 				WCLOG(LS_ERROR) << "first time to read:" << mfile;
 				len = 0;
 				dwDataSizeLast = 0;
-				fseek(f, mbufv.size(), SEEK_SET);
-				do {
-					len = fread(mb, 1, mblen, f);
-					if (len <= 0)
-						break;
-					mbufv.insert(mbufv.end(), mb, mb + len);
-					mreadpos = ftell(f);
-					if (mbufv.size() >= mfirstreadlenmin)
-						break;
-				} while (true);
-				if (len <= 0) {
+				len = fread(mb, 1, mblen, f);
+				if (len < mfirstreadlenmin) {
 					mreadpos = 0;
 					mbufv.clear();
 					WCLOG(LS_ERROR) << "first fread error:" << mfile << errno;
 					break;
 				}
-				if (mbufv.size() < mfirstreadlenmin) { // û�ж����㹻���ݡ�
+				char buf0[1024] = {0};
+				if (mencryption != 0) {
+					memcpy(buf0, mb + 512, 512);
+					memmove(mb + 512, mb, 512);
+					memcpy(mb, buf0, 512);
+				}
+				mbufv.insert(mbufv.begin(),mb,mb+len);
+				if (mbufv.size() < mfirstreadlenmin) { //
 					mreadpos = 0;
 					mbufv.clear();
 					WCLOG(LS_ERROR) << "first fread buffer not enough:" << mbufv.size() << "(need 1024)";
 					break;
 				}
+				mreadpos = ftell(f);
 				if (mencryption != 0) {
 					char s = -1;
-					/*
-					for (i = mfile.length() - 1; i >= 0; i--) {
-						if (mfile[i] == '\\' || mfile[i] == '/') {
-							s = mfile.substr(i + 1)[5];
-							break;
-						}
-					}
-					if (s == -1)
-						s = mfile[5];
-					if (s == 0) s = 1;
-					*/
 					s = menckey;
 					for (i = 0; i < 1024; i++) {
 						mbufv[i] = mbufv[i] ^ s;
 					}
 				}
+
 
 				len = 0;
 				char* p0 = &mbufv[0];
@@ -221,12 +210,10 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,T
 					WCLOG(LS_ERROR) << "first fread buffer not enough:" << mbufv.size() << "(need" << len << ")";
 					break;
 				}
-
 				if (!(ph->btSignature[0] == 'F' && ph->btSignature[1] == 'L' && ph->btSignature[2] == 'V')) {
 					fclose(f);
 					return 3;
 				}
-				
 				mbufv.erase(mbufv.begin(), mbufv.begin() + len);
 			}
 			if (mbufv.size() < sizeof(TAG_HEADER)) {
@@ -249,7 +236,7 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,T
 					break;
 				}
 			}
-			if (mbufv.size() < sizeof(TAG_HEADER)) { // û�ж����㹻���ݡ��ļ��������أ�û���ϲ��Ž��ȡ�
+			if (mbufv.size() < sizeof(TAG_HEADER)) { 
 				WCLOG(LS_ERROR) << "fread buffer not enough:" << mbufv.size() << "(need" << sizeof(TAG_HEADER) << ")";
 				break;
 			}

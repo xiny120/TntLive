@@ -224,16 +224,19 @@ public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHel
         try {
             String info = getIntent().getExtras().getString("minfo");
             String res = getIntent().getExtras().getString("res");
-            JSONObject resdata = new JSONObject(res).getJSONObject("data");
+            JSONObject resdata = new JSONObject(res).optJSONObject("data");// .getJSONObject("data");
             JSONObject obj = new JSONObject(info);
             JSONObject objData = obj.getJSONObject("data");
             String pulluri = objData.getString("FilePath");
             String filename = objData.getString("FileName").trim();
             String nickname = objData.getString("NickName").trim();
             int enc = objData.getInt("Encryptioned");
-            char enckey = (char) resdata.getInt("EncKey");
+            char enckey =0;//
+            if(resdata != null)
+                enckey = (char) resdata.getInt("EncKey");
             objData = obj.getJSONObject("ui");
-            int userid = objData.getInt("UserId");
+            int userid = 0;
+            userid = objData.optInt("UserId");//.getInt("UserId");
             String url = getResources().getString(R.string.app_hosthis) + pulluri;
             mGuest = new RTMPGuestKit(this, this);
 

@@ -98,12 +98,13 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
                                 const RTPFragmentationHeader* /*fragmentation*/,
                                 const CodecSpecificInfo* codec_specific_info,
                                 int64_t /*render_time_ms*/) {
+  WCLOG(LS_ERROR) << "H264DecoderImpl-open264::Decode has been called ";
   if (!IsInitialized()) {
     ReportError();
     return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   }
   if (!decoded_image_callback_) {
-    LOG(LS_WARNING) << "InitDecode() has been called, but a callback function "
+    WCLOG(LS_WARNING) << "InitDecode() has been called, but a callback function "
         "has not been set with RegisterDecodeCompleteCallback()";
     ReportError();
     return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
@@ -124,7 +125,7 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
   sbi.uiInBsTimeStamp = input_image.capture_time_ms_;
   int result = decoder_->DecodeFrame2(input_image._buffer, (int)input_image._size, nal, &sbi);
   if (result != 0) {
-    LOG(LS_ERROR) << "DecodeFrame2 error: " << result;
+    WCLOG(LS_ERROR) << "DecodeFrame2 error: " << result;
     ReportError();
     return WEBRTC_VIDEO_CODEC_ERROR;
   }

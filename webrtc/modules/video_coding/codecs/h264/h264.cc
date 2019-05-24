@@ -82,7 +82,7 @@ bool H264Encoder::IsSupported() {
   return IsH264CodecSupported();
 }
 
-H264Decoder* H264Decoder::Create() {
+H264Decoder* H264Decoder::Create(const char* path) {
   RTC_DCHECK(H264Decoder::IsSupported());
 #if defined(WEBRTC_IOS) && defined(WEBRTC_VIDEO_TOOLBOX_SUPPORTED)
   if (IsH264CodecSupportedObjC()) {
@@ -93,7 +93,7 @@ H264Decoder* H264Decoder::Create() {
 #if defined(WEBRTC_USE_H264)
   RTC_CHECK(g_rtc_use_h264);
   WCLOG(LS_INFO) << "Creating H264DecoderImpl.";
-  return new H264DecoderImpl();
+  return new H264DecoderImpl(path);
 #else
   RTC_NOTREACHED();
   return nullptr;

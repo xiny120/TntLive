@@ -1,11 +1,12 @@
 <resources>
-    <string name="app_name">怪秀直播</string>
+    <string name="app_name">唐能通短线是银</string>
 
     <string name="start_live">推流</string>
     <string name="watch_live">拉流</string>
     <string name="str_rtmp">目前暂无直播...</string>
 
     <string name="app_uri">http://210.192.107.62:8080/live/h5client/mainpage/</string>
+    <string name="app_urir">http://gpk01.gwgz.com/live/h5client/mainpage/</string>
     <string name="app_hosthis">http://gpk01.gwgz.com:8862/</string>
     <string name="hint_rtmp_url">输入推流/拉流地址</string>
     <string name="str_rtmp_success">RTMP 连接成功</string>
@@ -16,9 +17,9 @@
     <string name="str_rtmp_pull_status">缓冲数据中，直播马上开始... 缓存区：%d@%d - curTime:%d totalTime:%d</string>
     <string name="version">V0.0.1</string>
 
-    <string name="str_rtmp_company">Powered by Boyuan (Shanghai) Information Technology Co., Ltd.</string>
+    <string name="str_rtmp_company">GWGZ.COM</string>
 
-    <string name="title_activity_flv_player">FlvPlayerActivity</string>
+    <string name="title_activity_flv_player">播放</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>

@@ -17,6 +17,7 @@ android {
                 abiFilters "armeabi-v7a"
             }
         }
+        
 
         ndk {
             //选择要添加的对应cpu类型的.so库。
@@ -40,6 +41,9 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            jniDebuggable = true
         }
     }
 }

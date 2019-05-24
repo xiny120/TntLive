@@ -75,7 +75,8 @@ public class MainActivity extends AppCompatActivity {
         webView.getSettings().setAllowFileAccess(true);
         webView.getSettings().setAppCacheEnabled(true);
 //        webView.loadUrl("file:///android_asset/test.html");//加载asset文件夹下html
-        webView.loadUrl(getResources().getString(R.string.app_uri));//加载url
+        //webView.loadUrl(getResources().getString(R.string.app_uri));//加载url
+        webView.loadUrl(getResources().getString(R.string.app_urir));//加载url
 
         //使用webview显示html代码
 //        webView.loadDataWithBaseURL(null,"<html><head><title> 欢迎您 </title></head>" +
@@ -177,8 +178,8 @@ public class MainActivity extends AppCompatActivity {
             //localBuilder.create().show();
             try {
                 JSONObject obj = new JSONObject(message);
-                String cmd = obj.getString("cmd");
-                if(cmd.equals("pulldlghis117") || cmd.equals("pulldlghisgp")){ // history
+                final String cmd = obj.getString("cmd");
+                if(cmd.equals("pulldlghis117") || cmd.equals("pulldlghisgp") || cmd.equals("pulldlghis")){ // history
                     final String info1 = message;
                     new Thread(new Runnable() {
                         @Override
@@ -191,8 +192,9 @@ public class MainActivity extends AppCompatActivity {
                                 int enc = objData.getInt("Encryptioned");
                                 char enckey = 0;
                                 objData = obj.getJSONObject("ui");
-                                int userid = objData.getInt("UserId");
-                                String sid = objData.getString("SessionId");
+
+                                int userid = objData.optInt("UserId");//objData.getInt("UserId");
+                                String sid = objData.optString("SessionId");// objData.getString("SessionId");
 
                                 JSONObject data = new JSONObject();
                                 try {
@@ -202,6 +204,9 @@ public class MainActivity extends AppCompatActivity {
 
                                 }
                                 URL url = new URL(MyApplication.apiServer + "/api/1.00/private");//放网站
+                                if(cmd.equals("pulldlghis117")){
+                                    url = new URL(MyApplication.apiServer + "/api/1.00/public");//放网站
+                                }
                                 HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
                                 httpURLConnection.setRequestMethod("POST");
                                 httpURLConnection.setRequestProperty("Content-Type", "application/json");
@@ -224,9 +229,9 @@ public class MainActivity extends AppCompatActivity {
                                     public void run() {
                                         try {
                                             JSONObject res = new JSONObject(buffer.toString());
-                                            if (res.getInt("status") == 0 ) {
-                                                JSONObject resdata = res.getJSONObject("data");
-                                                if(resdata != null) {
+                                            if (res.getInt("status") == 0 || cmd.equals("pulldlghis117")) {
+                                                //JSONObject resdata = res.getJSONObject("data");
+                                                //if(resdata != null) {
                                                     try {
                                                         Intent it = new Intent(getApplicationContext(), FlvPlayerActivity.class);
                                                         Bundle bd = new Bundle();
@@ -237,14 +242,14 @@ public class MainActivity extends AppCompatActivity {
                                                     }catch (Exception e1){
                                                         Log.i("",e1.toString());
                                                     }
-                                                }else{
-                                                    Toast.makeText(getApplicationContext(), "播放数据为空！", Toast.LENGTH_LONG).show();
-                                                }
+                                                //}else{
+                                                //    Toast.makeText(getApplicationContext(), "播放数据为空！", Toast.LENGTH_LONG).show();
+                                               // }
                                             } else {
                                                 Toast.makeText(getApplicationContext(), res.getString("msg"), Toast.LENGTH_LONG).show();
                                             }
                                         } catch (Exception e1) {
-
+                                            e1.printStackTrace();
                                         }
                                     }
                                 });
@@ -260,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
                 }else { //living
                     JSONObject objData = obj.getJSONObject("data");
                     String pulluri = objData.getString("pulluri");
-                    int enc = objData.getInt("Encryptioned");
+                    int enc = objData.optInt("Encryptioned");// .getInt("Encryptioned");
                     objData = obj.getJSONObject("ui");
                     String sid = objData.getString("SessionId");
                     String tkn = objData.getString("Token");

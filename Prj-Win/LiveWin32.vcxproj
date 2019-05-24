@@ -83,7 +83,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\out\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>out\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(OutDir)obj\$(ProjectName)\</IntDir>
     <IncludePath>..\..\common\cef_binary_3.3626.1895.g7001d56_windows32;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\common\cef_binary_3.3626.1895.g7001d56_windows32;$(LibraryPath)</LibraryPath>
@@ -126,7 +126,7 @@
     </PreLinkEvent>
     <PostBuildEvent>
       <Command>setlocal
-mt.exe -nologo -manifest "$(ProjectDir)cefsimple.exe.manifest" "$(ProjectDir)compatibility.manifest" -outputresource:"$(ProjectDir)out\Win32\Debug\LiveWin32.exe";#1
+mt.exe -nologo -manifest "$(ProjectDir)cefsimple.exe.manifest" "$(ProjectDir)compatibility.manifest" -outputresource:"$(ProjectDir)$(OutDir)$(TargetName)$(TargetExt)";#1
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -207,6 +207,17 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <Command>copy $(SolutionDir)webrtc\modules\video_coding\codecs\h264\lib_static\x86\*.dll $(OutDir)</Command>
       <Message>copy openh264 dll</Message>
     </PreLinkEvent>
+    <PostBuildEvent>
+      <Command>setlocal
+mt.exe -nologo -manifest "$(ProjectDir)cefsimple.exe.manifest" "$(ProjectDir)compatibility.manifest" -outputresource:"$(ProjectDir)$(OutDir)$(TargetName)$(TargetExt)";#1
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>

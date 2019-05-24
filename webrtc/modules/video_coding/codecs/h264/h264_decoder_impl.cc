@@ -14,13 +14,22 @@
 #include <algorithm>
 #include <limits>
 
+#ifdef _WIN32 // in win32 we use the vcpkg lib.
+extern "C" {
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libavutil/imgutils.h>
+#include <libswscale/swscale.h>
+}  // extern "C"
+#else
+
 extern "C" {
 #include "third_party/ffmpeg/libavcodec/avcodec.h"
 #include "third_party/ffmpeg/libavformat/avformat.h"
 #include "third_party/ffmpeg/libavutil/imgutils.h"
 #include "third_party/ffmpeg/libswscale/swscale.h"
 }  // extern "C"
-
+#endif
 #include "webrtc/base/checks.h"
 #include "webrtc/base/criticalsection.h"
 #include "webrtc/base/keep_ref_until_done.h"
@@ -180,10 +189,12 @@ void H264DecoderImpl::AVFreeBuffer2(void* opaque, uint8_t* data) {
   delete video_frame;
 }
 
-H264DecoderImpl::H264DecoderImpl() : pool_(true),
-                                     decoded_image_callback_(nullptr),
-                                     has_reported_init_(false),
-                                     has_reported_error_(false) {
+H264DecoderImpl::H264DecoderImpl(const char* p) : 
+	pool_(true),
+	decoded_image_callback_(nullptr),
+	has_reported_init_(false),
+	mpath(p),
+	has_reported_error_(false) {
 }
 
 H264DecoderImpl::~H264DecoderImpl() {
@@ -278,19 +289,41 @@ int32_t H264DecoderImpl::RegisterDecodeCompleteCallback(
   decoded_image_callback_ = callback;
   return WEBRTC_VIDEO_CODEC_OK;
 }
-/*
 
-void SaveAsBMP(AVFrame *pFrameRGB, int width, int height, int index, int bpp)
+struct BITMAPFILEHEADER1 {
+	unsigned short    bfType;
+	unsigned long   bfSize;
+	unsigned short    bfReserved1;
+	unsigned short    bfReserved2;
+	unsigned long   bfOffBits;
+};
+
+struct BITMAPINFOHEADER1 {
+	unsigned long      biSize;
+	long       biWidth;
+	long       biHeight;
+	unsigned short       biPlanes;
+	unsigned short       biBitCount;
+	unsigned long      biCompression;
+	unsigned long      biSizeImage;
+	long       biXPelsPerMeter;
+	long       biYPelsPerMeter;
+	unsigned long      biClrUsed;
+	unsigned long      biClrImportant;
+};
+
+
+void H264DecoderImpl::SaveAsBMP(AVFrame *pFrameRGB, int width, int height, int index, int bpp)
 {
 	char buf[5] = { 0 };
-	BITMAPFILEHEADER bmpheader;
-	BITMAPINFOHEADER bmpinfo;
+	BITMAPFILEHEADER1 bmpheader;
+	BITMAPINFOHEADER1 bmpinfo;
 	FILE *fp;
 
-	char *filename = new char[255];
+	char *filename = new char[512];
 
 	//文件存放路径，根据自己的修改  
-	sprintf_s(filename, 255, "%s%d.bmp", "c:/temp/", index);
+	sprintf(filename, "%s%d.bmp", mpath.c_str(), index);
 	if ((fp = fopen(filename, "wb+")) == NULL) {
 		printf("open file failed!\n");
 		return;
@@ -299,15 +332,15 @@ void SaveAsBMP(AVFrame *pFrameRGB, int width, int height, int index, int bpp)
 	bmpheader.bfType = 0x4d42;
 	bmpheader.bfReserved1 = 0;
 	bmpheader.bfReserved2 = 0;
-	bmpheader.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+	bmpheader.bfOffBits = sizeof(bmpheader) + sizeof(bmpinfo);
 	bmpheader.bfSize = bmpheader.bfOffBits + width * height*bpp / 8;
 
-	bmpinfo.biSize = sizeof(BITMAPINFOHEADER);
+	bmpinfo.biSize = sizeof(bmpinfo);
 	bmpinfo.biWidth = width;
 	bmpinfo.biHeight = height;
 	bmpinfo.biPlanes = 1;
 	bmpinfo.biBitCount = bpp;
-	bmpinfo.biCompression = BI_RGB;
+	bmpinfo.biCompression = 0;
 	bmpinfo.biSizeImage = (width*bpp + 31) / 32 * 4 * height;
 	bmpinfo.biXPelsPerMeter = 100;
 	bmpinfo.biYPelsPerMeter = 100;
@@ -320,13 +353,14 @@ void SaveAsBMP(AVFrame *pFrameRGB, int width, int height, int index, int bpp)
 
 	fclose(fp);
 }
-*/
+
 
 int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
                                 bool /*missing_frames*/,
                                 const RTPFragmentationHeader* /*fragmentation*/,
                                 const CodecSpecificInfo* codec_specific_info,
                                 int64_t /*render_time_ms*/) {
+
   if (!IsInitialized()) {
     ReportError();
     return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
@@ -398,6 +432,7 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
   }
 
   /*
+  
   AVFrame* pFrameRGB = av_frame_alloc();
 
   struct SwsContext *pSwsCtx;
@@ -447,6 +482,7 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
   rtc::scoped_refptr<VideoFrameBuffer> buf = video_frame->video_frame_buffer();
 	//WCLOG(LS_WARNING) << "DecodedImageCallback::Decoded width:" << buf->width() << "height:" << buf->height();
   if (av_frame_->width != buf->width() || av_frame_->height != buf->height()) {
+     // WCLOG(LS_ERROR) << "Changesize (" << av_frame_->width << "," << av_frame_->height << ") (" << buf->width() << "," << buf->height() << ")";
     rtc::scoped_refptr<VideoFrameBuffer> cropped_buf(
         new rtc::RefCountedObject<WrappedI420Buffer>(
             av_frame_->width, av_frame_->height,
@@ -461,6 +497,7 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
     // interface to pass a VideoFrameBuffer instead of a VideoFrame?
     ret = decoded_image_callback_->Decoded(cropped_frame);
   } else {
+     // WCLOG(LS_ERROR) << "Changesize ok";
     // Return decoded frame.
     ret = decoded_image_callback_->Decoded(*video_frame);
   }

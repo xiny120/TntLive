@@ -152,10 +152,10 @@ BOOL CLiveWin32Dlg::OnInitDialog(){
 
 	CMenu* pSysMenu = GetSystemMenu(FALSE);
 	if (pSysMenu != NULL){
-#ifdef _DEBUG
+//#ifdef _DEBUG
 		pSysMenu->AppendMenu(MF_STRING, IDR_MENU_SYS_MORE_SHOWDEVTOOLS, L"开发者工具");
 		pSysMenu->AppendMenu(MF_STRING, IDR_MENU_SYS_MORE_REFRESH, L"刷新界面");
-#endif
+//#endif
 
 		BOOL bNameValid;
 		CString strAboutMenu;

@@ -44,7 +44,7 @@ class H264Encoder : public VideoEncoder {
 
 class H264Decoder : public VideoDecoder {
  public:
-  static H264Decoder* Create();
+  static H264Decoder* Create(const char*);
   static bool IsSupported();
 
   ~H264Decoder() override {}

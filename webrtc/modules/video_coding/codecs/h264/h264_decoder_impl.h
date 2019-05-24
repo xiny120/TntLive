@@ -16,9 +16,19 @@
 
 #include "webrtc/modules/video_coding/codecs/h264/include/h264.h"
 
+#ifdef _WIN32
+extern "C" {
+#include <libavcodec/avcodec.h>
+}  // extern "C"
+
+
+#else
+
 extern "C" {
 #include "third_party/ffmpeg/libavcodec/avcodec.h"
 }  // extern "C"
+
+#endif
 
 #include "webrtc/common_video/include/i420_buffer_pool.h"
 
@@ -33,7 +43,7 @@ struct AVFrameDeleter {
 
 class H264DecoderImpl : public H264Decoder {
  public:
-  H264DecoderImpl();
+  H264DecoderImpl(const char*);
   ~H264DecoderImpl() override;
 
   // If |codec_settings| is NULL it is ignored. If it is not NULL,
@@ -53,6 +63,7 @@ class H264DecoderImpl : public H264Decoder {
                  int64_t render_time_ms = -1) override;
 
   const char* ImplementationName() const override;
+  void SaveAsBMP(AVFrame *pFrameRGB, int width, int height, int index, int bpp);
 
  private:
   // Called by FFmpeg when it needs a frame buffer to store decoded frames in.
@@ -77,6 +88,7 @@ class H264DecoderImpl : public H264Decoder {
 
   bool has_reported_init_;
   bool has_reported_error_;
+  std::string mpath;
 };
 
 }  // namespace webrtc

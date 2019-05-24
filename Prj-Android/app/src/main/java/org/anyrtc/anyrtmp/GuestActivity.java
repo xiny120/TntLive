@@ -51,13 +51,20 @@ import android.widget.Toast;
 import org.anyrtc.core.AnyRTMP;
 import org.anyrtc.core.RTMPGuestHelper;
 import org.anyrtc.core.RTMPGuestKit;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.RendererCommon;
 import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoRenderer;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import static android.content.ContentValues.TAG;
 
@@ -372,7 +379,7 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
             @Override
             public void run() {
                 //mTxtStatus.setText(String.format( getString(R.string.str_rtmp_pull_status), cacheTime, curBitrate,curTime,totalTime));
-                mwvMediaList.loadUrl(getResources().getString(R.string.app_uri) + "#/pages/chatroom/chatroom");
+                mwvMediaList.loadUrl(getResources().getString(R.string.app_urir) + "#/pages/chatroom/chatroom");
             }
         });
     }
@@ -431,11 +438,98 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
                 String sid = objData.getString("SessionId");
                 String tkn = objData.getString("Token");
 
+
+                final String info1 = message;
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            JSONObject obj = new JSONObject(info1);
+                            JSONObject objData = obj.getJSONObject("data");
+                            String id = objData.getString("Id");
+                            String pulluri = objData.getString("FilePath");
+                            int enc = objData.getInt("Encryptioned");
+                            char enckey = 0;
+                            objData = obj.getJSONObject("ui");
+
+                            int userid = objData.optInt("UserId");//objData.getInt("UserId");
+                            String sid = objData.optString("SessionId");// objData.getString("SessionId");
+
+                            JSONObject data = new JSONObject();
+                            try {
+                                data.put("action", "caniplay");
+                                data.put("id", id);
+                            } catch (Exception e) {
+
+                            }
+                            URL url = new URL(MyApplication.apiServer + "/api/1.00/private");//放网站
+                            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+                            httpURLConnection.setRequestMethod("POST");
+                            httpURLConnection.setRequestProperty("Content-Type", "application/json");
+                            httpURLConnection.setRequestProperty("mster-token", sid);
+                            OutputStream ots = httpURLConnection.getOutputStream();
+                            ots.write(data.toString().getBytes());
+                            InputStream inputStream = httpURLConnection.getInputStream();
+                            InputStreamReader reader = new InputStreamReader(inputStream, "UTF-8");
+                            BufferedReader bufferedReader = new BufferedReader(reader);
+                            final StringBuffer buffer = new StringBuffer();
+                            String temp = null;
+                            while ((temp = bufferedReader.readLine()) != null) {
+                                buffer.append(temp);
+                            }
+                            bufferedReader.close();//记得关闭
+                            reader.close();
+                            inputStream.close();
+                            Log.e("MAIN", buffer.toString());//打印结果
+                            runOnUiThread(new Runnable() {
+                                public void run() {
+                                    try {
+                                        JSONObject res = new JSONObject(buffer.toString());
+                                        if (res.getInt("status") == 0 ) {
+                                            //JSONObject resdata = res.getJSONObject("data");
+                                            //if(resdata != null) {
+                                            try {
+                                                Intent it = new Intent(getApplicationContext(), FlvPlayerActivity.class);
+                                                Bundle bd = new Bundle();
+                                                bd.putString("minfo", info1);
+                                                bd.putString("res", buffer.toString());
+                                                it.putExtras(bd);
+                                                startActivity(it);
+                                            }catch (Exception e1){
+                                                Log.i("",e1.toString());
+                                            }
+                                            //}else{
+                                            //    Toast.makeText(getApplicationContext(), "播放数据为空！", Toast.LENGTH_LONG).show();
+                                            // }
+                                        } else {
+                                            Toast.makeText(getApplicationContext(), res.getString("msg"), Toast.LENGTH_LONG).show();
+                                        }
+                                    } catch (Exception e1) {
+                                        e1.printStackTrace();
+                                    }
+                                }
+                            });
+                        }catch (JSONException je){
+                            je.printStackTrace();
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+
+
+
+
+/*
+
                 Intent it = new Intent(getApplicationContext(), FlvPlayerActivity.class);
                 Bundle bd = new Bundle();
                 bd.putString("minfo", message);
                 it.putExtras(bd);
                 startActivity(it);
+                */
 
             }catch (Exception e1){
                 Log.i("",e1.toString());
@@ -488,7 +582,7 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         webSettings.setAppCachePath(appCachePath);
         webSettings.setAllowFileAccess(true);
         webSettings.setAppCacheEnabled(true);
-        mwvMediaList.loadUrl(getResources().getString(R.string.app_uri) + "#/pages/medialist/medialist");//加载url
+        mwvMediaList.loadUrl(getResources().getString(R.string.app_urir) + "#/pages/medialist/medialist");//加载url
         //mwvMediaList.loadUrl("http://www.qq.com");
 
 //        webView.loadDataWithBaseURL(null,"<html><head><title> 欢迎您 </title></head>" +

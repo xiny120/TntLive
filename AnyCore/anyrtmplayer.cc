@@ -113,7 +113,7 @@ void AnyRtmplayerImpl::OnMessage(rtc::Message* msg){
 			else {
 				assert(0);
 			}
-			ply_decoder_ = new PlyDecoder(needgofast);
+			ply_decoder_ = new PlyDecoder(needgofast,mdir.c_str());
 			if (video_renderer_)
 				ply_decoder_->SetVideoRender(video_renderer_);
 		}
