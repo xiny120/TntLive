@@ -38,7 +38,7 @@ LOCAL_LDLIBS := -llog -lz -lOpenSLES
 ifeq ($(TARGET_ARCH_ABI),armeabi)  
 LOCAL_LDLIBS += -L$(call host-path,$(LOCAL_PATH)/library/arm) -lavformat -lavcodec -lavutil
 else ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)  
-LOCAL_LDLIBS += -L$(call host-path,$(LOCAL_PATH)/library/v7) -lavformat -lavcodec -lavutil
+LOCAL_LDLIBS += -L$(call host-path,$(LOCAL_PATH)/library/v7) -lavformat -lavcodec -lavutil -lx264 -lswscale -lswresample
 else
 LOCAL_LDLIBS += -L$(call host-path,$(LOCAL_PATH)/library/v64) -lavformat -lavcodec -lavutil
 endif  	

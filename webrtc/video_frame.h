@@ -180,7 +180,6 @@ class VideoFrame {
 class EncodedImage {
  public:
   static const size_t kBufferPaddingBytesH264;
-
   // Some decoders require encoded image buffers to be padded with a small
   // number of additional bytes (due to over-reading byte readers).
   static size_t GetBufferPaddingBytes(VideoCodecType codec_type);

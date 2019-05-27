@@ -1039,11 +1039,11 @@ extern ISrsThreadContext* _srs_context;
 // TODO: FIXME: add more verbose and info logs.
 #ifndef SRS_AUTO_VERBOSE
 #undef srs_verbose
-#define srs_verbose(msg, ...) _srs_log->verbose(__FUNCTION__, _srs_context->get_id(), msg, ##__VA_ARGS__)
+#define srs_verbose(msg, ...) //_srs_log->verbose(__FUNCTION__, _srs_context->get_id(), msg, ##__VA_ARGS__)
 #endif
 #ifndef SRS_AUTO_INFO
 #undef srs_info
-#define srs_info(msg, ...)  _srs_log->info(__FUNCTION__, _srs_context->get_id(), msg, ##__VA_ARGS__)
+#define srs_info(msg, ...)  //_srs_log->info(__FUNCTION__, _srs_context->get_id(), msg, ##__VA_ARGS__)
 #endif
 #ifndef SRS_AUTO_TRACE
 #undef srs_trace

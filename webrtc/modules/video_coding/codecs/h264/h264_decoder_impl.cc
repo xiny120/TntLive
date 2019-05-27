@@ -203,6 +203,7 @@ H264DecoderImpl::~H264DecoderImpl() {
 
 int32_t H264DecoderImpl::InitDecode(const VideoCodec* codec_settings,
                                     int32_t number_of_cores) {
+    i = 0;
   ReportInit();
   if (codec_settings &&
       codec_settings->codecType != kVideoCodecH264) {
@@ -281,6 +282,7 @@ int32_t H264DecoderImpl::InitDecode(const VideoCodec* codec_settings,
 int32_t H264DecoderImpl::Release() {
   av_context_.reset();
   av_frame_.reset();
+  
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
@@ -289,7 +291,8 @@ int32_t H264DecoderImpl::RegisterDecodeCompleteCallback(
   decoded_image_callback_ = callback;
   return WEBRTC_VIDEO_CODEC_OK;
 }
-
+#pragma pack(push)
+#pragma pack(2)
 struct BITMAPFILEHEADER1 {
 	unsigned short    bfType;
 	unsigned long   bfSize;
@@ -312,6 +315,7 @@ struct BITMAPINFOHEADER1 {
 	unsigned long      biClrImportant;
 };
 
+#pragma pack(pop)
 
 void H264DecoderImpl::SaveAsBMP(AVFrame *pFrameRGB, int width, int height, int index, int bpp)
 {
@@ -323,7 +327,7 @@ void H264DecoderImpl::SaveAsBMP(AVFrame *pFrameRGB, int width, int height, int i
 	char *filename = new char[512];
 
 	//文件存放路径，根据自己的修改  
-	sprintf(filename, "%s%d.bmp", mpath.c_str(), index);
+	sprintf(filename, "%s/%d.bmp", mpath.c_str(), index);
 	if ((fp = fopen(filename, "wb+")) == NULL) {
 		printf("open file failed!\n");
 		return;
@@ -333,7 +337,7 @@ void H264DecoderImpl::SaveAsBMP(AVFrame *pFrameRGB, int width, int height, int i
 	bmpheader.bfReserved1 = 0;
 	bmpheader.bfReserved2 = 0;
 	bmpheader.bfOffBits = sizeof(bmpheader) + sizeof(bmpinfo);
-	bmpheader.bfSize = bmpheader.bfOffBits + width * height*bpp / 8;
+	bmpheader.bfSize = sizeof(bmpheader);// bmpheader.bfOffBits + width * height*bpp / 8;
 
 	bmpinfo.biSize = sizeof(bmpinfo);
 	bmpinfo.biWidth = width;
@@ -353,7 +357,6 @@ void H264DecoderImpl::SaveAsBMP(AVFrame *pFrameRGB, int width, int height, int i
 
 	fclose(fp);
 }
-
 
 int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
                                 bool /*missing_frames*/,
@@ -395,43 +398,43 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
   AVPacket packet;
   av_init_packet(&packet);
   packet.data = input_image._buffer;
-  if (input_image._length >
-      static_cast<size_t>(std::numeric_limits<int>::max())) {
+  if (input_image._length > static_cast<size_t>(std::numeric_limits<int>::max())) {
     ReportError();
     return WEBRTC_VIDEO_CODEC_ERROR;
   }
   packet.size = static_cast<int>(input_image._length);
   av_context_->reordered_opaque = input_image.ntp_time_ms_ * 1000;  // ms -> μs
 
-
-
-
-
-  int frame_decoded = 0;
-  int result = avcodec_decode_video2(av_context_.get(),
-                                     av_frame_.get(),
-                                     &frame_decoded,
-                                     &packet);
-  if (result < 0) {
-   // WCLOG(LS_ERROR) << "avcodec_decode_video2 error: " << result;
+  //int frame_decoded = 0;
+  int result = -1;
+  if (avcodec_send_packet(av_context_.get(), &packet) == 0) {
+	  while (true) {
+		  result = avcodec_receive_frame(av_context_.get(), av_frame_.get());
+		  break;
+	  }
+  }
+  //int result = avcodec_decode_video2(av_context_.get(), av_frame_.get(), &frame_decoded, &packet);
+  if (result != 0) {
+    WCLOG(LS_ERROR) << "avcodec_decode_video2 error: " << result;
     ReportError();
     return WEBRTC_VIDEO_CODEC_ERROR;
   }
+  
   // |result| is number of bytes used, which should be all of them.
-  if (result != packet.size) {
-    WCLOG(LS_ERROR) << "avcodec_decode_video2 consumed " << result << " bytes "
-        "when " << packet.size << " bytes were expected.";
-    ReportError();
-    return WEBRTC_VIDEO_CODEC_ERROR;
-  }
+  //if (result != packet.size) {
+  //  WCLOG(LS_ERROR) << "avcodec_decode_video2 consumed " << result << " bytes "
+  //      "when " << packet.size << " bytes were expected.";
+  //  ReportError();
+  //  return WEBRTC_VIDEO_CODEC_ERROR;
+  //}
 
-  if (!frame_decoded) {
-    WCLOG(LS_WARNING) << "avcodec_decode_video2 successful but no frame was "
-        "decoded.";
-    return WEBRTC_VIDEO_CODEC_OK;
-  }
+ // if (!frame_decoded) {
+  //  WCLOG(LS_ERROR) << "avcodec_decode_video2 successful but no frame was "
+//        "decoded.";
+ //   return WEBRTC_VIDEO_CODEC_OK;
+//  }
 
-  /*
+/*
   
   AVFrame* pFrameRGB = av_frame_alloc();
 
@@ -458,9 +461,9 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
   sws_scale(pSwsCtx, av_frame_.get()->data,
 	  av_frame_.get()->linesize, 0, av_context_.get()->height,
 	  pFrameRGB->data, pFrameRGB->linesize);
-  int i = 0;
+
   SaveAsBMP(pFrameRGB, av_context_.get()->width, av_context_.get()->height, i++, 24);
-  */
+*/
 
   // Obtain the |video_frame| containing the decoded image.
   VideoFrame* video_frame = static_cast<VideoFrame*>(
@@ -506,7 +509,7 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
   video_frame = nullptr;
 
   if (ret) {
-    WCLOG(LS_WARNING) << "DecodedImageCallback::Decoded returned " << ret;
+    WCLOG(LS_ERROR) << "DecodedImageCallback::Decoded returned " << ret;
     return ret;
   }
   return WEBRTC_VIDEO_CODEC_OK;

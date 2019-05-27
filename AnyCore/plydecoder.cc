@@ -353,7 +353,7 @@ void PlyDecoder::Run(){
 				//WCLOG(LS_ERROR) << "h264_decoder_->Decode " << ret;
 				if (ret != 0){
 
-					WCLOG(LS_WARNING) << "h264_decoder_->Decode error:" <<  ret;
+					WCLOG(LS_ERROR) << "h264_decoder_->Decode error:" <<  ret;
 				}
 			}
 			delete pkt;
@@ -399,7 +399,8 @@ bool PlyDecoder::OnNeedDecodeData(PlyPacket* pkt){
             }
             
             if(ft == FRAME_B) {
-                return false;
+				WCLOG(LS_ERROR) << "ft == FRAME_B" ;
+                //return false;
             }
         }
 #endif
