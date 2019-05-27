@@ -400,7 +400,7 @@ bool PlyDecoder::OnNeedDecodeData(PlyPacket* pkt){
             
             if(ft == FRAME_B) {
 				WCLOG(LS_ERROR) << "ft == FRAME_B" ;
-                //return false;
+                //return false; // android video break probelim is here! DONT skip!
             }
         }
 #endif
