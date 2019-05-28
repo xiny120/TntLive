@@ -35,4 +35,6 @@ public:
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
 	CDateTimeCtrl m_curTime;
+	CEdit m_EditPath;
+	afx_msg void OnBnClickedBnBrowse();
 };

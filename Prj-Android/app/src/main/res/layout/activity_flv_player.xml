@@ -29,7 +29,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
-            android:layout_below="@+id/llayout_host_tools"
+
             android:layout_margin="8dp"
             android:visibility="invisible"
             android:text="正在查询频道..."
