@@ -188,7 +188,10 @@ func encoderfile(filepath string) byte {
 				data[i] = data[i] ^ s
 			}
 			file.Seek(0, os.SEEK_SET)
-			file.Write(data)
+			file.Write(data[512:1024])
+			log.Println(data[512:1024])
+			file.Write(data[0:512])
+			log.Println(data[0:512])
 		}
 	}
 	return s

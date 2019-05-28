@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 	"ucenter"
 
 	"github.com/gorilla/mux"
@@ -15,9 +16,11 @@ import (
 
 var (
 	actions = map[string](func(http.ResponseWriter, *http.Request, *map[string]interface{})){
-		"auth":     f_auth,
-		"roomlist": f_roomlist,
-		"wxjsinit": f_wxjsinit,
+		"auth":         f_auth,
+		"roomlist":     f_roomlist,
+		"medialist":    f_medialist,
+		"medialistnew": f_medialistnew,
+		"wxjsinit":     f_wxjsinit,
 	}
 )
 
@@ -49,12 +52,20 @@ func Public(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		return
 	}
-
+	res := make(map[string]interface{})
+	res["msg"] = "unknow"
+	res["status"] = 0
 	var v interface{}
 	err := json.NewDecoder(r.Body).Decode(&v)
 	log.Println("serveTest - ", r.URL, " - ", v)
 	if err != nil {
-		w.Write([]byte("\"status\":1,\"msg\":\"提交的json参数解析失败\""))
+		//w.Write([]byte("{\"status\":1,\"msg\":\"提交的json参数解析失败\"}"))
+		res["msg"] = "提交的json参数解析失败"
+		res["status"] = 1
+		rmsg, err := json.Marshal(res)
+		if err == nil {
+			w.Write(rmsg)
+		}
 	} else {
 		v1 := v.(map[string]interface{})
 		action := v1["action"].(string)
@@ -63,7 +74,14 @@ func Public(w http.ResponseWriter, r *http.Request) {
 
 			f(w, r, &v1)
 		} else {
-			http.Error(w, "NotFound", http.StatusNotFound)
+			//w.Write([]byte("{\"status\":1,\"msg\":\"no api\"}"))
+			//http.Error(w, "NotFound", http.StatusNotFound)
+			res["msg"] = "no api"
+			res["status"] = 1
+			rmsg, err := json.Marshal(res)
+			if err == nil {
+				w.Write(rmsg)
+			}
 		}
 	}
 }
@@ -222,4 +240,236 @@ func f_roomlist(w http.ResponseWriter, r *http.Request, v *map[string]interface{
 		w.Write(rmsg)
 	}
 
+}
+
+type mediaitem struct {
+	Id           string //`json:"id"`
+	RoomName     string //`json:"roomname"`
+	CreateDate   string //`json:"createdate"`
+	PublisherId  string //`json:"PublisherId"`
+	FileName     string //`json:"filename"`
+	NickName     string //`json:"title"`
+	FilePath     string //`json:"filepath"`
+	FileSize     int64  //`json:"follow"`
+	Followed     int64  //`json:"onlines"`
+	Readed       int64  //`json:"intro"`
+	Encryptioned int32  //`json:"encryptioned"`
+}
+
+func f_medialist(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
+	//log.Println("f_medialist", *v)
+	roomid := "{96518478-BE8D-4EEE-9FEC-69D472CED4DC}"
+	orderby := " asc "
+	pageid := 1
+	CreateDate := "3030-12-31"
+	if val, found := (*v)["roomid"]; found {
+		roomid = val.(string)
+	}
+	if val, found := (*v)["orderby"]; found {
+		orderby = val.(string)
+	}
+	if val, found := (*v)["pageid"]; found {
+		pageid = int(val.(float64))
+	}
+	if val, found := (*v)["CreateDate"]; found {
+		CreateDate = val.(string)
+	}
+
+	pagesize := "20"
+	res := make(map[string]interface{})
+	res["t"] = "medialist"
+	res["status"] = 0
+	res["msg"] = ""
+	mis := []mediaitem{}
+
+	db, err0 := sql.Open("adodb", cfg.Cfg["mssql"])
+	if err0 != nil {
+		log.Println("ServeSrs sql open error")
+	} else {
+		defer db.Close()
+		/*
+			sqlstr := `
+				select top ` + pagesize + ` *
+				from (select a.[Id], a.[CreateDate],a.[PublisherId],a.[NickName],a.[FileSize],a.[Followed],
+				a.[Readed],a.[FilePath], b.[STitle],row_number() over(order by a.` + orderby + ` ) as rownumber,
+				a.[Encryptioned],a.[FileName]
+				from [hds12204021_db].[dbo].[Web2019_historylist] a, [hds12204021_db].[dbo].[Web2019_roomlist] b
+				where a.roomid = '` + roomid + `' and a.Deleted = 0 and a.roomid=b.id and a.[CreateDate] < CONVERT(datetime,'` + CreateDate + `')) temp_row
+				where rownumber>((?-1)*?)
+			`
+		*/
+		sqlstr := `
+			select top ` + pagesize + `
+			a.[Id], a.[CreateDate],a.[PublisherId],a.[NickName],a.[FileSize],a.[Followed],
+			a.[Readed],a.[FilePath], b.[STitle],a.[CreateDate],a.[Encryptioned],a.[FileName]
+			from [hds12204021_db].[dbo].[Web2019_historylist] a, [hds12204021_db].[dbo].[Web2019_roomlist] b
+			where a.roomid = '` + roomid + `' and a.Deleted = 0 and a.roomid=b.id and a.[CreateDate] < CONVERT(datetime,'` + CreateDate + `')
+			order by a.` + orderby + `
+		`
+
+		stmt1, err0 := db.Prepare(sqlstr)
+		if err0 != nil {
+			log.Println("ServeSrs sql db.Prepare error" + err0.Error())
+		} else {
+			defer stmt1.Close()
+			rows, err := stmt1.Query() //pageid, pagesize)
+			if err != nil {
+				log.Println("ServeSrs sql stmt.Query error", err.Error(), pageid, pagesize, roomid)
+			} else {
+				culs, _ := rows.Columns()
+				count := len(culs)
+				vals := make([]interface{}, count)
+				for rows.Next() {
+					ri := mediaitem{}
+					rows.Scan(&vals[0], &vals[1], &vals[2], &vals[3], &vals[4], &vals[5], &vals[6], &vals[7], &vals[8], &vals[9], &vals[10], &vals[11])
+					if vals[0] != nil {
+						ri.Id = vals[0].(string)
+					}
+					if vals[1] != nil {
+						ri.CreateDate = (vals[1].(time.Time)).Format(("2006-01-02 15:04:05"))
+					}
+					if vals[2] != nil {
+						ri.PublisherId = vals[2].(string)
+					}
+					if vals[3] != nil {
+						ri.NickName = vals[3].(string)
+					}
+					if vals[4] != nil {
+						ri.FileSize = vals[4].(int64)
+					}
+					if vals[5] != nil {
+						ri.Followed = vals[5].(int64)
+					}
+					if vals[6] != nil {
+						ri.Readed = (vals[6].(int64))
+					}
+					if vals[7] != nil {
+						ri.FilePath = (vals[7].(string))
+					}
+					if vals[8] != nil {
+						ri.RoomName = (vals[8].(string))
+					}
+					if vals[10] != nil {
+						ri.Encryptioned = int32(vals[10].(int64))
+					}
+					if vals[11] != nil {
+						ri.FileName = (vals[11].(string))
+					}
+					mis = append(mis, ri)
+				}
+			}
+		}
+	}
+
+	res["medialist"] = mis
+	res["msg"] = ""
+	rmsg, err := json.Marshal(res)
+	//log.Println(rmsg)
+	if err == nil {
+		w.Write(rmsg)
+	}
+}
+
+func f_medialistnew(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
+	//log.Println("f_medialist", *v)
+	roomid := "{96518478-BE8D-4EEE-9FEC-69D472CED4DC}"
+	orderby := "CreateDate"
+	pageid := 1
+	CreateDate := ""
+	if val, found := (*v)["roomid"]; found {
+		roomid = val.(string)
+	}
+	if val, found := (*v)["orderby"]; found {
+		orderby = val.(string)
+	}
+	if val, found := (*v)["pageid"]; found {
+		pageid = int(val.(float64))
+	}
+	if val, found := (*v)["CreateDate"]; found {
+		CreateDate = val.(string)
+	}
+
+	pagesize := "20"
+	res := make(map[string]interface{})
+	res["t"] = "medialist"
+	res["status"] = 0
+	res["msg"] = ""
+	mis := []mediaitem{}
+
+	db, err0 := sql.Open("adodb", cfg.Cfg["mssql"])
+	if err0 != nil {
+		log.Println("ServeSrs sql open error")
+	} else {
+		defer db.Close()
+		sqlstr := `
+			select top ` + pagesize + ` *
+			from (select a.[Id], a.[CreateDate],a.[PublisherId],a.[NickName],a.[FileSize],a.[Followed],
+			a.[Readed],a.[FilePath], b.[STitle],row_number() over(order by a.` + orderby + ` ) as rownumber,
+			a.[Encryptioned],a.[FileName]
+			from [hds12204021_db].[dbo].[Web2019_historylist] a, [hds12204021_db].[dbo].[Web2019_roomlist] b
+			where a.roomid = '` + roomid + `' and a.Deleted = 0 and a.roomid=b.id and a.[CreateDate] > CONVERT(datetime,'` + CreateDate + `')) temp_row
+			where rownumber>((?-1)*?)
+		`
+		log.Println(sqlstr)
+		stmt1, err0 := db.Prepare(sqlstr)
+		if err0 != nil {
+			log.Println("ServeSrs sql db.Prepare error" + err0.Error())
+		} else {
+			defer stmt1.Close()
+			rows, err := stmt1.Query(pageid, pagesize)
+			if err != nil {
+				log.Println("ServeSrs sql stmt.Query error", err.Error(), pageid, pagesize, roomid)
+			} else {
+				culs, _ := rows.Columns()
+				count := len(culs)
+				vals := make([]interface{}, count)
+				for rows.Next() {
+					ri := mediaitem{}
+					rows.Scan(&vals[0], &vals[1], &vals[2], &vals[3], &vals[4], &vals[5], &vals[6], &vals[7], &vals[8], &vals[9], &vals[10], &vals[11])
+					if vals[0] != nil {
+						ri.Id = vals[0].(string)
+					}
+					if vals[1] != nil {
+						ri.CreateDate = (vals[1].(time.Time)).Format(("2006-01-02 15:04:05"))
+					}
+					if vals[2] != nil {
+						ri.PublisherId = vals[2].(string)
+					}
+					if vals[3] != nil {
+						ri.NickName = vals[3].(string)
+					}
+					if vals[4] != nil {
+						ri.FileSize = vals[4].(int64)
+					}
+					if vals[5] != nil {
+						ri.Followed = vals[5].(int64)
+					}
+					if vals[6] != nil {
+						ri.Readed = (vals[6].(int64))
+					}
+					if vals[7] != nil {
+						ri.FilePath = (vals[7].(string))
+					}
+					if vals[8] != nil {
+						ri.RoomName = (vals[8].(string))
+					}
+					if vals[10] != nil {
+						ri.Encryptioned = int32(vals[10].(int64))
+					}
+					if vals[11] != nil {
+						ri.FileName = (vals[11].(string))
+					}
+					mis = append(mis, ri)
+				}
+			}
+		}
+	}
+
+	res["medialist"] = mis
+	res["msg"] = ""
+	rmsg, err := json.Marshal(res)
+	//log.Println(rmsg)
+	if err == nil {
+		w.Write(rmsg)
+	}
 }
