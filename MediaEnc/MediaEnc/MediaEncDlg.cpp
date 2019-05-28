@@ -74,6 +74,7 @@ void CMediaEncDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_DATETIMEPICKER1, m_curTime);
+	DDX_Control(pDX, IDC_EDIT_PATH, m_EditPath);
 }
 
 BEGIN_MESSAGE_MAP(CMediaEncDlg, CDialogEx)
@@ -82,6 +83,7 @@ BEGIN_MESSAGE_MAP(CMediaEncDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDOK, &CMediaEncDlg::OnBnClickedOk)
 	ON_BN_CLICKED(IDCANCEL, &CMediaEncDlg::OnBnClickedCancel)
+	ON_BN_CLICKED(IDC_BN_BROWSE, &CMediaEncDlg::OnBnClickedBnBrowse)
 END_MESSAGE_MAP()
 
 
@@ -266,6 +268,12 @@ void CMediaEncDlg::OnBnClickedOk(){
 				f.Write(&buf[0], 512);
 			}
 			f.Close();
+			TCHAR path[1024] = {0};
+			this->m_EditPath.GetWindowText(path, 1024);
+			CString strPath = path;
+			strPath += L"/";
+			strPath += strFilePath;
+			::CopyFile(strTemp0, strPath, FALSE);
 		}
 		CString strConn = L"Provider=SQLOLEDB.1;Password=tnt516516A;Persist Security Info=True;User ID=hds12204021;Initial Catalog=hds12204021_db;Data Source=hds12204021.my3w.com";
 		_ConnectionPtr conn;
@@ -303,4 +311,28 @@ void CMediaEncDlg::OnBnClickedOk(){
 void CMediaEncDlg::OnBnClickedCancel(){
 	if(AfxMessageBox(L"退出码？",MB_YESNO) == IDYES)
 		CDialogEx::OnCancel();
+}
+
+
+void CMediaEncDlg::OnBnClickedBnBrowse(){
+	TCHAR szPath[MAX_PATH];     //存放选择的目录路径 
+	CString str;
+	ZeroMemory(szPath, sizeof(szPath));
+	BROWSEINFO bi;
+	bi.hwndOwner = m_hWnd;
+	bi.pidlRoot = NULL;
+	bi.pszDisplayName = szPath;
+	bi.lpszTitle = L"请选择需要打包的目录：";
+	bi.ulFlags = 0;
+	bi.lpfn = NULL;
+	bi.lParam = 0;
+	bi.iImage = 0;
+	//弹出选择目录对话框
+	LPITEMIDLIST lp = SHBrowseForFolder(&bi);
+	if (lp && SHGetPathFromIDList(lp, szPath)){
+		//str.Format(L"选择的目录为 %s", szPath);
+		//AfxMessageBox(str);
+		m_EditPath.SetWindowText(szPath);
+	}
+
 }
