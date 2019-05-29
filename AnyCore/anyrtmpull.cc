@@ -427,6 +427,7 @@ void AnyRtmpPull::CallDisconnect(int code){
 	callback_.OnRtmpullConnectionFailed(code);
     if(rtmp_status_ != RS_PLY_Closed) {
         rtmp_status_ = RS_PLY_Init;
+		std::this_thread::sleep_for(std::chrono::milliseconds(5000));
         retry_ct_ ++;
         if(retry_ct_ <= MAX_RETRY_TIME){
 			mrtmp->Create(str_url_);
