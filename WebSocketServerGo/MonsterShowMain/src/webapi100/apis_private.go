@@ -2,7 +2,7 @@ package webapi100
 
 import (
 	"cfg"
-	"database/sql"
+	//"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -83,7 +83,7 @@ func f_pushroomlist(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v
 	res["msg"] = ""
 	ris := []pushroomitem{}
 
-	db, err0 := sql.Open("adodb", cfg.Cfg["mssql"])
+	db, err0 := cfg.OpenDb() //sql.Open("adodb", cfg.Cfg["mssql"])
 	if err0 != nil {
 		log.Println("ServeSrs sql open error")
 	} else {
@@ -168,7 +168,7 @@ func f_caniplay(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v *ma
 
 	if val, found := (*v)["id"]; found {
 		id = val.(string)
-		db, err0 := sql.Open("adodb", cfg.Cfg["mssql"])
+		db, err0 := cfg.OpenDb() //sql.Open("adodb", cfg.Cfg["mssql"])
 		if err0 != nil {
 			log.Println("ServeSrs sql open error")
 		} else {

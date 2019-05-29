@@ -52,7 +52,7 @@ func GetAccessToken() string {
 	if tnow.Sub(lasttime).Seconds() >= 7200 {
 
 		tokenUrl := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/token?grant_type=%s&appid=%s&secret=%s",
-			"client_credential", cfg.Cfg["appid"], cfg.Cfg["secret"])
+			"client_credential", cfg.Cfg["wx_appid"], cfg.Cfg["wx_secret"])
 		log.Println(tokenUrl)
 		resp, err := http.Post(tokenUrl, "", strings.NewReader(""))
 		if err == nil {

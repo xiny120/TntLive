@@ -2,11 +2,11 @@ package sign
 
 import (
 	"cfg"
-	"database/sql"
+	//"database/sql"
 	"os"
 
 	"encoding/json"
-	"fmt"
+	_ "fmt"
 	"log"
 
 	//"strings"
@@ -46,36 +46,34 @@ func SessionsGet(token string) (*UserInfo, bool) {
 	ret := false
 	found := false
 
-	if ui, found = sessions[token]; found {
-		log.Println("found", token, ui)
-		ret = true
-	} else {
-		ui = &UserInfo{}
+	func() {
+		if ui, found = sessions[token]; found {
+			ret = true
+			return
+		}
 		tfile := "./tokens/" + token
 		f, err3 := os.Open(tfile) //创建文件
-		log.Println("openfile", tfile, err3)
-		if err3 == nil {
-			defer f.Close()
-			fileinfo, err := f.Stat()
-			if err == nil {
-				fileSize := fileinfo.Size()
-				buffer := make([]byte, fileSize)
-				_, err := f.Read(buffer)
-				if err == nil {
-					//log.Println(string(buffer))
-					ui0 := &UserInfo{}
-					err3 := json.Unmarshal(buffer, &ui0)
-					if err3 == nil {
-						//log.Println(ui0)
-						sessions[token] = ui0
-						ret = true
-						return ui0, ret
-					}
-				}
-			}
+		if err3 != nil {
+			return
 		}
-	}
-	//log.Println("SessionsGet", token, ui, ret)
+		defer f.Close()
+		fileinfo, err := f.Stat()
+		if err != nil {
+			return
+		}
+		fileSize := fileinfo.Size()
+		buffer := make([]byte, fileSize)
+		_, err = f.Read(buffer)
+		if err != nil {
+			return
+		}
+		err3 = json.Unmarshal(buffer, &ui)
+		if err3 == nil {
+			sessions[token] = ui
+			ret = true
+		}
+	}()
+
 	return ui, ret
 }
 
@@ -83,33 +81,29 @@ func SignIn(un string, pwd string) *UserInfo {
 	ok, _ := uuid.NewV4()
 	sid, _ := uuid.NewV4()
 	ui := &UserInfo{UserName: "anonymous", UserId: 0, Token: ok.String(), UserUuid: "00000000-0000-0000-0000-000000000000", Info: "", AvatarUrl: "../../static/logo.png", SessionId: sid.String()}
-	db, err0 := sql.Open("adodb", cfg.Cfg["mssql"])
-	if err0 != nil {
-		fmt.Println("sql open:", err0)
-		ui.Info = "SignIn sql open error"
-	} else {
+	ui.Info = func() string {
+		db, err0 := cfg.OpenDb() //sql.Open("adodb", cfg.Cfg["mssql"])
+		if err0 != nil {
+			return "SignIn sql open error"
+		}
 		defer db.Close()
 		stmt, err0 := db.Prepare(`SELECT [UserID],[UserName],[userguid] FROM [Dv_User] where [UserName] = ? and [UserPassword] = ?`)
 		if err0 != nil {
-			log.Println(err0)
-			ui.Info = "SignIn sql db.Prepare error"
-		} else {
-			defer stmt.Close()
-			rows, err := stmt.Query(un, pwd)
-			if err != nil {
-				fmt.Println("query: ", err)
-				ui.Info = "SignIn sql stmt.Query error"
-			} else {
-				ui.Info = "用户名或密码错误！"
-				for rows.Next() {
-					rows.Scan(&ui.UserId, &ui.UserName, &ui.UserUuid)
-					ui.Info = "登录成功"
-					break
-				}
-			}
+			return "SignIn sql db.Prepare error"
 		}
-
-	}
+		defer stmt.Close()
+		rows, err := stmt.Query(un, pwd)
+		if err != nil {
+			return "SignIn sql stmt.Query error"
+		}
+		ui.Info = "用户名或密码错误！"
+		for rows.Next() {
+			rows.Scan(&ui.UserId, &ui.UserName, &ui.UserUuid)
+			ui.Info = "登录成功"
+			break
+		}
+		return ui.Info
+	}()
 	return ui
 }
 
@@ -119,43 +113,37 @@ func SignUp(un string, pwd string, cellphone string, email string) {
 
 func ModiPassword(un string, pwd string, pwdnew string) (string, int) {
 	iresult := 1
-	result := ""
-
-	db, err0 := sql.Open("adodb", cfg.Cfg["mssql"])
-	if err0 != nil {
-		result = "modipassword sql open error"
-	} else {
+	result := func() string {
+		db, err0 := cfg.OpenDb() //sql.Open("adodb", cfg.Cfg["mssql"])
+		if err0 != nil {
+			return "modipassword sql open error"
+		}
 		defer db.Close()
 		stmt, err0 := db.Prepare(`SELECT [UserID],[UserName],[userguid] FROM [Dv_User] where [UserName] = ? and [UserPassword] = ?`)
 		if err0 != nil {
-			result = "modipassword sql db.Prepare error"
-		} else {
-			defer stmt.Close()
-			rows, err := stmt.Query(un, pwd)
-			if err != nil {
-				result = "modipassword sql stmt.Query error"
-			} else {
-				result = "您提供的当前密码错误"
-				for rows.Next() {
-					stmt1, err0 := db.Prepare(`Update [Dv_User] set UserPassword=? where [UserName] = ?`)
-					if err0 != nil {
-						result = "modipassword sql db.Prepare error"
-					} else {
-						defer stmt1.Close()
-						r1, err := stmt1.Exec(pwdnew, un)
-						log.Println(r1)
-						if err != nil {
-							result = "modipassword sql stmt.Query error"
-						} else {
-							result = "用户名密码修改成功"
-							iresult = 0
-						}
-					}
-					break
-				}
-			}
+			return "modipassword sql db.Prepare error"
+		}
+		defer stmt.Close()
+		rows, err := stmt.Query(un, pwd)
+		if err != nil {
+			return "modipassword sql stmt.Query error"
 		}
 
-	}
+		if !rows.Next() {
+			return "当前密码错误！"
+		}
+		stmt1, err0 := db.Prepare(`Update [Dv_User] set UserPassword=? where [UserName] = ?`)
+		if err0 != nil {
+			return "modipassword sql db.Prepare error"
+		}
+		defer stmt1.Close()
+		r1, err := stmt1.Exec(pwdnew, un)
+		log.Println(r1)
+		if err != nil {
+			return "modipassword sql stmt.Query error"
+		}
+		iresult = 0
+		return "用户名密码修改成功"
+	}()
 	return result, iresult
 }

@@ -3,6 +3,8 @@ package cfg
 import (
 	"database/sql"
 	"strings"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var (
@@ -41,4 +43,9 @@ func (m *Mssql) Open() (err error) {
 		return err
 	}
 	return nil
+}
+
+func OpenDb() (*sql.DB, error) {
+	db, err := sql.Open("adodb", Cfg["mssql"]) //sql.Open("mysql", Cfg["tidb"])
+	return db, err
 }

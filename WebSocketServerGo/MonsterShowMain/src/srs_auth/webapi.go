@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"cfg"
-	"database/sql"
+	//"database/sql"
 	"log"
 	"net/http"
 
@@ -81,7 +81,7 @@ func ServeSrs(w http.ResponseWriter, r *http.Request) {
 					} else {
 						RoomId = RoomId0
 					}
-					db, err0 := sql.Open("adodb", cfg.Cfg["mssql"])
+					db, err0 := cfg.OpenDb() //sql.Open("adodb", cfg.Cfg["mssql"])
 					if err0 != nil {
 						log.Println("ServeSrs sql open error")
 					} else {

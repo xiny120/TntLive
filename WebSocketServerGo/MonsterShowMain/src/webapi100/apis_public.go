@@ -2,13 +2,14 @@ package webapi100
 
 import (
 	"cfg"
-	"database/sql"
+	_ "database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"time"
+	"toolset"
 	"ucenter"
 
 	"github.com/gorilla/mux"
@@ -17,6 +18,7 @@ import (
 var (
 	actions = map[string](func(http.ResponseWriter, *http.Request, *map[string]interface{})){
 		"auth":         f_auth,
+		"reg":          f_reg,
 		"roomlist":     f_roomlist,
 		"medialist":    f_medialist,
 		"medialistnew": f_medialistnew,
@@ -59,7 +61,6 @@ func Public(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&v)
 	log.Println("serveTest - ", r.URL, " - ", v)
 	if err != nil {
-		//w.Write([]byte("{\"status\":1,\"msg\":\"提交的json参数解析失败\"}"))
 		res["msg"] = "提交的json参数解析失败"
 		res["status"] = 1
 		rmsg, err := json.Marshal(res)
@@ -69,13 +70,9 @@ func Public(w http.ResponseWriter, r *http.Request) {
 	} else {
 		v1 := v.(map[string]interface{})
 		action := v1["action"].(string)
-
 		if f, ok := actions[action]; ok {
-
 			f(w, r, &v1)
 		} else {
-			//w.Write([]byte("{\"status\":1,\"msg\":\"no api\"}"))
-			//http.Error(w, "NotFound", http.StatusNotFound)
 			res["msg"] = "no api"
 			res["status"] = 1
 			rmsg, err := json.Marshal(res)
@@ -110,11 +107,56 @@ func f_wxjsinit(w http.ResponseWriter, r *http.Request, v *map[string]interface{
 	}
 }
 
-func f_auth(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
-	//log.Println("f_auth", *v)
+func f_reg(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
 	res := make(map[string]interface{})
-	account := (*v)["account"].(string)
-	password := (*v)["password"].(string)
+	res["t"] = "sign in"
+	res["status"] = 1
+	res["msg"] = "注册成功！"
+	account := toolset.MapGetString("account", v, "")
+	password := toolset.MapGetString("password", v, "")
+	email := toolset.MapGetString("email", v, "")
+	cellphone := toolset.MapGetString("cellphone", v, "")
+
+	res["msg"] = func() string {
+		db, err0 := cfg.OpenDb() //sql.Open("adodb", cfg.Cfg["mssql"])
+		if err0 != nil {
+			return "f_reg sql open error"
+		}
+		defer db.Close()
+		sqlstr := fmt.Sprintf("SELECT TOP (%d) [Id], [Title], [Intro], [Icon], [Corver], [Background], [Follow], [Online],  [Type], [PullUri], [OrderIdx] FROM  [Web2019_roomlist] where [orderidx] >= %d and bDeleted=0 order by [orderidx] asc")
+		log.Println(sqlstr)
+		stmt, err0 := db.Prepare(sqlstr)
+		if err0 != nil {
+			return "f_reg sql db.Prepare error"
+		}
+		defer stmt.Close()
+		rows, err := stmt.Query()
+		if err != nil {
+			return "f_reg sql stmt.Query error" + account + password + email + cellphone
+			//result = "f_roomlist sql stmt.Query error" + account + password + email + cellphone
+		}
+
+		//result = "用户名或密码错误！"
+		//culs, _ := rows.Columns()
+		//count := len(culs)
+		//vals := make([]interface{}, count)
+		for rows.Next() {
+			//break
+		}
+		return "Register ok"
+
+	}()
+	//res["msg"] = result
+	rmsg, err := json.Marshal(res)
+	if err == nil {
+		w.Write(rmsg)
+	}
+}
+
+func f_auth(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
+	res := make(map[string]interface{})
+	account := toolset.MapGetString("account", v, "")   //(*v)["account"].(string)
+	password := toolset.MapGetString("password", v, "") //(*v)["password"].(string)
 	tt := sign.SignIn(account, password)
 	sign.SessionsSet(tt.SessionId, tt)
 	wbuf, werr := json.Marshal(tt)
@@ -124,7 +166,6 @@ func f_auth(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
 		log.Println("f_auth", tfile, err3)
 		if err3 == nil {
 			defer f.Close()
-			//_, err3 := f.WriteString(string(wbuf)) //写入文件(字节数组)
 			_, err3 := f.Write(wbuf) //写入文件(字节数组)
 			if err3 != nil {
 				os.Remove(tfile)
@@ -164,15 +205,15 @@ func f_roomlist(w http.ResponseWriter, r *http.Request, v *map[string]interface{
 	res["msg"] = "未知错误！"
 	ris := []roomitem{}
 	result := ""
-	page := int((*v)["page"].(float64)) - 1
-	per_page := int((*v)["per_page"].(float64))
-	db, err0 := sql.Open("adodb", cfg.Cfg["mssql"])
+	page := toolset.MapGetInt("page", v, 0) - 1     //int((*v)["page"].(float64)) - 1
+	per_page := toolset.MapGetInt("per_page", v, 0) //int((*v)["per_page"].(float64))
+
+	db, err0 := cfg.OpenDb() //sql.Open("adodb", cfg.Cfg["mssql"])
 	if err0 != nil {
 		result = "f_roomlist sql open error"
 	} else {
 		defer db.Close()
 		sqlstr := fmt.Sprintf("SELECT TOP (%d) [Id], [Title], [Intro], [Icon], [Corver], [Background], [Follow], [Online],  [Type], [PullUri], [OrderIdx] FROM  [Web2019_roomlist] where [orderidx] >= %d and bDeleted=0 order by [orderidx] asc", per_page, page*per_page)
-		log.Println(sqlstr)
 		stmt, err0 := db.Prepare(sqlstr)
 		if err0 != nil {
 			log.Println(err0)
@@ -189,7 +230,6 @@ func f_roomlist(w http.ResponseWriter, r *http.Request, v *map[string]interface{
 				vals := make([]interface{}, count)
 				for rows.Next() {
 					ri := roomitem{}
-					//rows.Scan(&ri.Id, &ri.Title, &ri.Intro, &ri.Icon, &ri.Corver, &ri.Background, &ri.Follow, &ri.Onlines, &ri.Type, &ri.PullUri, &ri.OrderIdx)
 					rows.Scan(&vals[0], &vals[1], &vals[2], &vals[3], &vals[4], &vals[5], &vals[6], &vals[7], &vals[8], &vals[9], &vals[10])
 					if vals[0] != nil {
 						ri.Id = vals[0].(string)
@@ -258,61 +298,55 @@ type mediaitem struct {
 
 func f_medialist(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
 	//log.Println("f_medialist", *v)
-	roomid := "{96518478-BE8D-4EEE-9FEC-69D472CED4DC}"
-	orderby := " asc "
-	pageid := 1
-	CreateDate := "3030-12-31"
-	if val, found := (*v)["roomid"]; found {
-		roomid = val.(string)
-	}
-	if val, found := (*v)["orderby"]; found {
-		orderby = val.(string)
-	}
-	if val, found := (*v)["pageid"]; found {
-		pageid = int(val.(float64))
-	}
-	if val, found := (*v)["CreateDate"]; found {
-		CreateDate = val.(string)
-	}
-
-	pagesize := "20"
+	roomid := toolset.MapGetString("roomid", v, "{96518478-BE8D-4EEE-9FEC-69D472CED4DC}")
+	//orderby := toolset.MapGetString("orderby", v, "CreateDate asc ")
+	pageid := toolset.MapGetInt("pageid", v, 0)
+	CreateDate := toolset.MapGetString("CreateDate", v, "3030-12-31")
+	pagesize := 20
 	res := make(map[string]interface{})
 	res["t"] = "medialist"
 	res["status"] = 0
 	res["msg"] = ""
 	mis := []mediaitem{}
 
-	db, err0 := sql.Open("adodb", cfg.Cfg["mssql"])
+	db, err0 := cfg.OpenDb() //sql.Open("adodb", cfg.Cfg["mssql"])
 	if err0 != nil {
 		log.Println("ServeSrs sql open error")
 	} else {
 		defer db.Close()
 		/*
+				sqlstr := `
+					select top ` + pagesize + ` *
+					from (select a.[Id], a.[CreateDate],a.[PublisherId],a.[NickName],a.[FileSize],a.[Followed],
+					a.[Readed],a.[FilePath], b.[STitle],row_number() over(order by a.` + orderby + ` ) as rownumber,
+					a.[Encryptioned],a.[FileName]
+					from [hds12204021_db].[dbo].[Web2019_historylist] a, [hds12204021_db].[dbo].[Web2019_roomlist] b
+					where a.roomid = '` + roomid + `' and a.Deleted = 0 and a.roomid=b.id and a.[CreateDate] < CONVERT(datetime,'` + CreateDate + `')) temp_row
+					where rownumber>((?-1)*?)
 			sqlstr := `
-				select top ` + pagesize + ` *
-				from (select a.[Id], a.[CreateDate],a.[PublisherId],a.[NickName],a.[FileSize],a.[Followed],
-				a.[Readed],a.[FilePath], b.[STitle],row_number() over(order by a.` + orderby + ` ) as rownumber,
-				a.[Encryptioned],a.[FileName]
+				select top ` + pagesize + `
+				a.[Id], a.[CreateDate],a.[PublisherId],a.[NickName],a.[FileSize],a.[Followed],
+				a.[Readed],a.[FilePath], b.[STitle],a.[CreateDate],a.[Encryptioned],a.[FileName]
 				from [hds12204021_db].[dbo].[Web2019_historylist] a, [hds12204021_db].[dbo].[Web2019_roomlist] b
-				where a.roomid = '` + roomid + `' and a.Deleted = 0 and a.roomid=b.id and a.[CreateDate] < CONVERT(datetime,'` + CreateDate + `')) temp_row
-				where rownumber>((?-1)*?)
-			`
+				where a.roomid = '` + roomid + `' and a.Deleted = 0 and a.roomid=b.id and a.[CreateDate] < CONVERT(datetime,'` + CreateDate + `')
+				order by a.` + orderby + `
+				`
 		*/
 		sqlstr := `
-			select top ` + pagesize + `
+			select top 20
 			a.[Id], a.[CreateDate],a.[PublisherId],a.[NickName],a.[FileSize],a.[Followed],
 			a.[Readed],a.[FilePath], b.[STitle],a.[CreateDate],a.[Encryptioned],a.[FileName]
 			from [hds12204021_db].[dbo].[Web2019_historylist] a, [hds12204021_db].[dbo].[Web2019_roomlist] b
-			where a.roomid = '` + roomid + `' and a.Deleted = 0 and a.roomid=b.id and a.[CreateDate] < CONVERT(datetime,'` + CreateDate + `')
-			order by a.` + orderby + `
+			where a.roomid = ? and a.Deleted = 0 and a.roomid=b.id and a.[CreateDate] < CONVERT(datetime,'` + CreateDate + `')
+			order by a.CreateDate desc
 		`
-
+		log.Println(sqlstr)
 		stmt1, err0 := db.Prepare(sqlstr)
 		if err0 != nil {
 			log.Println("ServeSrs sql db.Prepare error" + err0.Error())
 		} else {
 			defer stmt1.Close()
-			rows, err := stmt1.Query() //pageid, pagesize)
+			rows, err := stmt1.Query(roomid) //, CreateDate) //, "  ")
 			if err != nil {
 				log.Println("ServeSrs sql stmt.Query error", err.Error(), pageid, pagesize, roomid)
 			} else {
@@ -326,7 +360,7 @@ func f_medialist(w http.ResponseWriter, r *http.Request, v *map[string]interface
 						ri.Id = vals[0].(string)
 					}
 					if vals[1] != nil {
-						ri.CreateDate = (vals[1].(time.Time)).Format(("2006-01-02 15:04:05"))
+						ri.CreateDate = (vals[1].(time.Time)).Format(("2006-01-02 15:04:05.000"))
 					}
 					if vals[2] != nil {
 						ri.PublisherId = vals[2].(string)
@@ -372,43 +406,29 @@ func f_medialist(w http.ResponseWriter, r *http.Request, v *map[string]interface
 
 func f_medialistnew(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
 	//log.Println("f_medialist", *v)
-	roomid := "{96518478-BE8D-4EEE-9FEC-69D472CED4DC}"
-	orderby := "CreateDate"
-	pageid := 1
-	CreateDate := ""
-	if val, found := (*v)["roomid"]; found {
-		roomid = val.(string)
-	}
-	if val, found := (*v)["orderby"]; found {
-		orderby = val.(string)
-	}
-	if val, found := (*v)["pageid"]; found {
-		pageid = int(val.(float64))
-	}
-	if val, found := (*v)["CreateDate"]; found {
-		CreateDate = val.(string)
-	}
-
-	pagesize := "20"
+	roomid := toolset.MapGetString("roomid", v, "{96518478-BE8D-4EEE-9FEC-69D472CED4DC}")
+	//orderby := "CreateDate"
+	pageid := toolset.MapGetInt("pageid", v, 1)
+	CreateDate := toolset.MapGetString("CreateDate", v, "3030-12-31")
+	pagesize := 20
 	res := make(map[string]interface{})
 	res["t"] = "medialist"
 	res["status"] = 0
 	res["msg"] = ""
 	mis := []mediaitem{}
-
-	db, err0 := sql.Open("adodb", cfg.Cfg["mssql"])
+	log.Println("medialistnew CreateDate", CreateDate)
+	db, err0 := cfg.OpenDb() //sql.Open("adodb", cfg.Cfg["mssql"])
 	if err0 != nil {
 		log.Println("ServeSrs sql open error")
 	} else {
 		defer db.Close()
 		sqlstr := `
-			select top ` + pagesize + ` *
-			from (select a.[Id], a.[CreateDate],a.[PublisherId],a.[NickName],a.[FileSize],a.[Followed],
-			a.[Readed],a.[FilePath], b.[STitle],row_number() over(order by a.` + orderby + ` ) as rownumber,
-			a.[Encryptioned],a.[FileName]
+			select 
+			a.[Id], a.[CreateDate],a.[PublisherId],a.[NickName],a.[FileSize],a.[Followed],
+			a.[Readed],a.[FilePath], b.[STitle],a.[CreateDate],a.[Encryptioned],a.[FileName]
 			from [hds12204021_db].[dbo].[Web2019_historylist] a, [hds12204021_db].[dbo].[Web2019_roomlist] b
-			where a.roomid = '` + roomid + `' and a.Deleted = 0 and a.roomid=b.id and a.[CreateDate] > CONVERT(datetime,'` + CreateDate + `')) temp_row
-			where rownumber>((?-1)*?)
+			where a.roomid = ? and a.Deleted = 0 and a.roomid=b.id and a.[CreateDate] > CONVERT(datetime,'` + CreateDate + `')
+			order by a.CreateDate desc
 		`
 		log.Println(sqlstr)
 		stmt1, err0 := db.Prepare(sqlstr)
@@ -416,7 +436,7 @@ func f_medialistnew(w http.ResponseWriter, r *http.Request, v *map[string]interf
 			log.Println("ServeSrs sql db.Prepare error" + err0.Error())
 		} else {
 			defer stmt1.Close()
-			rows, err := stmt1.Query(pageid, pagesize)
+			rows, err := stmt1.Query(roomid) //, CreateDate)
 			if err != nil {
 				log.Println("ServeSrs sql stmt.Query error", err.Error(), pageid, pagesize, roomid)
 			} else {
@@ -430,7 +450,7 @@ func f_medialistnew(w http.ResponseWriter, r *http.Request, v *map[string]interf
 						ri.Id = vals[0].(string)
 					}
 					if vals[1] != nil {
-						ri.CreateDate = (vals[1].(time.Time)).Format(("2006-01-02 15:04:05"))
+						ri.CreateDate = (vals[1].(time.Time)).Format(("2006-01-02 15:04:05.000"))
 					}
 					if vals[2] != nil {
 						ri.PublisherId = vals[2].(string)
