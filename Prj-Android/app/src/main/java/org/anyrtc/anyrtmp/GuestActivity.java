@@ -31,6 +31,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.v7.app.ActionBar;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -73,8 +74,9 @@ import static android.content.ContentValues.TAG;
  */
 public class GuestActivity extends Activity implements RTMPGuestHelper,  SurfaceHolder.Callback{
     private WebView mwvMediaList;
-
-    private LinearLayout mToolbar = null;
+    //private LinearLayout mToolbar = null;
+    private ImageView mIvClose = null;
+    private ImageView mIvFull = null;
     private TextView mTxtStatus = null;
     private RTMPGuestKit mGuest = null;
     private SurfaceViewRenderer mSurfaceView = null;
@@ -101,7 +103,8 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         @Override
         public void handleMessage(Message msg) {
             mTxtStatus.setVisibility(View.GONE);
-            mToolbar.setVisibility(View.VISIBLE);
+            //mToolbar.setVisibility(View.VISIBLE);
+            mIvFull.setVisibility(View.VISIBLE);
             RelativeLayout.LayoutParams lp =
                     (RelativeLayout.LayoutParams) mSurfaceLayout.getLayoutParams();
             lp.width = mVideoWidth;//(int) (mScreenWidth * SHOW_SCALE);
@@ -118,8 +121,10 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
             mFullScreen = false;
             mTxtStatus = (TextView) findViewById(R.id.txt_rtmp_status);
             mSurfaceView = (SurfaceViewRenderer) findViewById(R.id.suface_view);
-            mToolbar = (LinearLayout)findViewById(R.id.llayout_host_tools);
-            mToolbar.setVisibility(View.GONE);
+            //mToolbar = (LinearLayout)findViewById(R.id.llayout_host_tools);
+            //mToolbar.setVisibility(View.GONE);
+            mIvFull = (ImageView)findViewById(R.id.btn_tofullscreen);
+            mIvFull.setVisibility(View.GONE);
             mwvMediaList = (WebView)findViewById(R.id.webviewmeidalist);
             displayMetrics = new DisplayMetrics();
             this.getWindow().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -142,16 +147,6 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         int enckey = 0;
         int userid = getIntent().getExtras().getInt("UserId");
         mGuest = new RTMPGuestKit(this, this);
-        /*
-        short [][] pp = new short[10][];
-        int [] len = new int[10];
-        int [] resids = {R.raw.a0_192k, R.raw.a1_192k, R.raw.a2_192k, R.raw.a3_192k, R.raw.a4_192k, R.raw.a5_192k,
-                R.raw.a6_192k, R.raw.a7_192k, R.raw.a8_192k, R.raw.a9_192k};
-        for(int i = 0; i < 10; i++){
-            pp[i] = readRawFile(resids[i]);
-            len[i] = readRawFileLen(resids[i]);
-        }
-        */
         MyApplication myApp = (MyApplication) getApplication();
         mGuest.StartRtmpPlay(rtmpUrl, mRenderer.GetRenderPointer(),"rtmp","",enc,enckey,String.valueOf(userid),myApp.pp,myApp.len);
         initView();
@@ -232,15 +227,12 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         super.onConfigurationChanged(newConfig);
         switch (newConfig.orientation) {
             case Configuration.ORIENTATION_PORTRAIT://竖屏
-                Log.i(TAG,"竖屏");
                 mFullScreen = false;
                 ((ImageView) btn).setImageResource(R.mipmap.tofullscreen);
                 break;
             case Configuration.ORIENTATION_LANDSCAPE://横屏
-                Log.i(TAG,"横屏");
                 mFullScreen = true;
                 ((ImageView) btn).setImageResource(R.mipmap.tosmallwindow);
-                //getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//remove notification bar  即全屏
             default:
                 break;
         }
@@ -277,6 +269,7 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
             getWindow().setAttributes(attrs);
             //取消全屏设置
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            this.getActionBar().show();
             //mPreferences.edit().putBoolean("fullScreen", false).commit() ;
             if (Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 19) {
                 //低版本sdk
@@ -284,7 +277,7 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
                 v.setSystemUiVisibility(View.VISIBLE);
             } else if (Build.VERSION.SDK_INT >= 19) {
                 View decorView = getWindow().getDecorView();
-                int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+                int uiOptions = View.VISIBLE; //.SYSTEM_UI_FLAG_FULLSCREEN;
                 decorView.setSystemUiVisibility(uiOptions);
             }
         } else {

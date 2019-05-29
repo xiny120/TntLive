@@ -25,14 +25,8 @@
         android:layout_below="@+id/layout_gesture"
         android:id="@+id/webviewmeidalist"
         android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
-        android:layout_height="match_parent"/>
-    <WebView
-        android:layout_below="@+id/layout_gesture"
-        android:id="@+id/webview"
-        android:layout_width="match_parent"
-        android:visibility="gone"
-        android:layout_height="match_parent"/>
     <LinearLayout
         android:id="@+id/llayout_host_tools"
         android:layout_width="match_parent"
@@ -41,6 +35,20 @@
         android:layout_alignParentTop="true"
         android:orientation="vertical"
         android:gravity="right">
+        <LinearLayout android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            >
+            <TextView
+                android:id="@+id/txt_rtmp_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_below="@+id/llayout_host_tools"
+                android:layout_margin="8dp"
+                android:visibility="invisible"
+                android:text="目前暂无直播..."
+                android:textColor="@android:color/holo_red_dark" />
 
         <ImageView
             android:id="@+id/btn_close"
@@ -50,6 +58,7 @@
             android:onClick="OnBtnClicked"
             android:scaleType="centerInside"
             android:src="@mipmap/btn_close" />
+        </LinearLayout>
         <ImageView
             android:id="@+id/btn_tofullscreen"
             android:layout_width="wrap_content"
@@ -60,15 +69,4 @@
             android:src="@mipmap/tofullscreen" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/txt_rtmp_status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/llayout_host_tools"
-        android:layout_margin="8dp"
-        android:visibility="invisible"
-        android:text="正在查询频道..."
-
-        android:textColor="@android:color/holo_red_dark" />
 </RelativeLayout>
