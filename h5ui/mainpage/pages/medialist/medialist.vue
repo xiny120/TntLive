@@ -75,8 +75,7 @@
 		},
 		onPullDownRefresh() {
 			console.log("下拉刷新");
-			this.refreshing = true;
-			this.getData();
+			this.getNew()();
 		},
 		onReachBottom() {
 			console.log("上拉加载刷新");
@@ -89,14 +88,23 @@
 		computed: mapState(['userInfo','roomid','hasLogin']),
 		methods: {
 			...mapMutations(['getroomid','setroomid']),
-			getData(par) {
+			getNew(e) {
+				if(this.refreshing) return;
+				this.refreshing = true;
+				let now0 = new Date();
+				let cd = now0.getFullYear() + "-" + (now0.getMonth()+1) + "-" + now0.getDate();
+				if(this.lists.length > 0){
+					cd = this.lists[0].CreateDate
+				}
 				const data = {
-					action:"medialist",
+					action:"medialistnew",
 					roomid:this.roomid,
+					orderby:"CreateDate desc",
+					CreateDate:cd
 				}
 				let that = this;
 				uni.request({
-					url: this.$serverUrl + '/api/1.00/private',
+					url: this.$serverUrl + '/api/1.00/public',
 					method: 'POST',
 					data:data,
 					dataType:'json',  
@@ -106,38 +114,83 @@
 					}, 					
 					success: (ret) => {
 						if (ret.statusCode !== 200) {
-							console.log("请求失败", ret)
-						
+							uni.showToast({
+								title: "请求失败",
+								icon: "none",
+							})
+							that.refreshing = false;
+							uni.stopPullDownRefresh();							
 						} else {
 							if(ret.data.status != 0){
 								uni.showToast({
 									title:ret.data.msg,
 								})
+								uni.stopPullDownRefresh();
+								that.refreshing = false;
 								return;
 							}
-							if (that.refreshing && ret.medialist[0].id === that.lists[0].id) {
+							let mls = ret.data.medialist;
+							that.lists = mls.concat(that.lists);//that.lists.concat(mls);
+							uni.stopPullDownRefresh();
+							that.refreshing = false;
+						}
+					}
+				});
+			},			
+			getData(e) {
+				if(this.refreshing) return;
+				this.refreshing = true;
+				let now0 = new Date();
+				now0.setTime(now0.getTime() + 60*60*24*1000);
+				let cd = now0.getFullYear() + "-" + (now0.getMonth()+1) + "-" + now0.getDate();
+				if(this.lists.length > 0){
+					cd = this.lists[this.lists.length-1].CreateDate
+				}				
+				const data = {
+					action:"medialist",
+					roomid:this.roomid,
+					orderby:"CreateDate desc",
+					pageid:this.fetchPageNum,
+					CreateDate:cd
+				}
+				let that = this;
+				uni.request({
+					url: this.$serverUrl + '/api/1.00/public',
+					method: 'POST',
+					data:data,
+					dataType:'json',  
+					header:{  
+						'content-type':'application/json',
+						'mster-token':this.userInfo.SessionId,
+					}, 					
+					success: (ret) => {
+						if (ret.statusCode !== 200) {
+							uni.showToast({
+								title: "请求失败",
+								icon: "none",
+							})
+							that.refreshing = false;
+						} else {
+							if(ret.data.status != 0){
 								uni.showToast({
-									title: "已经最新",
-									icon: "none",
+									title:ret.data.msg,
 								})
 								that.refreshing = false;
-								uni.stopPullDownRefresh()
 								return;
 							}
-							
-							let lists = ret.data.medialist;
-							console.log("list页面得到lists", lists);
-							if (that.refreshing) {
-								that.refreshing = false;
-								uni.stopPullDownRefresh()
-								that.lists = lists;
-								that.fetchPageNum = 2;
-								that.loadMoreText="下拉刷新";
-							} else {
-								that.lists = that.lists.concat(lists);
+							let mls = ret.data.medialist;
+							console.log("list页面得到lists", mls);
+							if(mls.length <= 0){
+								uni.showToast({
+									title: '没有更多数据了！',
+									mask: false,
+									duration: 1500
+								});
+							}else{								
+								that.lists = that.lists.concat(mls);
 								that.fetchPageNum += 1;
 							}
-							
+							that.refreshing = false;
 						}
 					}
 				});

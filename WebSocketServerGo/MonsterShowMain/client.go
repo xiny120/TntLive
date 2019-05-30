@@ -18,9 +18,9 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-	"ucenter"
+	sign "ucenter"
 
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -61,13 +61,13 @@ type Client struct {
 	hub       *Hub
 	conn      *websocket.Conn
 	send      chan []byte
-	SessionId string //未登录之前，记录socket连接时生成的uuid,如果客户端免登录进来的，客户端上报后置换为客户端保存的uuid
+	SessionID string //未登录之前，记录socket连接时生成的uuid,如果客户端免登录进来的，客户端上报后置换为客户端保存的uuid
 }
 
 func (c *Client) readPump() {
 	defer func() {
 		if info := recover(); info != nil {
-			log.Println("client ", c.SessionId, "触发了宕机,终止读任务", info)
+			log.Println("client ", c.SessionID, "触发了宕机,终止读任务", info)
 		} else {
 			//log.Println("client ", c.SessionId, "读任务完成,终止读任务")
 		}
@@ -82,7 +82,7 @@ func (c *Client) readPump() {
 
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("用户：", c.SessionId, "error: %v", err)
+				//log.Println("用户：", c.SessionId, "error:", err)
 			}
 			break
 		}
@@ -109,16 +109,16 @@ func (c *Client) readPump() {
 		case "sign in": // 登录
 			account := m["account"].(string)
 			password := m["password"].(string)
-			tt := sign.SignIn(account, password)
-			tt.SessionId = c.SessionId
-			sign.SessionsSet(c.SessionId, tt)
+			tt, _ := sign.In(account, password)
+			tt.SessionID = c.SessionID
+			sign.SessionsSet(c.SessionID, tt)
 			r["t"] = "sign in"
 			r["userinfo"] = tt
 			rmsg, err := json.Marshal(r)
 			if err == nil {
 				c.send <- rmsg
 			}
-			log.Println("用户：", account, tt.UserId)
+			log.Println("用户：", account, tt.UserID)
 
 		case "sign out": // 登出
 		case "checkin": //免密登录
@@ -157,7 +157,7 @@ func (c *Client) writePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		if info := recover(); info != nil {
-			log.Println("client ", c.SessionId, "写任务触发宕机，终止执行", info)
+			log.Println("client ", c.SessionID, "写任务触发宕机，终止执行", info)
 		} else {
 			//log.Println("client ", c.SessionId, "写任务成功完成，终止执行")
 		}
@@ -176,7 +176,7 @@ func (c *Client) writePump() {
 
 			w, err := c.conn.NextWriter(websocket.TextMessage)
 			if err != nil {
-				log.Println("用户：", c.SessionId, "NextWriter create 失败..", err)
+				log.Println("用户：", c.SessionID, "NextWriter create 失败..", err)
 				return
 			}
 			w.Write(message)
@@ -189,13 +189,13 @@ func (c *Client) writePump() {
 			}
 
 			if err := w.Close(); err != nil {
-				log.Println("用户：", c.SessionId, "NextWriter close 失败..", err)
+				log.Println("用户：", c.SessionID, "NextWriter close 失败..", err)
 				return
 			}
 		case <-ticker.C:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				log.Println("用户：", c.SessionId, "websocket.PingMessage 失败..", err)
+				log.Println("用户：", c.SessionID, "websocket.PingMessage 失败..", err)
 				return
 			}
 		}
@@ -205,7 +205,7 @@ func (c *Client) writePump() {
 // websocket连接请求处理handlefunc
 func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request, conn *websocket.Conn) {
 	ok, _ := uuid.NewV4()
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), SessionId: ok.String()}
+	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), SessionID: ok.String()}
 	//log.Println("newClient SessionId", client.SessionId)
 	client.hub.register <- client
 	// 开启client的数据读写任务。

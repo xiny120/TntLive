@@ -4,23 +4,24 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	sign "ucenter"
 
 	//"os"
-	"ucenter"
 
 	"github.com/gorilla/mux"
 )
 
+// Oauth ok
 func Oauth(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Gorilla! oauth\n"))
 }
 
-// Define our struct
+// AuthenticationMiddleware Define our struct
 type AuthenticationMiddleware struct {
 	tokenUsers map[string]string
 }
 
-// Initialize it somewhere
+// Populate Initialize it somewhere
 func (amw *AuthenticationMiddleware) Populate() {
 	amw.tokenUsers = make(map[string]string)
 	amw.tokenUsers["00000000"] = "user0"
@@ -29,7 +30,7 @@ func (amw *AuthenticationMiddleware) Populate() {
 	amw.tokenUsers["deadbeef"] = "user0"
 }
 
-// 中间件。进行统一的权限认证校验。
+// Middleware 中间件。进行统一的权限认证校验。
 func (amw *AuthenticationMiddleware) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 

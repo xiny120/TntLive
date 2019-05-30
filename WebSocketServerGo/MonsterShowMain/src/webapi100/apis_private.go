@@ -2,26 +2,29 @@ package webapi100
 
 import (
 	"cfg"
+	"toolset"
+
 	//"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
 	"os"
 	"time"
-	"ucenter"
+	sign "ucenter"
 	//"github.com/gorilla/mux"
 )
 
 var (
-	actions_private = map[string](func(*sign.UserInfo, http.ResponseWriter, *http.Request, *map[string]interface{})){
-		"modipassword": f_modipassword,
-		"authout":      f_authout,
+	actionsPrivate = map[string](func(*sign.UserInfo, http.ResponseWriter, *http.Request, *map[string]interface{})){
+		"modipassword": fModipassword,
+		"authout":      fAuthout,
 		//"medialist":    f_medialist,
-		"pushroomlist": f_pushroomlist,
-		"caniplay":     f_caniplay,
+		"pushroomlist": fPushroomlist,
+		"caniplay":     fCaniplay,
 	}
 )
 
+// Private ok
 func Private(w http.ResponseWriter, r *http.Request) {
 	if origin := r.Header.Get("Origin"); origin != "" {
 		w.Header().Set("Access-Control-Allow-Origin", "*") //允许访问所有域
@@ -44,7 +47,7 @@ func Private(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Api Private Action:%s Token:%s\n", action, token)
 
 		if ui, found := sign.SessionsGet(token); found {
-			if f, ok := actions_private[action]; ok {
+			if f, ok := actionsPrivate[action]; ok {
 				f(ui, w, r, &v1)
 			} else {
 				http.Error(w, "NotFound", http.StatusNotFound)
@@ -64,19 +67,19 @@ func Private(w http.ResponseWriter, r *http.Request) {
 }
 
 type pushroomitem struct {
-	Id      string //`json:"id"`
+	ID      string //`json:"id"`
 	Title   string //`json:"title"`
 	Intro   string //`json:"intro"`
 	Icon    string //`json:"icon"`
-	PushUri string //`json:"pushuri"`
+	PushURI string //`json:"pushuri"`
 	VHost   string //`json:"vhost"`
 	VApp    string //`json:"vapp"`
 	VStream string //`json:"vstream"`
 }
 
-func f_pushroomlist(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
+func fPushroomlist(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
 	//log.Println("f_pushroomlist", *v)
-	userguid := ui.UserUuid
+	userguid := ui.UserGUID
 	res := make(map[string]interface{})
 	res["t"] = "roomlist"
 	res["status"] = 0
@@ -109,7 +112,7 @@ func f_pushroomlist(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v
 					ri := pushroomitem{}
 					rows.Scan(&vals[0], &vals[1], &vals[2], &vals[3], &vals[4], &vals[5], &vals[6], &vals[7]) //, &vals[8], &vals[9], &vals[10])
 					if vals[0] != nil {
-						ri.Id = vals[0].(string)
+						ri.ID = vals[0].(string)
 					}
 					if vals[1] != nil {
 						ri.Title = vals[1].(string)
@@ -122,7 +125,7 @@ func f_pushroomlist(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v
 						ri.Icon = vals[3].(string)
 					}
 					if vals[4] != nil {
-						ri.PushUri = vals[4].(string)
+						ri.PushURI = vals[4].(string)
 					}
 					if vals[5] != nil {
 						ri.VHost = vals[5].(string)
@@ -149,7 +152,7 @@ func f_pushroomlist(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v
 }
 
 type caniplay struct {
-	RoomId       string
+	RoomID       string
 	CreateDate   string
 	FilePath     string
 	FileName     string
@@ -158,7 +161,7 @@ type caniplay struct {
 	EncKey       int32
 }
 
-func f_caniplay(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
+func fCaniplay(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
 	log.Println("f_caniplay", *v)
 	id := ""
 	res := make(map[string]interface{})
@@ -199,7 +202,7 @@ func f_caniplay(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v *ma
 						cip := caniplay{}
 						rows.Scan(&vals[0], &vals[1], &vals[2], &vals[3], &vals[4], &vals[5], &vals[6]) //, &vals[7]) //, &vals[8], &vals[9], &vals[10])
 						if vals[0] != nil {
-							cip.RoomId = vals[0].(string)
+							cip.RoomID = vals[0].(string)
 						}
 						if vals[1] != nil {
 							cip.CreateDate = (vals[1].(time.Time)).Format(("2006-01-02 15:04:05"))
@@ -219,8 +222,8 @@ func f_caniplay(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v *ma
 						if vals[6] != nil {
 							cip.EncKey = int32((vals[6].(int64)))
 						}
-						log.Println("RoomId:", cip.RoomId)
-						if cip.RoomId == "{2B7E7BFC-2730-49FE-BA43-A3E1043FCC13}" {
+						log.Println("RoomId:", cip.RoomID)
+						if cip.RoomID == "{2B7E7BFC-2730-49FE-BA43-A3E1043FCC13}" {
 							stmt02, err02 := db.Prepare(`SELECT[StartTime] ,[StopTime]
 							FROM [hds12204021_db].[dbo].[dv_vcd_charge_2014]
 							where UserId=?`)
@@ -228,7 +231,7 @@ func f_caniplay(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v *ma
 
 							} else {
 								defer stmt02.Close()
-								row03, err03 := stmt02.Query(ui.UserId)
+								row03, err03 := stmt02.Query(ui.UserID)
 								if err03 != nil {
 
 								} else {
@@ -269,7 +272,7 @@ func f_caniplay(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v *ma
 	}
 }
 
-func f_authout(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
+func fAuthout(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
 	log.Println("f_auth", *v)
 	token := r.Header.Get("mster-token")
 	res := make(map[string]interface{})
@@ -285,11 +288,11 @@ func f_authout(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v *map
 	}
 }
 
-func f_modipassword(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
+func fModipassword(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
 	res := make(map[string]interface{})
-	account := (*v)["account"].(string)
-	password := (*v)["password"].(string)
-	password1 := (*v)["password1"].(string)
+	account := toolset.MapGetString("account", v, "")     //(*v)["account"].(string)
+	password := toolset.MapGetString("password", v, "")   //(*v)["password"].(string)
+	password1 := toolset.MapGetString("password1", v, "") //(*v)["password1"].(string)
 	msg, status := sign.ModiPassword(account, password, password1)
 	res["t"] = "modipassword"
 	res["status"] = status

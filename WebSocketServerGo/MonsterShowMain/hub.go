@@ -46,7 +46,7 @@ func (h *Hub) run() {
 				Sessionid string `json:"sessionid"`
 			}{
 				T:         "sessionid",
-				Sessionid: client.SessionId,
+				Sessionid: client.SessionID,
 			}
 			//msg := fmt.Sprint("{\"t\":\"sessionid\",\"sessionid\":\"%s\"}", client.SessionId)
 			msg, _ := json.Marshal(data)

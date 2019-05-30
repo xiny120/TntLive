@@ -142,21 +142,26 @@
 				"pagePath": "pages/medialistgp/medialistgp",
 				"iconPath": "static/index-0.png",
 				"selectedIconPath": "static/index-1.png",
-				"text": "光盘课"
-			},
-
-			{
-				"pagePath": "pages/medialist117/medialist117",
-				"iconPath": "static/tag-0.png",
-				"selectedIconPath": "static/tag-1.png",
-				"text": "免费课"
+				"text": "首页"
 			},
 			{
 				"pagePath": "pages/hot/hot",
 				"iconPath": "static/hot-0.png",
 				"selectedIconPath": "static/hot-1.png",
 				"text": "直播室"
-			},			
+			},
+			{
+				"pagePath": "pages/list/list",
+				"iconPath": "static/shop-0.png",
+				"selectedIconPath": "static/shop-1.png",
+				"text": "商城"
+			},
+			{
+				"pagePath": "pages/medialist117/medialist117",
+				"iconPath": "static/tag-0.png",
+				"selectedIconPath": "static/tag-1.png",
+				"text": "关注"
+			},
 			{
 				"pagePath": "pages/center/center",
 				"iconPath": "static/center-0.png",

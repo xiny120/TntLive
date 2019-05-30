@@ -1,11 +1,12 @@
 package sign
 
+// UserInfo  ok
 type UserInfo struct {
 	UserName  string
-	UserId    int64
-	UserUuid  string
+	UserID    int64
+	UserGUID  string
 	Token     string
 	Info      string
-	SessionId string
-	AvatarUrl string `json:"avatarUrl"`
+	SessionID string
+	AvatarURL string `json:"avatarUrl"`
 }

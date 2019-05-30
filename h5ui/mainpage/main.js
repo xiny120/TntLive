@@ -7,7 +7,7 @@ import store from './store'
 Vue.config.productionTip = false
 
 Vue.prototype.$store = store
-Vue.prototype.$baseUrl = 'gpk01.gwgz.com:8092';
+Vue.prototype.$baseUrl = 'gpk01.gwgz.com:8091';
 Vue.prototype.$serverUrl = 'http://'+Vue.prototype.$baseUrl;
 Vue.prototype.$wssUrl = 'ws://'+Vue.prototype.$baseUrl;
 
@@ -37,6 +37,7 @@ uni.request({
 		'content-type':'application/json',
 	}, 		
 	success: res => {
+		
 		var s = JSON.parse(res.data);
 		console.log(s.data);
 		

@@ -46,6 +46,6 @@ func (m *Mssql) Open() (err error) {
 }
 
 func OpenDb() (*sql.DB, error) {
-	db, err := sql.Open("adodb", Cfg["mssql"]) //sql.Open("mysql", Cfg["tidb"])
+	db, err := sql.Open("mysql", Cfg["tidb"]) //sql.Open("adodb", Cfg["mssql"]) //
 	return db, err
 }

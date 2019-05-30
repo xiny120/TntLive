@@ -48,64 +48,9 @@
 				
             }
         },
-		computed: mapState(['signupStatus','userName']),
-		watch: {
-			"signupStatus":{
-				handler(){
-					switch(this.signupStatus){
-						case 0:
-							uni.showToast({
-								title: '注册成功',
-								complete: function(res){
-							
-								}
-							});
-							
-							setTimeout(() => {
-								uni.navigateBack({
-										delta: 1
-								});						  
-							}, 2000)
-							this.register00(-1);
-						break;
-						case 1:
-							this.register00(-1);
-							uni.showToast({
-								title: '用户名已经被人注册，请更换再试',
-								complete: function(res){
-									
-							
-								}
-							});						
-						break;
-						case -1:
-						break;
-						default:
-							this.register00(-1);
-							break;
-						
-					}
-				}
-			},
-			"userName":{
-				handler(){
-					uni.showToast({
-						title:"userName"
-					})
-				}
-				
-			}
-		},
         methods: {
-			...mapMutations(['register00']),
             register() {
-                /**
-                 * 客户端对账号信息进行一些必要的校验。
-                 * 实际开发中，根据业务需要进行处理，这里仅做示例。
-                 */
-				
 				this.isSubmitBnDisable = true;
-				
 				setTimeout(() => {
 				  this.isSubmitBnDisable = false
 				}, 1600)
@@ -155,9 +100,7 @@
 						cellphone0 = this.email;
 						ok = true;
 					}
-				}
-				else{
-
+				}else{
 					if(!(/^[A-Za-z0-9._%-]+@([A-Za-z0-9-]+\.)+[A-Za-z]{2,4}$/.test(this.email))){	
 						msg = "邮箱地址不合法";
 					}else{
@@ -165,7 +108,6 @@
 						email0 = this.email;
 						ok = true;
 					}
-			
 				} 
 							
 				if(!ok){
@@ -175,36 +117,49 @@
                     });
 					return;
 				}
-
-
                 const data = {
-					t:"sign up",
+					action:"reg",
                     account: this.account,
-                    password: cj.MD5(this.password).toString(),
+                    password: cj.MD5(this.password).toString().substring(8,24),
                     email: email0,
 					cellphone:cellphone0,
                 }
 				
-                //service.addUser(data);
-				
-				getApp().websocketsend(JSON.stringify(data))
-				//this.sign_up_status = 1;
-				/*
-				console.log(data);
-                uni.showToast({
-                    title: '注册成功',
-					complete: function(res){
-				
+				let that = this;
+				uni.request({
+					url: this.$serverUrl + '/api/1.00/public',
+					method: 'POST',
+					data:data,
+					dataType:'json',  
+					header:{  
+						'content-type':'application/json',
+					}, 					
+					success: (ret) => {
+						if (ret.statusCode !== 200) {
+							console.log("请求失败", ret)
+							that.refreshing = false;
+						} else {
+							if(ret.data.status != 0){
+								uni.showToast({
+									title:ret.data.msg,
+								})
+								that.refreshing = false;
+								return;
+							}else{
+								uni.showToast({
+									title: '注册成功，准备跳转...',
+								});						
+								
+								setTimeout(() => {
+									uni.navigateBack({
+										delta: 1
+									});						  
+								}, 200)									
+							}
+							
+						}
 					}
-                });
-				
-				setTimeout(() => {
-					uni.navigateBack({
-							delta: 1
-					});						  
-				}, 2000)
-				*/
-				
+				});				
 
             }
         }

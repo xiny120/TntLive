@@ -1,4 +1,4 @@
-package srs_auth
+package srsauth
 
 import (
 	"encoding/json"
@@ -15,9 +15,10 @@ import (
 
 	//"strconv"
 	"strings"
-	"ucenter"
+	sign "ucenter"
 )
 
+// ServeSrs ok
 func ServeSrs(w http.ResponseWriter, r *http.Request) {
 	if origin := r.Header.Get("Origin"); origin != "" {
 		w.Header().Set("Access-Control-Allow-Origin", "*") //允许访问所有域
@@ -35,7 +36,7 @@ func ServeSrs(w http.ResponseWriter, r *http.Request) {
 		Hello    string `json:"hello"`
 		Stream   string `json:"stream"`
 		Param    string `json:"param"`
-		ClientId int64  `json:"client_id"`
+		ClientID int64  `json:"client_id"`
 		Cwd      string `json:"cwd"`
 		File     string `json:"file"`
 	}
@@ -59,14 +60,17 @@ func ServeSrs(w http.ResponseWriter, r *http.Request) {
 		case "on_close":
 			retstr = "0"
 		case "on_play":
+			log.Println(data.Param)
 			pars, err := uri2map(data.Param)
 			if err == nil {
-				ui, _ := sign.SessionsGet(pars["sessionid"])
-				if ui.Token == pars["token"] {
-					retstr = "0"
+				if sid, found := pars["sessionid"]; found {
+					if ui, err0 := sign.SessionsGet(sid); err0 && sid != "" {
+						if tk, err1 := pars["token"]; err1 && ui.Token == tk {
+							retstr = "0"
+						}
+					}
 				}
 			}
-			//log.Println("用户：", pars["sessionid"], retstr)
 		case "on_stop":
 			retstr = "0"
 		case "on_dvr":
@@ -75,11 +79,11 @@ func ServeSrs(w http.ResponseWriter, r *http.Request) {
 				ui, _ := sign.SessionsGet(pars["sessionid"])
 				if ui.Token == pars["token"] {
 					retstr = "0"
-					RoomId := ""
-					if RoomId0, ok := pars["roomid"]; !ok {
-						RoomId = "{32efce68-c637-4f1c-b915-2a7c5efd7b15}"
+					RoomID := ""
+					if RoomID0, ok := pars["roomid"]; !ok {
+						RoomID = "{32efce68-c637-4f1c-b915-2a7c5efd7b15}"
 					} else {
-						RoomId = RoomId0
+						RoomID = RoomID0
 					}
 					db, err0 := cfg.OpenDb() //sql.Open("adodb", cfg.Cfg["mssql"])
 					if err0 != nil {
@@ -87,7 +91,6 @@ func ServeSrs(w http.ResponseWriter, r *http.Request) {
 					} else {
 						defer db.Close()
 						OOtmp := strings.Replace(data.File, "/media/share/", "E:/mzgp/share/", 1)
-						//log.Println(OOtmp)
 						enckey := encoderfile(OOtmp)
 						BasePath := cfg.SrsDvrBasepath
 						FilePath := strings.Replace(data.File, "/media/share/", "", 1)
@@ -128,8 +131,8 @@ func ServeSrs(w http.ResponseWriter, r *http.Request) {
 						} else {
 							defer stmt1.Close()
 
-							r1, err := stmt1.Exec(RoomId, time.Now().Format("2006-01-02 15:04:05"),
-								data.App, data.Stream, ui.UserUuid, FilePath, FileName, NickName, FileSize, enckey)
+							r1, err := stmt1.Exec(RoomID, time.Now().Format("2006-01-02 15:04:05"),
+								data.App, data.Stream, ui.UserGUID, FilePath, FileName, NickName, FileSize, enckey)
 
 							log.Println(r1)
 							if err != nil {
@@ -169,7 +172,8 @@ func encoderfile(filepath string) byte {
 	Copy(filepath, filepath+".bak")
 	fi, _ := os.Stat(filepath)
 	a1 := []byte(fi.Name())
-	var s byte = (a1[5])
+	var s byte
+	s = (a1[5])
 	if s == 0 {
 		s = 1
 	}
@@ -197,6 +201,7 @@ func encoderfile(filepath string) byte {
 	return s
 }
 
+// Copy ok
 func Copy(src, dst string) (int64, error) {
 	sourceFileStat, err := os.Stat(src)
 	if err != nil {

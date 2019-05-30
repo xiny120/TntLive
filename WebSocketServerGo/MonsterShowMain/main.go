@@ -1,4 +1,5 @@
 // Copyright 2019 The MonsterShow Authors. All rights reserved.
+// we user db table [userinfo],[userindentify]
 
 package main
 
@@ -7,7 +8,8 @@ import (
 	"flag"
 	"log"
 	"net/http"
-	"srs_auth"
+
+	"srsauth"
 	"webapi100"
 
 	"github.com/gorilla/mux"
@@ -30,7 +32,7 @@ func main() {
 	r.HandleFunc("/ws/{id}", serveWebSocket)             // websocket的handleFunc.其中表示聊天室编号。
 	r.HandleFunc("/api/1.00/private", webapi100.Private) // webapi 1.0.0 协议
 	r.HandleFunc("/api/1.00/public", webapi100.Public)
-	r.HandleFunc("/srs", srs_auth.ServeSrs)
+	r.HandleFunc("/srs", srsauth.ServeSrs)
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("www/")))
 	log.Println("ListenAndServe Success at: ", *addr)
 	err := http.ListenAndServe(*addr, r)

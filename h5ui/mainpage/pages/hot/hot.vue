@@ -7,7 +7,7 @@
 					<view class="card-bottm row">
 						<view class="car-title-view column">
 							<text class="card-title ">{{item.title}}</text>
-							<text class="card-title card-list2-title">关注:{{item.follow}} 在线:{{item.onlines}}</text>
+							<text class="card-title card-list2-title">关注:{{item.follow}} 在线:{{item.online}}</text>
 						</view>
 						<view @click.stop="share(item)" class="card-share-view"></view>
 					</view>
@@ -96,10 +96,8 @@
 					dataType:'json',  
 					header:{  
 						'content-type':'application/json',
-						//'mster-token':this.userInfo.SessionId,
 					}, 
 					fail:(ret)=>{
-						console.log(ret);
 						this.loading = false;
 					},
 					success: (ret) => {
@@ -125,6 +123,9 @@
 									lists.push(list);
 									list = [];
 								}
+							}
+							if(list.length > 0){
+								lists.push(list);
 							}
 							console.log("得到lists", lists);
 							if (this.refreshing) {

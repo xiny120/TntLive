@@ -16,8 +16,8 @@
 			<button type="default" class="login" hover-class="hover" formType="submit">登录</button>
 		</view>
         <view class="action-row">
-            <navigator url="../login/reg/reg" v-show="0">注册账号</navigator>
-            <text  v-show="0">|</text>
+            <navigator url="../login/reg/reg" v-show="1">注册账号</navigator>
+            <text  v-show="1">|</text>
             <navigator url="../login/pwd/pwd">忘记密码</navigator>
         </view>
         <view class="oauth-row" v-if="hasProvider" v-bind:style="{top: positionTop + 'px'}">
@@ -57,28 +57,6 @@
 		},
 		computed: mapState(['forcedLogin','hasLogin']),
 		watch: {
-			"hasLogin":{
-				handler(){
-					switch(this.hasLogin){
-						case 1:
-
-							
-						break;
-						case 0:
-							//uni.showToast({
-							//	title: '登录失败，请重试',
-							//	complete: function(res){
-							//		//this.loginFail();
-							//
-							//	}
-							//});						
-						break;
-						case -1:
-						break;
-						default:
-					}
-				}
-			},
 			"userName":{
 				handler(){
 					uni.showToast({
@@ -123,9 +101,6 @@
                 this.positionTop = uni.getSystemInfoSync().windowHeight - 100;
             },			
 			formSubmit: function (e) {
-				//getApp().websocketsend("{\"t\":\"login hello\"}");
-				//将下列代码加入到对应的检查位置
-				//定义表单规则
 				var rule = [
 					{name:"nameValue", checkType : "string", checkRule:"1,30",  errorMsg:"请输入帐号！"},
 					{name:"passwordValue", checkType : "string", checkRule:"1,30",  errorMsg:"请输入密码"},
@@ -150,8 +125,7 @@
 					});						
 					
 					uni.request({
-						//url: this.$serverUrl + '/api/1.00/auth', //仅为示例，并非真实接口地址。
-						url: this.$serverUrl + '/api/1.00/public', //仅为示例，并非真实接口地址。
+						url: this.$serverUrl + '/api/1.00/public', 
 						method: 'POST',
 						data:data,
 						dataType:'json',  
@@ -168,7 +142,7 @@
 									
 									setTimeout(() => {
 										uni.navigateBack({
-												delta: 1
+											delta: 1
 										});						  
 									}, 200)								
 								}else{
@@ -187,17 +161,10 @@
 							uni.showToast({
 								title: '登录失败，请重试。',
 								complete: function(res){
-									//this.loginFail();
-							
 								}
 							});								
 						},
 					});					
-					
-					
-					
-					//getApp().websocketsend(JSON.stringify(data))
-					
 				}else{
 					uni.showToast({ title: graceChecker.error, icon: "none" });
 				}

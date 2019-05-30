@@ -17,15 +17,16 @@ import (
 )
 
 var (
-	lasttime     time.Time
-	access_token string
-	expires_in   int
-	ticket       string
+	lasttime    time.Time
+	accessToken string
+	expiresIn   int
+	ticket      string
 )
 
+// GetAccessToken ok
 func GetAccessToken() string {
 	tfile := "./ws_js/" + "access_tokens"
-	if access_token == "" {
+	if accessToken == "" {
 
 		fi, err0 := os.Open(tfile)
 		if err0 == nil {
@@ -41,8 +42,8 @@ func GetAccessToken() string {
 			}
 			if len(conf) == 3 {
 				lasttime, _ = time.Parse("2006-01-02 15:04:05", conf[0])
-				access_token = conf[1]
-				expires_in, _ = strconv.Atoi(conf[2])
+				accessToken = conf[1]
+				expiresIn, _ = strconv.Atoi(conf[2])
 			}
 		}
 	}
@@ -51,10 +52,10 @@ func GetAccessToken() string {
 
 	if tnow.Sub(lasttime).Seconds() >= 7200 {
 
-		tokenUrl := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/token?grant_type=%s&appid=%s&secret=%s",
+		tokenURL := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/token?grant_type=%s&appid=%s&secret=%s",
 			"client_credential", cfg.Cfg["wx_appid"], cfg.Cfg["wx_secret"])
-		log.Println(tokenUrl)
-		resp, err := http.Post(tokenUrl, "", strings.NewReader(""))
+		log.Println(tokenURL)
+		resp, err := http.Post(tokenURL, "", strings.NewReader(""))
 		if err == nil {
 			defer resp.Body.Close()
 			var v1 interface{}
@@ -62,32 +63,33 @@ func GetAccessToken() string {
 			if err == nil {
 				v := v1.(map[string]interface{})
 				if val, found := v["access_token"]; found {
-					access_token = val.(string)
+					accessToken = val.(string)
 					lasttime = time.Now()
 				}
 				if val, found := v["expires_in"]; found {
-					expires_in = int(val.(float64))
+					expiresIn = int(val.(float64))
 				}
 				fi, err0 := os.Create(tfile)
 				if err0 == nil {
 					defer fi.Close()
 					bw := bufio.NewWriter(fi)
 					bw.WriteString(lasttime.Format("2006-01-02 15:04:05") + "\n")
-					bw.WriteString(access_token + "\n")
-					bw.WriteString(strconv.Itoa(expires_in) + "\n")
+					bw.WriteString(accessToken + "\n")
+					bw.WriteString(strconv.Itoa(expiresIn) + "\n")
 					bw.Flush()
 				}
 			}
 		}
 	}
-	return access_token
+	return accessToken
 }
 
-func GetWeiXinJsapi_Ticket() string {
-	tokenUrl := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=%s&type=%s",
-		access_token, "jsapi")
-	log.Println(tokenUrl)
-	resp, err := http.Post(tokenUrl, "", strings.NewReader(""))
+// GetWeiXinJsapiTicket ok
+func GetWeiXinJsapiTicket() string {
+	tokenURL := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=%s&type=%s",
+		accessToken, "jsapi")
+	log.Println(tokenURL)
+	resp, err := http.Post(tokenURL, "", strings.NewReader(""))
 	if err == nil {
 		defer resp.Body.Close()
 		var v1 interface{}
@@ -104,10 +106,12 @@ func GetWeiXinJsapi_Ticket() string {
 	return ticket
 }
 
-func CreatenNonce_str() string {
+// CreatenNonceStr ok
+func CreatenNonceStr() string {
 	return "43tl899ujljdfafds"
 }
 
+// CreatenTimestamp ok
 func CreatenTimestamp() int {
 	return time.Now().Nanosecond()
 }

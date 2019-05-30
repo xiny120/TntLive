@@ -29,3 +29,7 @@ MediaEnc/MediaEnc/temp/
 MediaEnc/Debug/
 Prj-Win/out/
 WebSocketServerGo/MonsterShowMain/conf/
+WebSocketServerGo/MonsterShowMain/bin/
+WebSocketServerGo/MonsterShowMain/src/github.com/
+WebSocketServerGo/MonsterShowMain/src/golang.org/
+WebSocketServerGo/MonsterShowMain/pkg/

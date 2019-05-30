@@ -4,13 +4,13 @@
 			<block v-for="(item, index) in lists" :key="index">
 				<uni-list-item :title="item.RoomName" :note="item.CreateDate" show-extra-icon="true"  @click="goDetail(item)" ></uni-list-item>
 			</block>
-			<!--<uni-list-item title="标题文字" note="描述信息" show-extra-icon="true" :extra-icon="{color: '#4cd964',size: '22',type: 'spinner'}"></uni-list-item>-->
 		</uni-list>		
 		<text class="loadMore">{{loadMoreText}}</text>
 	</view>
 </template>
 
 <script>
+	
 	import uniList from '../../components/uni-list/uni-list.vue'
 	import uniListItem from '../../components/uni-list-item/uni-list-item.vue'	
     import {
@@ -30,25 +30,14 @@
 				lists: [],
 				id: 0,
 				fetchPageNum: 1,
-				roomid:"{2b7e7bfc-2730-49fe-ba43-a3e1043fcc13}"
 			}
 		},
-        onShow: function() {
-            console.log('medialist Show')
-			setTimeout(() => { //防止app里由于渲染导致转场动画卡顿
-				this.getNew();
-			}, 50)				
-        },
-        onHide: function() {
-		
-        },		
-
 		onLoad(e) {
-			this.fetchPageNum = 1;
+			this.getroomid();
 			this.id = e.id;
 			setTimeout(() => { //防止app里由于渲染导致转场动画卡顿
 				this.getData();
-			}, 50)			
+			}, 150)			
 
 			uni.getProvider({
 				service: "share",
@@ -87,82 +76,24 @@
 		onPullDownRefresh() {
 			console.log("下拉刷新");
 			this.refreshing = true;
-			this.getNew();
+			this.getData();
 		},
 		onReachBottom() {
 			console.log("上拉加载刷新");
-			if(this.fetchPageNum > 30){
+			if(this.fetchPageNum > 20){
 				this.loadMoreText = "没有更多了"
 				return;
 			}
 			this.getData();
 		},
-		computed: mapState(['userInfo','hasLogin']),
+		computed: mapState(['userInfo','roomid','hasLogin']),
 		methods: {
-			getNew(e) {
-				if(this.refreshing) return;
-				this.refreshing = true;
-				let now0 = new Date();
-				let cd = now0.getFullYear() + "-" + (now0.getMonth()+1) + "-" + now0.getDate();
-				if(this.lists.length > 0){
-					cd = this.lists[0].CreateDate
-				}
-				const data = {
-					action:"medialistnew",
-					roomid:this.roomid,
-					orderby:"CreateDate desc",
-					CreateDate:cd
-				}
-				let that = this;
-				uni.request({
-					url: this.$serverUrl + '/api/1.00/public',
-					method: 'POST',
-					data:data,
-					dataType:'json',  
-					header:{  
-						'content-type':'application/json',
-						'mster-token':this.userInfo.SessionId,
-					}, 					
-					success: (ret) => {
-						if (ret.statusCode !== 200) {
-							uni.showToast({
-								title: "请求失败",
-								icon: "none",
-							})
-							that.refreshing = false;
-							uni.stopPullDownRefresh();							
-						} else {
-							if(ret.data.status != 0){
-								uni.showToast({
-									title:ret.data.msg,
-								})
-								uni.stopPullDownRefresh();
-								that.refreshing = false;
-								return;
-							}
-							let mls = ret.data.medialist;
-							that.lists = mls.concat(that.lists);//that.lists.concat(mls);
-							uni.stopPullDownRefresh();
-							that.refreshing = false;
-						}
-					}
-				});
-			},			
-			getData(e) {
-				if(this.refreshing) return;
-				this.refreshing = true;
-				let now0 = new Date();
-				now0.setTime(now0.getTime() + 60*60*24*1000);
-				let cd = now0.getFullYear() + "-" + (now0.getMonth()+1) + "-" + now0.getDate();
-				if(this.lists.length > 0){
-					cd = this.lists[this.lists.length-1].CreateDate
-				}				
+			...mapMutations(['getroomid','setroomid']),
+			getData(par) {
 				const data = {
 					action:"medialist",
-					roomid:this.roomid,
 					orderby:"CreateDate desc",
-					pageid:this.fetchPageNum,
-					CreateDate:cd
+					roomid:this.roomid,
 				}
 				let that = this;
 				uni.request({
@@ -176,40 +107,49 @@
 					}, 					
 					success: (ret) => {
 						if (ret.statusCode !== 200) {
-							uni.showToast({
-								title: "请求失败",
-								icon: "none",
-							})
-							that.refreshing = false;
+							console.log("请求失败", ret)
+						
 						} else {
 							if(ret.data.status != 0){
 								uni.showToast({
 									title:ret.data.msg,
 								})
-								that.refreshing = false;
 								return;
 							}
-							let mls = ret.data.medialist;
-							console.log("list页面得到lists", mls);
-							if(mls.length <= 0){
+							if (that.refreshing && ret.medialist[0].id === that.lists[0].id) {
 								uni.showToast({
-									title: '没有更多数据了！',
-									mask: false,
-									duration: 1500
-								});
-							}else{								
-								that.lists = that.lists.concat(mls);
+									title: "已经最新",
+									icon: "none",
+								})
+								that.refreshing = false;
+								uni.stopPullDownRefresh()
+								return;
+							}
+							
+							let lists = ret.data.medialist;
+							console.log("list页面得到lists", lists);
+							if (that.refreshing) {
+								that.refreshing = false;
+								uni.stopPullDownRefresh()
+								that.lists = lists;
+								that.fetchPageNum = 2;
+								that.loadMoreText="下拉刷新";
+							} else {
+								that.lists = that.lists.concat(lists);
 								that.fetchPageNum += 1;
 							}
-							that.refreshing = false;
+							
 						}
 					}
 				});
 			},
 			goDetail(e) {
+				//uni.navigateTo({
+				//	url: "../detail/detail?data=" + encodeURIComponent(JSON.stringify(e))
+				//})
 				if(this.hasLogin == 1){
 					const data ={
-						cmd:"pulldlghisgp",
+						cmd:"pulldlghis",
 						data:e,
 						ui:this.userInfo,
 					}
@@ -217,8 +157,10 @@
 				}else{
 					uni.showModal({
 						title: '请先登录哦！',
+						//content: '确定切换账户吗？',
 						success: function (res) {
 							if (res.confirm) {				
+								
 								uni.navigateTo({
 									url:"../login/login"
 								})

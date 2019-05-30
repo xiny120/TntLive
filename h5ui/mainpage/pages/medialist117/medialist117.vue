@@ -4,30 +4,12 @@
 			<block v-for="(item, index) in lists" :key="index">
 				<uni-list-item :title="item.NickName" :note="item.CreateDate" show-extra-icon="true"  @click="goDetail(item)" ></uni-list-item>
 			</block>
-			<!--<uni-list-item title="标题文字" note="描述信息" show-extra-icon="true" :extra-icon="{color: '#4cd964',size: '22',type: 'spinner'}"></uni-list-item>-->
 		</uni-list>		
-		<!--
-		* 
-			<view class="row">
-				<view class="card card-list2"  @click="goDetail(item)" >
-					<image class="card-img card-list2-img" :src="item.img_src"></image>
-                    <text class="card-num-view card-list2-num-view">{{item.img_num}}P</text>
-					<view class="card-bottm row">
-						<view class="car-title-view row">
-							<text class="card-title card-list2-title">{{item.NickName}}</text>
-						</view>
-						<view @click.stop="share(item)" class="card-share-view"></view>
-					</view>
-				</view>
-			</view>
-			-->
-		
 		<text class="loadMore">{{loadMoreText}}</text>
 	</view>
 </template>
 
 <script>
-	
 	import uniList from '../../components/uni-list/uni-list.vue'
 	import uniListItem from '../../components/uni-list-item/uni-list-item.vue'	
     import {
@@ -51,20 +33,11 @@
 				
 			}
 		},
-        onShow: function() {
-            console.log('medialist Show')
-        },
-        onHide: function() {
-		
-        },		
-
 		onLoad(e) {
-			//this.fetchPageNum = 1;
 			this.id = e.id;
 			setTimeout(() => { //防止app里由于渲染导致转场动画卡顿
 				this.getData();
-			}, 150)			
-
+			}, 50)			
 			uni.getProvider({
 				service: "share",
 				success: (e) => {
@@ -102,11 +75,11 @@
 		onPullDownRefresh() {
 			console.log("下拉刷新");
 			this.refreshing = true;
-			this.getData();
+			//this.getNew();
 		},
 		onReachBottom() {
 			console.log("上拉加载刷新");
-			if(this.fetchPageNum > 20){
+			if(this.fetchPageNum > 30){
 				this.loadMoreText = "没有更多了"
 				return;
 			}else{
@@ -118,18 +91,26 @@
 			this.getData();
 		},
 		computed: mapState(['userInfo','hasLogin']),
-		methods: {
-			
+		methods: {					
 			getData(e) {
+				if(this.refreshing) return;
+				this.refreshing = true;
+				let now0 = new Date();
+				now0.setTime(now0.getTime() + 60*60*24*1000);
+				let cd = now0.getFullYear() + "-" + (now0.getMonth()+1) + "-" + now0.getDate();
+				if(this.lists.length > 0){
+					cd = this.lists[this.lists.length-1].CreateDate
+				}					
 				const data = {
 					action:"medialist",
-					orderby:"idx asc",
+					orderby:"CreateDate desc",
 					roomid:this.roomid,
-					pageid:this.fetchPageNum
+					pageid:this.fetchPageNum,
+					CreateDate:cd
 				}
 				let that = this;
 				uni.request({
-					url: this.$serverUrl + '/api/1.00/private',
+					url: this.$serverUrl + '/api/1.00/public',
 					method: 'POST',
 					data:data,
 					dataType:'json',  
@@ -140,26 +121,15 @@
 					success: (ret) => {
 						if (ret.statusCode !== 200) {
 							console.log("请求失败", ret)
-						
+							that.refreshing = false;
 						} else {
 							if(ret.data.status != 0){
 								uni.showToast({
 									title:ret.data.msg,
 								})
-								return;
-							}
-							if (that.refreshing && ret.medialist[0].id === that.lists[0].id) {
-								
-								uni.showToast({
-									title: "已经最新",
-									icon: "none",
-								})
 								that.refreshing = false;
-								uni.stopPullDownRefresh()
 								return;
 							}
-							
-							
 							let lists = ret.data.medialist;
 							if(lists.length == 0){
 								uni.showToast({
@@ -168,46 +138,21 @@
 								})								
 							}
 							console.log("list页面得到lists", lists);
-							if (that.refreshing) {
-								that.refreshing = false;
-								uni.stopPullDownRefresh()
-								that.lists = lists;
-								that.fetchPageNum = 2;
-								that.loadMoreText="下拉刷新";
-							} else {
-								that.lists = that.lists.concat(lists);
-								that.fetchPageNum += 1;
-							}
-							//that.fetchPageNum += 1;
+							that.lists = that.lists.concat(lists);
+							that.fetchPageNum += 1;
+							that.refreshing = false;
+
 						}
 					}
 				});
 			},
 			goDetail(e) {
-				if(this.hasLogin == 1){
-					const data ={
-						cmd:"pulldlghis117",
-						data:e,
-						ui:this.userInfo,
-					}
-					alert(JSON.stringify(data));
-				}else{
-					uni.showModal({
-						title: '请先登录哦！',
-						//content: '确定切换账户吗？',
-						success: function (res) {
-							if (res.confirm) {				
-								
-								uni.navigateTo({
-									url:"../login/login"
-								})
-							} else if (res.cancel) {
-								console.log('用户点击取消');
-							}
-						}
-					});	
-				}				
-				
+				const data ={
+					cmd:"pulldlghis117",
+					data:e,
+					ui:this.userInfo,
+				}
+				alert(JSON.stringify(data));
 			},
 			share(e) {
 				if (this.providerList.length === 0) {

@@ -2,47 +2,31 @@ package webapi100
 
 import (
 	"cfg"
-	_ "database/sql"
 	"encoding/json"
-	"fmt"
+
+	//"fmt"
 	"log"
 	"net/http"
 	"os"
 	"time"
 	"toolset"
-	"ucenter"
+	sign "ucenter"
 
-	"github.com/gorilla/mux"
+	uuid "github.com/satori/go.uuid"
 )
 
 var (
 	actions = map[string](func(http.ResponseWriter, *http.Request, *map[string]interface{})){
-		"auth":         f_auth,
-		"reg":          f_reg,
-		"roomlist":     f_roomlist,
-		"medialist":    f_medialist,
-		"medialistnew": f_medialistnew,
-		"wxjsinit":     f_wxjsinit,
+		"auth":         fAuth,
+		"reg":          fReg,
+		"roomlist":     fRoomlist,
+		"medialist":    fMedialist,
+		"medialistnew": fMedialistnew,
+		"wxjsinit":     fWxjsinit,
 	}
 )
 
-func ServeWebapi100_(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	//log.Println("serveTest - ", r.URL, " - ", vars["action"])
-	var v interface{}
-	err := json.NewDecoder(r.Body).Decode(&v)
-	if err != nil {
-		w.Write([]byte("\"status\":1,\"msg\":\"提交的json参数解析失败\""))
-	} else {
-		if f, ok := actions[vars["action"]]; ok {
-			v1 := v.(map[string]interface{})
-			f(w, r, &v1)
-		} else {
-			http.Error(w, "NotFound", http.StatusNotFound)
-		}
-	}
-}
-
+// Public ok
 func Public(w http.ResponseWriter, r *http.Request) {
 	if origin := r.Header.Get("Origin"); origin != "" {
 		w.Header().Set("Access-Control-Allow-Origin", "*") //允许访问所有域
@@ -84,13 +68,13 @@ func Public(w http.ResponseWriter, r *http.Request) {
 }
 
 type wxjsinit struct {
-	AppId     string //`json:"appId"`
+	AppID     string //`json:"appId"`
 	Timestamp string //`json:"timestamp"`
 	NonceStr  string //`json:"nonceStr"`
 	Signature string //`json:"signature"`
 }
 
-func f_wxjsinit(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
+func fWxjsinit(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
 	log.Println("f_wxjsinit", *v)
 	res := make(map[string]interface{})
 	res["t"] = "wxjsinit"
@@ -107,44 +91,71 @@ func f_wxjsinit(w http.ResponseWriter, r *http.Request, v *map[string]interface{
 	}
 }
 
-func f_reg(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
+func fReg(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
 	res := make(map[string]interface{})
 	res["t"] = "sign in"
 	res["status"] = 1
-	res["msg"] = "注册成功！"
+	res["msg"] = "用户名密码不能为空！"
 	account := toolset.MapGetString("account", v, "")
 	password := toolset.MapGetString("password", v, "")
 	email := toolset.MapGetString("email", v, "")
 	cellphone := toolset.MapGetString("cellphone", v, "")
 
 	res["msg"] = func() string {
-		db, err0 := cfg.OpenDb() //sql.Open("adodb", cfg.Cfg["mssql"])
+		if account == "" || password == "" {
+			return "用户名密码不能为空！"
+		}
+		db, err0 := cfg.OpenDb()
 		if err0 != nil {
 			return "f_reg sql open error"
 		}
 		defer db.Close()
-		sqlstr := fmt.Sprintf("SELECT TOP (%d) [Id], [Title], [Intro], [Icon], [Corver], [Background], [Follow], [Online],  [Type], [PullUri], [OrderIdx] FROM  [Web2019_roomlist] where [orderidx] >= %d and bDeleted=0 order by [orderidx] asc")
-		log.Println(sqlstr)
-		stmt, err0 := db.Prepare(sqlstr)
+		stmt, err0 := db.Prepare(`
+			SELECT userguid 
+			FROM useridentify
+			where userid=?			
+		`)
 		if err0 != nil {
 			return "f_reg sql db.Prepare error"
 		}
 		defer stmt.Close()
-		rows, err := stmt.Query()
+		rows, err := stmt.Query(account)
 		if err != nil {
 			return "f_reg sql stmt.Query error" + account + password + email + cellphone
-			//result = "f_roomlist sql stmt.Query error" + account + password + email + cellphone
+		}
+		if rows.Next() {
+			return "用户名已经被占用！"
 		}
 
-		//result = "用户名或密码错误！"
-		//culs, _ := rows.Columns()
-		//count := len(culs)
-		//vals := make([]interface{}, count)
-		for rows.Next() {
-			//break
-		}
-		return "Register ok"
+		sid, _ := uuid.NewV4()
 
+		stmti, err1 := db.Prepare(`
+			INSERT INTO useridentify
+			(userguid, userid, createtime, LastSignin, LastIp)
+			VALUES (?,?,?,?,?)
+		`)
+		if err1 != nil {
+			return "f_reg sql db.Prepare error"
+		}
+		defer stmti.Close()
+		_, err2 := stmti.Exec(sid, account, time.Now(), time.Now(), r.RemoteAddr)
+		if err2 != nil {
+			return "f_reg sql stmti.Exec error"
+		}
+
+		stmtu, err3 := db.Prepare(`
+			INSERT INTO userinfo
+			(userguid, email,cellphone, password, create_time, age, sex, nick_name, follow, idol, writer)
+			VALUES (?,?,?,?,?,?,?,?,?,?,?)
+		`)
+		defer stmtu.Close()
+		_, err3 = stmtu.Exec(sid, email, cellphone, password, time.Now(), 0, 0, account, 0, 0, 0)
+		if err3 != nil {
+			stmti.Exec("delete from useridentify where userid=?", account)
+			return "f_reg sql stmti.Exec error"
+		}
+		res["status"] = 0
+		return "注册成功！"
 	}()
 	//res["msg"] = result
 	rmsg, err := json.Marshal(res)
@@ -153,15 +164,15 @@ func f_reg(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
 	}
 }
 
-func f_auth(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
+func fAuth(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
 	res := make(map[string]interface{})
 	account := toolset.MapGetString("account", v, "")   //(*v)["account"].(string)
 	password := toolset.MapGetString("password", v, "") //(*v)["password"].(string)
-	tt := sign.SignIn(account, password)
-	sign.SessionsSet(tt.SessionId, tt)
+	tt, _ := sign.In(account, password)
+	sign.SessionsSet(tt.SessionID, tt)
 	wbuf, werr := json.Marshal(tt)
 	if werr == nil {
-		tfile := "./tokens/" + tt.SessionId
+		tfile := "./tokens/" + tt.SessionID
 		f, err3 := os.Create(tfile) //创建文件
 		log.Println("f_auth", tfile, err3)
 		if err3 == nil {
@@ -181,100 +192,41 @@ func f_auth(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
 	}
 }
 
-type roomitem struct {
-	Img_src    string `json:"img_src"`
-	Img_num    string `json:"img_num"`
-	Title      string `json:"title"`
-	Follow     int64  `json:"follow"`
-	Onlines    int64  `json:"onlines"`
-	Intro      string `json:"intro"`
-	PullUri    string `json:"pulluri"`
-	Id         string `json:"id"`
-	Icon       string `json:"icon"`
-	Corver     string `json:"corver"`
-	Background string `json:"background"`
-	Type       int64  `json:"type"`
-	OrderIdx   int64  `json:"orderidx"`
-}
-
-func f_roomlist(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
+func fRoomlist(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
 	log.Println("f_roomlist", *v)
 	res := make(map[string]interface{})
 	res["t"] = "f_roomlist"
 	res["status"] = 1
 	res["msg"] = "未知错误！"
-	ris := []roomitem{}
-	result := ""
-	page := toolset.MapGetInt("page", v, 0) - 1     //int((*v)["page"].(float64)) - 1
-	per_page := toolset.MapGetInt("per_page", v, 0) //int((*v)["per_page"].(float64))
+	ris := [](map[string]interface{}){}
 
-	db, err0 := cfg.OpenDb() //sql.Open("adodb", cfg.Cfg["mssql"])
-	if err0 != nil {
-		result = "f_roomlist sql open error"
-	} else {
-		defer db.Close()
-		sqlstr := fmt.Sprintf("SELECT TOP (%d) [Id], [Title], [Intro], [Icon], [Corver], [Background], [Follow], [Online],  [Type], [PullUri], [OrderIdx] FROM  [Web2019_roomlist] where [orderidx] >= %d and bDeleted=0 order by [orderidx] asc", per_page, page*per_page)
-		stmt, err0 := db.Prepare(sqlstr)
+	res["msg"] = func() string {
+		db, err0 := cfg.OpenDb()
 		if err0 != nil {
-			log.Println(err0)
-			result = "f_roomlist sql db.Prepare error"
-		} else {
-			defer stmt.Close()
-			rows, err := stmt.Query()
-			if err != nil {
-				result = "f_roomlist sql stmt.Query error"
-			} else {
-				result = "用户名或密码错误！"
-				culs, _ := rows.Columns()
-				count := len(culs)
-				vals := make([]interface{}, count)
-				for rows.Next() {
-					ri := roomitem{}
-					rows.Scan(&vals[0], &vals[1], &vals[2], &vals[3], &vals[4], &vals[5], &vals[6], &vals[7], &vals[8], &vals[9], &vals[10])
-					if vals[0] != nil {
-						ri.Id = vals[0].(string)
-					}
-					if vals[1] != nil {
-						ri.Title = vals[1].(string)
-					}
-					if vals[2] != nil {
-						ri.Intro = vals[2].(string)
-					}
-					if vals[3] != nil {
-						ri.Icon = vals[3].(string)
-					}
-					if vals[4] != nil {
-						ri.Corver = vals[4].(string)
-					}
-					if vals[5] != nil {
-						ri.Background = vals[5].(string)
-					}
-					if vals[6] != nil {
-						ri.Follow = (vals[6].(int64))
-					}
-					if vals[7] != nil {
-						ri.Onlines = (vals[7].(int64))
-					}
-					if vals[8] != nil {
-						ri.Type = (vals[8].(int64))
-					}
-					if vals[9] != nil {
-						ri.PullUri = vals[9].(string)
-					}
-					if vals[10] != nil {
-						ri.OrderIdx = vals[10].(int64)
-					}
-					result = "登录成功"
-
-					ris = append(ris, ri)
-					//break
-				}
-			}
+			return "f_roomlist sql open error"
 		}
+		defer db.Close()
+		stmt, err0 := db.Prepare(`
+			SELECT roomid, title, intro, icon, corver, background, follow, online,
+			    type, ownerguid, orderidx, vhost,vport, vapp, vstream, deleted ,stitle, createdate
+			FROM roomlist
+			where deleted = 0
+			order by createdate desc
+		`)
+		if err0 != nil {
+			return "f_roomlist sql db.Prepare error"
+		}
+		defer stmt.Close()
+		rows, err := stmt.Query()
+		if err != nil {
+			return "f_roomlist sql stmt.Query error"
+		}
+		ris, err = toolset.Rows2Map(rows)
+		return "登录成功"
+	}()
 
-	}
 	res["roomlist"] = ris
-	res["msg"] = result
+
 	rmsg, err := json.Marshal(ris)
 	if err == nil {
 		w.Write(rmsg)
@@ -283,10 +235,10 @@ func f_roomlist(w http.ResponseWriter, r *http.Request, v *map[string]interface{
 }
 
 type mediaitem struct {
-	Id           string //`json:"id"`
+	ID           string //`json:"id"`
 	RoomName     string //`json:"roomname"`
 	CreateDate   string //`json:"createdate"`
-	PublisherId  string //`json:"PublisherId"`
+	PublisherID  string //`json:"PublisherId"`
 	FileName     string //`json:"filename"`
 	NickName     string //`json:"title"`
 	FilePath     string //`json:"filepath"`
@@ -296,10 +248,8 @@ type mediaitem struct {
 	Encryptioned int32  //`json:"encryptioned"`
 }
 
-func f_medialist(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
-	//log.Println("f_medialist", *v)
+func fMedialist(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
 	roomid := toolset.MapGetString("roomid", v, "{96518478-BE8D-4EEE-9FEC-69D472CED4DC}")
-	//orderby := toolset.MapGetString("orderby", v, "CreateDate asc ")
 	pageid := toolset.MapGetInt("pageid", v, 0)
 	CreateDate := toolset.MapGetString("CreateDate", v, "3030-12-31")
 	pagesize := 20
@@ -308,8 +258,7 @@ func f_medialist(w http.ResponseWriter, r *http.Request, v *map[string]interface
 	res["status"] = 0
 	res["msg"] = ""
 	mis := []mediaitem{}
-
-	db, err0 := cfg.OpenDb() //sql.Open("adodb", cfg.Cfg["mssql"])
+	db, err0 := cfg.OpenDb()
 	if err0 != nil {
 		log.Println("ServeSrs sql open error")
 	} else {
@@ -357,13 +306,13 @@ func f_medialist(w http.ResponseWriter, r *http.Request, v *map[string]interface
 					ri := mediaitem{}
 					rows.Scan(&vals[0], &vals[1], &vals[2], &vals[3], &vals[4], &vals[5], &vals[6], &vals[7], &vals[8], &vals[9], &vals[10], &vals[11])
 					if vals[0] != nil {
-						ri.Id = vals[0].(string)
+						ri.ID = vals[0].(string)
 					}
 					if vals[1] != nil {
 						ri.CreateDate = (vals[1].(time.Time)).Format(("2006-01-02 15:04:05.000"))
 					}
 					if vals[2] != nil {
-						ri.PublisherId = vals[2].(string)
+						ri.PublisherID = vals[2].(string)
 					}
 					if vals[3] != nil {
 						ri.NickName = vals[3].(string)
@@ -404,7 +353,7 @@ func f_medialist(w http.ResponseWriter, r *http.Request, v *map[string]interface
 	}
 }
 
-func f_medialistnew(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
+func fMedialistnew(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
 	//log.Println("f_medialist", *v)
 	roomid := toolset.MapGetString("roomid", v, "{96518478-BE8D-4EEE-9FEC-69D472CED4DC}")
 	//orderby := "CreateDate"
@@ -447,13 +396,13 @@ func f_medialistnew(w http.ResponseWriter, r *http.Request, v *map[string]interf
 					ri := mediaitem{}
 					rows.Scan(&vals[0], &vals[1], &vals[2], &vals[3], &vals[4], &vals[5], &vals[6], &vals[7], &vals[8], &vals[9], &vals[10], &vals[11])
 					if vals[0] != nil {
-						ri.Id = vals[0].(string)
+						ri.ID = vals[0].(string)
 					}
 					if vals[1] != nil {
 						ri.CreateDate = (vals[1].(time.Time)).Format(("2006-01-02 15:04:05.000"))
 					}
 					if vals[2] != nil {
-						ri.PublisherId = vals[2].(string)
+						ri.PublisherID = vals[2].(string)
 					}
 					if vals[3] != nil {
 						ri.NickName = vals[3].(string)
