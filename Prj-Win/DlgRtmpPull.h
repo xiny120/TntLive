@@ -35,14 +35,14 @@ public:
 	virtual ~DlgRtmpPull();
 
 	CefRefPtr<CefBrowser> GetChartroom() {
-		CWnd* pWnd = GetDlgItem(IDC_STATIC_CEF3);
+		CWnd* pWnd = GetDlgItem(IDC_STATIC_SB_CHATROOM);
 		if (IsWindow(pWnd->GetSafeHwnd())) {
 			return theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
 		}
 	};
 
 	CefRefPtr<CefBrowser> GetMedialist() {
-		CWnd* pWnd = GetDlgItem(IDC_STATIC_LIST);
+		CWnd* pWnd = GetDlgItem(IDC_STATIC_SB_MEDIALIST);
 		if (IsWindow(pWnd->GetSafeHwnd())) {
 			return theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
 		}

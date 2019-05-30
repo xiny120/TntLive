@@ -5,8 +5,8 @@
     <string name="watch_live">拉流</string>
     <string name="str_rtmp">目前暂无直播...</string>
 
-    <string name="app_uri">http://210.192.107.62:8080/live/h5client/mainpage/</string>
-    <string name="app_urir">http://gpk01.gwgz.com/live/h5client/mainpage/</string>
+    <string name="app_urir">http://210.192.107.62:8080/live/h5client/mainpage/</string>
+    <string name="app_uri">http://gpk01.gwgz.com/live/h5client/mainpage/</string>
     <string name="app_hosthis">http://gpk01.gwgz.com:8862/</string>
     <string name="hint_rtmp_url">输入推流/拉流地址</string>
     <string name="str_rtmp_success">RTMP 连接成功</string>

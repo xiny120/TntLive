@@ -28,7 +28,7 @@
 HWND	m_hWndPullDlg;
 extern int gUserId;
 //extern int gLiving;
-extern std::string m_baseurl;
+extern std::wstring m_baseurl;
 
 IMPLEMENT_DYNAMIC(DlgRtmpPull, CDialog)
 
@@ -115,22 +115,24 @@ BOOL DlgRtmpPull::OnInitDialog() {
 
 	CefBrowserSettings settings;
 	
-	std::string url;
+	std::wstring url;
 	if (url.empty())
-		url = m_baseurl + "live/h5client/mainpage/#/pages/chatroom/chatroom";
+		url = m_baseurl + L"live/h5client/mainpage/#/pages/chatroom/chatroom";
 	CRect rc;
 	CefWindowInfo window_info;
 	rc.left = 0;
 	rc.top = 0;
 	rc.bottom = 1000;
 	rc.right = 500;
-	CWnd* pWnd = this->GetDlgItem(IDC_STATIC_CEF3);
+	CWnd* pWnd = this->GetDlgItem(IDC_STATIC_SB_CHATROOM);
 	window_info.SetAsChild(pWnd->GetSafeHwnd(), rc);
+	//url = L"about:blank";
 	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, settings, NULL);
 
-	url = mmedialisturl;// m_baseurl + "live/h5client/mainpage/#/pages/medialist/medialist";
-	pWnd = this->GetDlgItem(IDC_STATIC_LIST);
+	url = m_baseurl + L"live/h5client/mainpage/#/pages/medialist/medialist";
+	pWnd = this->GetDlgItem(IDC_STATIC_SB_MEDIALIST);
 	window_info.SetAsChild(pWnd->GetSafeHwnd(), rc);
+	url = L"about:blank";
 	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, settings, NULL);
 
 	PostMessage(WM_SIZE, 0, 0);
@@ -179,7 +181,14 @@ void DlgRtmpPull::Start(){
 
 void DlgRtmpPull::Stop(){
 	if (m_pAVRtmplayer != NULL) {
-		//m_btnRtmp.SetWindowTextW(L"拉流");
+		CefRefPtr<CefBrowser> p = GetMedialist();
+		if (p != NULL) {
+			CefRefPtr<CefFrame> pf = p->GetMainFrame();
+			if (pf != NULL) {
+				pf->LoadURL(L"about:blank");
+				Sleep(100);
+			}
+		}
 		RTMPGuester::Destory(m_pAVRtmplayer);
 		m_pAVRtmplayer = NULL;
 	}
@@ -207,7 +216,7 @@ void DlgRtmpPull::OnSize(UINT nType, int cx, int cy) {
 		rcChatroom.left = rcVideo.right;// +GetSystemMetrics(SM_CYFRAME);
 	}
 	if (IsWindow(this->GetSafeHwnd())) {
-		CWnd* pWnd = GetDlgItem(IDC_STATIC_CEF3);
+		CWnd* pWnd = GetDlgItem(IDC_STATIC_SB_CHATROOM);
 		if (IsWindow(pWnd->GetSafeHwnd())) {
 			pWnd->SetWindowPos(NULL, rcChatroom.left, rcChatroom.top, rcChatroom.Width(), rcChatroom.Height(), SWP_NOZORDER);
 			CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
@@ -234,7 +243,7 @@ void DlgRtmpPull::OnSize(UINT nType, int cx, int cy) {
 		m_myStatic.SetWindowPos(NULL, 0, 0, rcStatic.Width(), rcStatic.Height(), SWP_NOMOVE | SWP_NOZORDER);
 	}
 	// 历史录像列表webview位置和大小。
-	CWnd* pList = this->GetDlgItem(IDC_STATIC_LIST);
+	CWnd* pList = this->GetDlgItem(IDC_STATIC_SB_MEDIALIST);
 	if (pList != NULL) {
 		pList->SetWindowPos(NULL, rcList.left, rcList.top, rcList.Width(), rcList.Height(), SWP_NOZORDER);
 		if (IsWindow(pList->GetSafeHwnd())) {
@@ -254,15 +263,18 @@ HBRUSH DlgRtmpPull::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor){
 }
 
 void DlgRtmpPull::OnSysCommand(UINT nID, LPARAM lParam){
-	CWnd* pWnd = this->GetDlgItem(IDC_STATIC_LIST);
+	CWnd* pWnd = this->GetDlgItem(IDC_STATIC_SB_MEDIALIST);
 	if ((nID) == IDR_MENU_SYS_MORE_REFRESH) {
 		CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
 		if (pb != nullptr) {
 			std::string url = pb->GetMainFrame()->GetURL().ToString();
+			//GetMedialist()->GetMainFrame()->ExecuteJavaScript("console.log('hello')", GetMedialist()->GetMainFrame()->GetURL(), 0);
+
 			pb->ReloadIgnoreCache();
 		}
 	}
 	else if ((nID) == IDR_MENU_SYS_MORE_SHOWDEVTOOLS) {
+		
 		CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
 		if (pb != nullptr) {
 			CefWindowInfo win_info;
@@ -276,73 +288,84 @@ void DlgRtmpPull::OnSysCommand(UINT nID, LPARAM lParam){
 }
 
 LRESULT DlgRtmpPull::OnPullDlg(WPARAM, LPARAM) {
-	std::string url = "";
+
+	
+	std::wstring url = L"";
 	CefString str = CPullDlgData::me()->pop();
-	if (!str.empty()) {
-		CefRefPtr<CefValue> jsonObject = CefParseJSON(str, JSON_PARSER_ALLOW_TRAILING_COMMAS);
-		if (jsonObject->IsValid()){
-			CefRefPtr<CefDictionaryValue> dict = jsonObject->GetDictionary();
-			CefString token = dict->GetString("cmd");
-			if (token == "pulldlg") {
-				CefRefPtr<CefDictionaryValue> data = dict->GetDictionary("data");
-				CefString title = data->GetString("title");
-				CefString roomid = data->GetString("id");
-				CefString pulluri = data->GetString("pulluri");
-				CefString background = data->GetString("background");
-				data = dict->GetDictionary("ui");
-				CefString sessionid = data->GetString("SessionId");
-				CefString token = data->GetString("Token");
-				url = std::string(pulluri);
-				std::string sid = std::string(sessionid);
-				std::string tkn = std::string(token);
-				std::string urlmedialist = m_baseurl + "live/h5client/mainpage/#/pages/medialist/medialist?roomid=";// +;
-				urlmedialist += roomid;
-				GetMedialist()->GetMainFrame()->LoadURL(urlmedialist);
-				m_strUri = url + "?sessionid=" + sid + "&token=" + tkn;
-				CWnd* pWnd = this->GetDlgItem(IDC_STATIC_CEF3);
-				if (pWnd != NULL && IsWindow(pWnd->GetSafeHwnd())) {
-					CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
-					if (pb != nullptr) {
-						pb->ReloadIgnoreCache();
-					}
-				}
+	if (str.empty())
+		return TRUE;
+	CefRefPtr<CefValue> jsonObject = CefParseJSON(str, JSON_PARSER_ALLOW_TRAILING_COMMAS);
+	if (!jsonObject->IsValid())
+		return TRUE;
+	CefRefPtr<CefDictionaryValue> dict = jsonObject->GetDictionary();
+	CefString token = dict->GetString("cmd");
+	if (token == "pulldlg") {
+		std::wstringstream ss;
+		CefRefPtr<CefDictionaryValue> data = dict->GetDictionary("data");
+		CefString title = data->GetString("title");
+		int roomid = data->GetInt("roomid");
+		ss << L"rtmp://" << data->GetString("vhost").ToWString() << L":" << data->GetInt("vport")
+			<< L"/" << data->GetString("vapp").ToWString() << L"/" << data->GetString("vstream").ToWString();
+		ss >> url;
+		CefString background = data->GetString("background");
+		data = dict->GetDictionary("ui");
+		std::wstring sid = data->GetString("SessionID").ToWString();
+		std::wstring tkn = data->GetString("Token").ToWString();
+		ss.clear();
+		ss.str(L"");
+		ss << m_baseurl << L"live/h5client/mainpage/#/pages/medialist/medialist?roomid=" << roomid;
+		std::wstring urlmedialist;
+		ss >> urlmedialist;
+		CefString tempurl;
+		tempurl.FromWString(urlmedialist);
 
-				pWnd = this->GetDlgItem(IDC_STATIC_LIST);
-				if (pWnd != NULL && IsWindow(pWnd->GetSafeHwnd())) {
-					CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
-					if (pb != nullptr) {
-						pb->ReloadIgnoreCache();
-					}
-				}
-
-				this->SetWindowText(title.c_str());
-				Start();
-			}else if (token == "pulldlghis") {
-				
-				if ( m_myStatic.GetLiving() == 99 ) {
-					AfxMessageBox(L"直播进行中，不能查看直播录像！请直播完毕后查看！");
-					return TRUE;
-				}
-				Stop();
-				CWnd* pWnd = AfxGetMainWnd();
-				CDlgFlvPlayer dlg(NULL, str);
-				dlg.DoModal();
-				Start();
-			}
-			else {
-
-				if (m_myStatic.GetLiving() == 99) {
-					AfxMessageBox(L"直播进行中，不能查看直播录像！请直播完毕后查看！");
-					return TRUE;
-				}
-				CWnd* pWnd = AfxGetMainWnd();
-				//Stop();
-				CDlgFlvPlayer dlg(NULL, str);
-				dlg.DoModal();
-				//Start();
+		GetMedialist()->GetMainFrame()->LoadURL(tempurl);
+		//GetMedialist()->Reload();
+		m_strUri = url + L"?sessionid=" + sid + L"&token=" + tkn;
+		/*
+		CWnd* pWnd = this->GetDlgItem(IDC_STATIC_CEF3);
+		if (pWnd != NULL && IsWindow(pWnd->GetSafeHwnd())) {
+			CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
+			if (pb != nullptr) {
+				pb->ReloadIgnoreCache();
 			}
 		}
+
+		pWnd = this->GetDlgItem(IDC_STATIC_LIST);
+		if (pWnd != NULL && IsWindow(pWnd->GetSafeHwnd())) {
+			CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
+			if (pb != nullptr) {
+				pb->ReloadIgnoreCache();
+			}
+		}
+		*/
+		this->SetWindowText(title.c_str());
+		Start();
+	}else if (token == "pulldlghis") {
+				
+		if ( m_myStatic.GetLiving() == 99 ) {
+			AfxMessageBox(L"直播进行中，不能查看直播录像！请直播完毕后查看！");
+			return TRUE;
+		}
+		Stop();
+		CWnd* pWnd = AfxGetMainWnd();
+		CDlgFlvPlayer dlg(NULL, str);
+		dlg.DoModal();
+		Start();
 	}
+	else {
+
+		if (m_myStatic.GetLiving() == 99) {
+			AfxMessageBox(L"直播进行中，不能查看直播录像！请直播完毕后查看！");
+			return TRUE;
+		}
+		CWnd* pWnd = AfxGetMainWnd();
+		//Stop();
+		CDlgFlvPlayer dlg(NULL, str);
+		dlg.DoModal();
+		//Start();
+	}
+	
 	return TRUE;
 }
 

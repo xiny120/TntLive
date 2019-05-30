@@ -30,7 +30,7 @@
 #define new DEBUG_NEW
 #endif
 
-extern std::string m_baseurl;
+extern std::wstring m_baseurl;
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
 class CAboutDlg : public CDialogEx
@@ -100,7 +100,8 @@ LRESULT CLiveWin32Dlg::OnPullDlgResize(WPARAM wp, LPARAM lp) {
 
 
 LRESULT CLiveWin32Dlg::OnPullDlg(WPARAM, LPARAM) {
-	std::string url = "";
+	ASSERT(0);
+	std::wstring url = L"";
 	CefString str = CPullDlgData::me()->pop();
 	if (!str.empty()) {
 		CefRefPtr<CefValue> jsonObject = CefParseJSON(str, JSON_PARSER_ALLOW_TRAILING_COMMAS);
@@ -113,16 +114,14 @@ LRESULT CLiveWin32Dlg::OnPullDlg(WPARAM, LPARAM) {
 				CefString pulluri = data->GetString("pulluri");
 				CefString background = data->GetString("background");
 				data = dict->GetDictionary("ui");
-				CefString sessionid = data->GetString("SessionId");
-				CefString token = data->GetString("Token");
-				url = std::string(pulluri);
-				std::string sid = std::string(sessionid);
-				std::string tkn = std::string(token);
-				std::string urlmedialist = m_baseurl + "live/h5client/mainpage/#/pages/medialist/medialist?roomid=";// +;
+				std::wstring sid = data->GetString("SessionId").ToWString();
+				std::wstring tkn = data->GetString("Token").ToWString();
+				url = std::wstring(pulluri);
+				std::wstring urlmedialist = m_baseurl + L"live/h5client/mainpage/#/pages/medialist/medialist?roomid=";// +;
 				urlmedialist += roomid;
 				//GetMedialist()->GetMainFrame()->LoadURL(urlmedialist);
-				std::string m_strUri = url + "?sessionid=" + sid + "&token=" + tkn;
-				CWnd* pWnd = this->GetDlgItem(IDC_STATIC_CEF3);
+				std::wstring m_strUri = url + L"?sessionid=" + sid + L"&token=" + tkn;
+				CWnd* pWnd = this->GetDlgItem(IDC_STATIC_SB_MEDIALIST);
 				if (pWnd != NULL && IsWindow(pWnd->GetSafeHwnd())) {
 					CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
 					if (pb != nullptr) {
@@ -201,13 +200,13 @@ BOOL CLiveWin32Dlg::OnInitDialog(){
 	// Specify CEF browser settings here.
 	CefBrowserSettings browser_settings;
 
-	std::string url;
+	std::wstring url;
 
 	// Check if a "--url=" value was provided via the command-line. If so, use
 	// that instead of the default URL.
 	//url = command_line->GetSwitchValue("url");
 	if (url.empty())
-		url = m_baseurl + "live/h5client/mainpage/#/";
+		url = m_baseurl + L"live/h5client/mainpage/#/";
 
 	CefWindowInfo window_info;
 

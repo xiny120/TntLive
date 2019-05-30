@@ -13,7 +13,7 @@
 
 #pragma warning (disable:4996)
 extern int gUserId;
-extern std::string m_baseurl;
+extern std::wstring m_baseurl;
 // CDlgFlvPlayer 对话框
 static std::wstring apiServer = L"http://gpk01.gwgz.com:8091";
 

@@ -154,37 +154,16 @@ bool SimpleHandler::OnJSDialog(CefRefPtr<CefBrowser> browser,
 	const CefString& default_prompt_text,
 	CefRefPtr<CefJSDialogCallback> callback,
 	bool& suppress_message) {
-	std::string str0 = message_text.ToString();
-	
-
 	CefRefPtr<CefValue> jsonObject = CefParseJSON(message_text, JSON_PARSER_ALLOW_TRAILING_COMMAS);
-	if (jsonObject->IsValid())
-	{
+	if (jsonObject->IsValid()){
+		CPullDlgData::me()->push(message_text);
 		CefRefPtr<CefDictionaryValue> dict = jsonObject->GetDictionary();
 		CefString token = dict->GetString("cmd");
 		if (token == "pulldlg") {
 			CefRefPtr<CefDictionaryValue> data = dict->GetDictionary("data");
-			CefString roomid = data->GetString("id");
-			CefString pulluri = data->GetString("pulluri");
-			CPullDlgData::me()->push(str0);
-
-			data = dict->GetDictionary("ui");
-			CefString sessionid = data->GetString("SessionId");
-			CefString token = data->GetString("Token");
 			gUserId = data->GetInt("UserId");
-			//::PostMessage(m_hWndDlg, WM_PULLDLG, 0, 0);
-			::PostMessage(m_hWndPullDlg, WM_PULLDLG, 0, 0);
 		}
-		else if (token == "pulldlghis") {
-			CPullDlgData::me()->push(str0);
-			//::PostMessage(m_hWndDlg, WM_PULLDLG, 0, 0);
-			::PostMessage(m_hWndPullDlg, WM_PULLDLG, 0, 0);
-		}
-		else {
-			CPullDlgData::me()->push(str0);
-			//::PostMessage(m_hWndDlg, WM_PULLDLG, 0, 0);
-			::PostMessage(m_hWndPullDlg, WM_PULLDLG, 0, 0);
-		}
+		::PostMessage(m_hWndPullDlg, WM_PULLDLG, 0, 0);
 	}
 
 
