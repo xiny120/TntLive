@@ -195,7 +195,8 @@ std::string webapi::post(char* url,char* sid, char* par) {
 					}
 					vbuf.insert(vbuf.end(), buf, buf + len);
 				}
-				ret = UTF8_To_string(std::string(&vbuf[0],vbuf.size()));
+				//ret = UTF8_To_string(std::string(&vbuf[0],vbuf.size()));
+				ret = std::string(&vbuf[0], vbuf.size());
 			}
 
 

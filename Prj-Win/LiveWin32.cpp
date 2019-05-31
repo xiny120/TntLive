@@ -66,7 +66,7 @@ CLiveWin32App::CLiveWin32App():CWinApp(L"π÷–„÷±≤•"){
 
 CLiveWin32App theApp;
 std::wstring m_baseurl = L"http://210.192.107.62:8080/";// "http://gpk01.gwgz.com/";
-std::wstring m_apiurl = L"http://gpk01.gwgz.com:8092/";
+std::string m_apiurl = "http://gpk01.gwgz.com:8091/";
 
 
 CString GetModuleDir()

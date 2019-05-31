@@ -86,13 +86,34 @@ void DlgRtmpPull::OnOK() {
 }
 
 void DlgRtmpPull::OnCancel() {
+	{
+		CefRefPtr<CefBrowser> p = GetMedialist();
+		if (p != NULL) {
+			CefRefPtr<CefFrame> pf = p->GetMainFrame();
+			if (pf != NULL) {
+				pf->LoadURL(L"about:blank");
+			}
+		}
+	}
+	{
+		CefRefPtr<CefBrowser> p = GetChartroom();
+		if (p != NULL) {
+			CefRefPtr<CefFrame> pf = p->GetMainFrame();
+			if (pf != NULL) {
+				pf->LoadURL(L"about:blank");
+			}
+		}
+	}
+
+	Sleep(100);
 	ShowWindow(SW_HIDE);
 	Stop();
 }
 
 void DlgRtmpPull::OnClose() {
-	ShowWindow(SW_HIDE);
-	Stop();
+	//ShowWindow(SW_HIDE);
+	//Stop();
+	OnCancel();
 }
 
 BOOL DlgRtmpPull::OnInitDialog() {
@@ -126,7 +147,7 @@ BOOL DlgRtmpPull::OnInitDialog() {
 	rc.right = 500;
 	CWnd* pWnd = this->GetDlgItem(IDC_STATIC_SB_CHATROOM);
 	window_info.SetAsChild(pWnd->GetSafeHwnd(), rc);
-	//url = L"about:blank";
+	url = L"about:blank";
 	CefBrowserHost::CreateBrowser(window_info, theApp.handler, url, settings, NULL);
 
 	url = m_baseurl + L"live/h5client/mainpage/#/pages/medialist/medialist";
@@ -165,8 +186,6 @@ void DlgRtmpPull::Start(){
 		CStringA strId;
 		int id = 0;
 		strId.Format(("%d"), gUserId);
-		TRACE(strId);
-		TRACE("\r\n");
 		std::string url;
 		if (url.empty())
 			url =  m_strUri;
@@ -181,14 +200,6 @@ void DlgRtmpPull::Start(){
 
 void DlgRtmpPull::Stop(){
 	if (m_pAVRtmplayer != NULL) {
-		CefRefPtr<CefBrowser> p = GetMedialist();
-		if (p != NULL) {
-			CefRefPtr<CefFrame> pf = p->GetMainFrame();
-			if (pf != NULL) {
-				pf->LoadURL(L"about:blank");
-				Sleep(100);
-			}
-		}
 		RTMPGuester::Destory(m_pAVRtmplayer);
 		m_pAVRtmplayer = NULL;
 	}
@@ -268,13 +279,10 @@ void DlgRtmpPull::OnSysCommand(UINT nID, LPARAM lParam){
 		CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
 		if (pb != nullptr) {
 			std::string url = pb->GetMainFrame()->GetURL().ToString();
-			//GetMedialist()->GetMainFrame()->ExecuteJavaScript("console.log('hello')", GetMedialist()->GetMainFrame()->GetURL(), 0);
-
 			pb->ReloadIgnoreCache();
 		}
 	}
 	else if ((nID) == IDR_MENU_SYS_MORE_SHOWDEVTOOLS) {
-		
 		CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
 		if (pb != nullptr) {
 			CefWindowInfo win_info;
@@ -288,8 +296,6 @@ void DlgRtmpPull::OnSysCommand(UINT nID, LPARAM lParam){
 }
 
 LRESULT DlgRtmpPull::OnPullDlg(WPARAM, LPARAM) {
-
-	
 	std::wstring url = L"";
 	CefString str = CPullDlgData::me()->pop();
 	if (str.empty())
@@ -300,7 +306,9 @@ LRESULT DlgRtmpPull::OnPullDlg(WPARAM, LPARAM) {
 	CefRefPtr<CefDictionaryValue> dict = jsonObject->GetDictionary();
 	CefString token = dict->GetString("cmd");
 	if (token == "pulldlg") {
+		CefString tempurl;
 		std::wstringstream ss;
+		std::wstring urlmedialist;
 		CefRefPtr<CefDictionaryValue> data = dict->GetDictionary("data");
 		CefString title = data->GetString("title");
 		int roomid = data->GetInt("roomid");
@@ -314,31 +322,16 @@ LRESULT DlgRtmpPull::OnPullDlg(WPARAM, LPARAM) {
 		ss.clear();
 		ss.str(L"");
 		ss << m_baseurl << L"live/h5client/mainpage/#/pages/medialist/medialist?roomid=" << roomid;
-		std::wstring urlmedialist;
 		ss >> urlmedialist;
-		CefString tempurl;
 		tempurl.FromWString(urlmedialist);
-
 		GetMedialist()->GetMainFrame()->LoadURL(tempurl);
-		//GetMedialist()->Reload();
-		m_strUri = url + L"?sessionid=" + sid + L"&token=" + tkn;
-		/*
-		CWnd* pWnd = this->GetDlgItem(IDC_STATIC_CEF3);
-		if (pWnd != NULL && IsWindow(pWnd->GetSafeHwnd())) {
-			CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
-			if (pb != nullptr) {
-				pb->ReloadIgnoreCache();
-			}
-		}
-
-		pWnd = this->GetDlgItem(IDC_STATIC_LIST);
-		if (pWnd != NULL && IsWindow(pWnd->GetSafeHwnd())) {
-			CefRefPtr<CefBrowser> pb = theApp.handler->GetBrowser(pWnd->GetSafeHwnd());
-			if (pb != nullptr) {
-				pb->ReloadIgnoreCache();
-			}
-		}
-		*/
+		ss.clear();
+		ss.str(L"");
+		ss << m_baseurl << L"live/h5client/mainpage/#/pages/chatroom/chatroom?roomid=" << roomid;
+		ss >> urlmedialist;
+		tempurl.FromWString(urlmedialist);
+		GetChartroom()->GetMainFrame()->LoadURL(tempurl);
+		m_strUri = url + L"?t=" + tkn + L"&s=" + sid;
 		this->SetWindowText(title.c_str());
 		Start();
 	}else if (token == "pulldlghis") {

@@ -187,14 +187,14 @@ public class MainActivity extends AppCompatActivity {
                             try {
                                 JSONObject obj = new JSONObject(info1);
                                 JSONObject objData = obj.getJSONObject("data");
-                                String id = objData.getString("Id");
-                                String pulluri = objData.getString("FilePath");
-                                int enc = objData.getInt("Encryptioned");
+                                String id = objData.getString("id");
+                                String pulluri = objData.getString("filepath");
+                                int enc = objData.getInt("encrypted");
                                 char enckey = 0;
                                 objData = obj.getJSONObject("ui");
 
-                                int userid = objData.optInt("UserId");//objData.getInt("UserId");
-                                String sid = objData.optString("SessionId");// objData.getString("SessionId");
+                                int userid = objData.optInt("UserID");//objData.getInt("UserId");
+                                String sid = objData.optString("SessionID");// objData.getString("SessionId");
 
                                 JSONObject data = new JSONObject();
                                 try {
@@ -264,18 +264,22 @@ public class MainActivity extends AppCompatActivity {
                     }).start();
                 }else { //living
                     JSONObject objData = obj.getJSONObject("data");
-                    String pulluri = objData.getString("pulluri");
-                    int enc = objData.optInt("Encryptioned");// .getInt("Encryptioned");
+                    String roomid = objData.getString("roomid");
+                    String pulluri ="rtmp://" + objData.getString("vhost") + ":" +
+                            objData.getString("vport") + "/" + objData.getString("vapp") +
+                            "/" + objData.getString("vstream");//= objData.getString("pulluri");
+                    int enc = 0;// = objData.optInt("Encryptioned");// .getInt("Encryptioned");
                     objData = obj.getJSONObject("ui");
-                    String sid = objData.getString("SessionId");
+                    String sid = objData.getString("SessionID");
                     String tkn = objData.getString("Token");
-                    int userid= objData.getInt("UserId");
+                    int userid= objData.getInt("UserID");
 
                     Intent it = new Intent(getApplicationContext(), GuestActivity.class);
                     Bundle bd = new Bundle();
-                    bd.putString("rtmp_url", pulluri + "?sessionid=" + sid + "&token=" + tkn);
+                    bd.putString("rtmp_url", pulluri + "?s=" + sid + "&t=" + tkn);
                     bd.putInt("Encryptioned",enc);
                     bd.putInt("UserId",userid);
+                    bd.putString("roomid",roomid);
                     it.putExtras(bd);
                     startActivity(it);
                 }

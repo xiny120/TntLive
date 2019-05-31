@@ -84,8 +84,8 @@ BEGIN_MESSAGE_MAP(CLiveWin32Dlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BTN_PUSH, &CLiveWin32Dlg::OnBnClickedBtnPush)
 	ON_BN_CLICKED(IDC_BTN_RTCP, &CLiveWin32Dlg::OnBnClickedBtnRtcp)
-	ON_MESSAGE(WM_PULLDLG_RESIZE, OnPullDlgResize)
-	ON_MESSAGE(WM_PULLDLG, OnPullDlg)
+	//ON_MESSAGE(WM_PULLDLG_RESIZE, OnPullDlgResize)
+	//ON_MESSAGE(WM_PULLDLG, OnPullDlg)
 	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
@@ -100,6 +100,7 @@ LRESULT CLiveWin32Dlg::OnPullDlgResize(WPARAM wp, LPARAM lp) {
 
 
 LRESULT CLiveWin32Dlg::OnPullDlg(WPARAM, LPARAM) {
+	
 	ASSERT(0);
 	std::wstring url = L"";
 	CefString str = CPullDlgData::me()->pop();

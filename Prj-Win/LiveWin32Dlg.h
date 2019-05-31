@@ -21,8 +21,7 @@
 
 class DlgRtmpPull;
 // CLiveWin32Dlg 对话框
-class CLiveWin32Dlg : public CDialogEx
-{
+class CLiveWin32Dlg : public CDialogEx{
 // 构造
 public:
 	CLiveWin32Dlg(CWnd* pParent = NULL);	// 标准构造函数

@@ -74,7 +74,6 @@ import static android.content.ContentValues.TAG;
  */
 public class GuestActivity extends Activity implements RTMPGuestHelper,  SurfaceHolder.Callback{
     private WebView mwvMediaList;
-    //private LinearLayout mToolbar = null;
     private ImageView mIvClose = null;
     private ImageView mIvFull = null;
     private TextView mTxtStatus = null;
@@ -82,20 +81,17 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
     private SurfaceViewRenderer mSurfaceView = null;
     private VideoRenderer mRenderer = null;
     private SurfaceHolder mHolder;
-
     public static final float SHOW_SCALE = 16 * 1.0f / 9;
-
     private RelativeLayout mSurfaceLayout;
-
     //屏幕宽度
     private boolean mFullScreen;
     private int mScreenWidth;
     private int mVideoWidth;
     private int mVideoLeft;
+    private int mroomid;
     //屏幕高度
     private int mScreenHeight;
     private DisplayMetrics displayMetrics;
-
     /**
      * 接收解析后传过来的数据
      */
@@ -103,7 +99,6 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         @Override
         public void handleMessage(Message msg) {
             mTxtStatus.setVisibility(View.GONE);
-            //mToolbar.setVisibility(View.VISIBLE);
             mIvFull.setVisibility(View.VISIBLE);
             RelativeLayout.LayoutParams lp =
                     (RelativeLayout.LayoutParams) mSurfaceLayout.getLayoutParams();
@@ -116,13 +111,10 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_guest);
-        {//* Init UI
+        setContentView(R.layout.activity_guest);{//* Init UI
             mFullScreen = false;
             mTxtStatus = (TextView) findViewById(R.id.txt_rtmp_status);
             mSurfaceView = (SurfaceViewRenderer) findViewById(R.id.suface_view);
-            //mToolbar = (LinearLayout)findViewById(R.id.llayout_host_tools);
-            //mToolbar.setVisibility(View.GONE);
             mIvFull = (ImageView)findViewById(R.id.btn_tofullscreen);
             mIvFull.setVisibility(View.GONE);
             mwvMediaList = (WebView)findViewById(R.id.webviewmeidalist);
@@ -142,6 +134,7 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
             });
             mRenderer = new VideoRenderer(mSurfaceView);
         }
+        mroomid = Integer.valueOf(getIntent().getExtras().getString("roomid"));
         String rtmpUrl = getIntent().getExtras().getString("rtmp_url");
         int enc = getIntent().getExtras().getInt("Encryptioned");
         int enckey = 0;
@@ -372,7 +365,7 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
             @Override
             public void run() {
                 //mTxtStatus.setText(String.format( getString(R.string.str_rtmp_pull_status), cacheTime, curBitrate,curTime,totalTime));
-                mwvMediaList.loadUrl(getResources().getString(R.string.app_urir) + "#/pages/chatroom/chatroom");
+                mwvMediaList.loadUrl(getResources().getString(R.string.app_urir) + "#/pages/chatroom/chatroom?roomid=" + mroomid);
             }
         });
     }
@@ -511,19 +504,6 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
                         }
                     }
                 }).start();
-
-
-
-
-/*
-
-                Intent it = new Intent(getApplicationContext(), FlvPlayerActivity.class);
-                Bundle bd = new Bundle();
-                bd.putString("minfo", message);
-                it.putExtras(bd);
-                startActivity(it);
-                */
-
             }catch (Exception e1){
                 Log.i("",e1.toString());
             }
@@ -558,7 +538,7 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         mSurfaceLayout = (RelativeLayout) findViewById(R.id.layout_gesture);
         RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) mSurfaceLayout.getLayoutParams();
         lp.width = mVideoWidth;//(int) (mScreenWidth * SHOW_SCALE);
-        lp.height = 120;//mVideoWidth*576/720;
+        lp.height = 130;//mVideoWidth*576/720;
         lp.leftMargin = mVideoLeft;
         mSurfaceLayout.setLayoutParams(lp);
         mHolder = mSurfaceView.getHolder();
@@ -575,7 +555,7 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
         webSettings.setAppCachePath(appCachePath);
         webSettings.setAllowFileAccess(true);
         webSettings.setAppCacheEnabled(true);
-        mwvMediaList.loadUrl(getResources().getString(R.string.app_urir) + "#/pages/medialist/medialist");//加载url
+        mwvMediaList.loadUrl(getResources().getString(R.string.app_urir) + "#/pages/medialist/medialist?roomid="+mroomid);//加载url
         //mwvMediaList.loadUrl("http://www.qq.com");
 
 //        webView.loadDataWithBaseURL(null,"<html><head><title> 欢迎您 </title></head>" +
