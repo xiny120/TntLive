@@ -151,7 +151,7 @@
 				}else{
 					if(this.hasLogin == 1){
 						this.setroomid(e.id);
-						if(e.id.toLowerCase()  == "{96518478-be8d-4eee-9fec-69d472ced4dc}"){
+						if(e.id  == 999){
 							uni.switchTab({
 								url:"../medialist117/medialist117"
 							})							
@@ -166,10 +166,8 @@
 					}else{
 						uni.showModal({
 							title: '请先登录哦！',
-							//content: '确定切换账户吗？',
 							success: function (res) {
 								if (res.confirm) {				
-									
 									uni.navigateTo({
 										url:"../login/login"
 									})
@@ -179,10 +177,7 @@
 							}
 						});	
 					}
-					//uni.navigateTo({
-					//	url:"../detail/detail?data=" + encodeURIComponent(JSON.stringify(e))
-					//})
-				}
+					}
 			},
 			share(e) {
 				if (this.providerList.length === 0) {
