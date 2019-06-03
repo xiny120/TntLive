@@ -203,9 +203,9 @@ public class MainActivity extends AppCompatActivity {
                                 } catch (Exception e) {
 
                                 }
-                                URL url = new URL(MyApplication.apiServer + "/api/1.00/private");//放网站
+                                URL url = new URL(getString(R.string.api_server) + "/api/1.00/private");//放网站
                                 if(cmd.equals("pulldlghis117")){
-                                    url = new URL(MyApplication.apiServer + "/api/1.00/public");//放网站
+                                    url = new URL(getString(R.string.api_server) + "/api/1.00/public");//放网站
                                 }
                                 HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
                                 httpURLConnection.setRequestMethod("POST");

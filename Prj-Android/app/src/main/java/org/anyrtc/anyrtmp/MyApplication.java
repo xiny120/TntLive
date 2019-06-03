@@ -14,7 +14,7 @@ import static android.content.ContentValues.TAG;
 
 public class MyApplication extends Application {
     //声明一个变量
-    static public String apiServer = "http://gpk01.gwgz.com:8092";
+    //static public String apiServer = "http://gpk01.gwgz.com:8092";
     public String nameString;
     public short [][] pp = new short[10][];
     public int [] len = new int[10];

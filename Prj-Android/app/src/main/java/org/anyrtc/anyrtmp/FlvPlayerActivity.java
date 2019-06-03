@@ -27,6 +27,7 @@ import android.widget.Toast;
 import org.anyrtc.core.AnyRTMP;
 import org.anyrtc.core.RTMPGuestHelper;
 import org.anyrtc.core.RTMPGuestKit;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.RendererCommon;
@@ -224,19 +225,21 @@ public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHel
         try {
             String info = getIntent().getExtras().getString("minfo");
             String res = getIntent().getExtras().getString("res");
-            JSONObject resdata = new JSONObject(res).optJSONObject("data");// .getJSONObject("data");
+            JSONObject resdata = new JSONObject(res);//optJSONObject("data");// .getJSONObject("data");
+            JSONArray resar = resdata.getJSONArray("data");
             JSONObject obj = new JSONObject(info);
             JSONObject objData = obj.getJSONObject("data");
-            String pulluri = objData.getString("FilePath");
-            String filename = objData.getString("FileName").trim();
-            String nickname = objData.getString("NickName").trim();
-            int enc = objData.getInt("Encryptioned");
+            String pulluri = objData.getString("filepath");
+            String filename = objData.getString("filename").trim();
+            String nickname = objData.getString("nickname").trim();
+            resar.getJSONObject(0).getInt("encrypted");
+            int enc = resar.getJSONObject(0).getInt("encrypted");;//objData.getInt("encrypted");
             char enckey =0;//
             if(resdata != null)
-                enckey = (char) resdata.getInt("EncKey");
+                enckey = (char) resar.getJSONObject(0).getInt("enckey");
             objData = obj.getJSONObject("ui");
             int userid = 0;
-            userid = objData.optInt("UserId");//.getInt("UserId");
+            userid = objData.optInt("UserID");//.getInt("UserId");
             String url = getResources().getString(R.string.app_hosthis) + pulluri;
             mGuest = new RTMPGuestKit(this, this);
 
@@ -479,7 +482,7 @@ public class FlvPlayerActivity extends AppCompatActivity implements RTMPGuestHel
        runOnUiThread(new Runnable() {
             @Override
             public void run() {
-
+                mTxtStatus.setVisibility(View.GONE);
             }
         });
     }

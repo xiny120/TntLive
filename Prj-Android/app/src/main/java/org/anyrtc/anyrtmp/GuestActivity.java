@@ -111,7 +111,8 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_guest);{//* Init UI
+        setContentView(R.layout.activity_guest);
+        {//* Init UI
             mFullScreen = false;
             mTxtStatus = (TextView) findViewById(R.id.txt_rtmp_status);
             mSurfaceView = (SurfaceViewRenderer) findViewById(R.id.suface_view);
@@ -419,9 +420,9 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
                 JSONObject obj = new JSONObject(message);
                 String cmd = obj.getString("cmd");
                 JSONObject objData = obj.getJSONObject("data");
-                String pulluri = objData.getString("FilePath");
+                String pulluri = objData.getString("filepath");
                 objData = obj.getJSONObject("ui");
-                String sid = objData.getString("SessionId");
+                String sid = objData.getString("SessionID");
                 String tkn = objData.getString("Token");
 
 
@@ -432,14 +433,14 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
                         try {
                             JSONObject obj = new JSONObject(info1);
                             JSONObject objData = obj.getJSONObject("data");
-                            String id = objData.getString("Id");
-                            String pulluri = objData.getString("FilePath");
-                            int enc = objData.getInt("Encryptioned");
+                            String id = objData.getString("id");
+                            String pulluri = objData.getString("filepath");
+                            int enc = 0;//objData.getInt("encrypted");
                             char enckey = 0;
                             objData = obj.getJSONObject("ui");
 
-                            int userid = objData.optInt("UserId");//objData.getInt("UserId");
-                            String sid = objData.optString("SessionId");// objData.getString("SessionId");
+                            int userid = objData.optInt("UserID");//objData.getInt("UserId");
+                            String sid = objData.optString("SessionID");// objData.getString("SessionId");
 
                             JSONObject data = new JSONObject();
                             try {
@@ -448,7 +449,7 @@ public class GuestActivity extends Activity implements RTMPGuestHelper,  Surface
                             } catch (Exception e) {
 
                             }
-                            URL url = new URL(MyApplication.apiServer + "/api/1.00/private");//放网站
+                            URL url = new URL(getString(R.string.api_server) + "/api/1.00/private");//放网站
                             HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
                             httpURLConnection.setRequestMethod("POST");
                             httpURLConnection.setRequestProperty("Content-Type", "application/json");
