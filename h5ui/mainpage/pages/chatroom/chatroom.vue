@@ -33,6 +33,7 @@
 	export default {
 		data() {
 			return {
+				roomid:0,
 				sessionid:"",
 				websockautor:true,
 				websockopened:false,
@@ -51,7 +52,7 @@
 				messages: [{
 					user: '系统小喇叭',
 					type: 'head', //input,content 
-					content: '唐能通短线是银 中国首个证券理论创始人 短线是银作者 中国最大盘中直播主讲人',
+					content: '进入本直播室，请遵守国家相关法律。尊老爱幼，遵纪守法！',
 					datetime: '2019-2-25 09:09:09',
 				}]
 			}
@@ -60,11 +61,8 @@
 			lyMarkdown,
 			uParse,
 		},
-		onLoad: function () {
-			console.log("onLoad................");
-			
-			
-			
+		onLoad(e) {
+			this.roomid = e.roomid;
 			this.initWebSocket();
 		},
 		onReady:function(){
@@ -72,11 +70,9 @@
 		computed: mapState(['userInfo']),
 		methods: {
 			preview(src, e) {
-				// do something
 				console.log("src: " + src);
 			},
 			navigate(href, e) {
-				// 如允许点击超链接跳转，则应该打开一个新页面，并传入href，由新页面内嵌webview组件负责显示该链接内容
 				console.log("href: " + href);
 				uni.showModal({
 					content : "点击链接为：" + href,
@@ -85,10 +81,7 @@
 			},		
 			
 			initWebSocket:function(){
-				//const wsuris = ["ws://localhost:8090/ws","ws://localhost:8091/ws","ws://localhost:8092/ws"]
-				const wsuris = [this.$wssUrl + "/ws/001"]
-				
-				
+				const wsuris = [this.$wssUrl + "/ws/" + this.roomid]
 				this.wsuriidx = this.wsuriidx + 1;
 				if(this.wsuriidx >= wsuris.length){
 					this.wsuriidx = 0;
@@ -111,53 +104,61 @@
 				this.websockopened = false;
 			},
 			websocketonmessage(res){ //数据接收 
-					const ans = JSON.parse(res.data);
-					switch(ans.t){
-						case "toall":
-							this.addMessage(ans.userInfo.UserName, ans.msg, false);
-						break;
-						case "checkin":
-							console.log(ans);
-							if(ans.status != 0){
-								this.websockautor = false;
-							}else{
-								
-							}
-						break;
-						case "sessionid":
+			
+				var ans = {};
+				
+				try
+				{
+				   //在此运行代码
+				   ans = JSON.parse(res.data);
+				}
+				catch(err)
+				{
+				   //在此处理错误
+				   console.log(err);
+				   console.log(res.data);
+				}	
 							
-							var userinfo;
-							try {
-								//sessionid = uni.getStorageSync('sessionid');
-								//uni.setStorage({key: 'userinfo', data: ui});	
-								userinfo = uni.getStorageSync('userinfo');
-								if(userinfo){
-									//let ui = JSON.parse(userinfo);
-									var checkin ={
-										t:'checkin',
-										sessionid:userinfo.SessionId,
-										userinfo:userinfo
-									}
-									this.websocketsend(JSON.stringify(checkin))
-									return;
-								}
-							} catch (e) {
-								console.log(e);
-							}					
-							try {
-								
-								//uni.setStorageSync('sessionid', redata.sessionid);
-							} catch (e) {
-								// error
-							}		
+				switch(ans.t){
+					case "toall":
+						this.addMessage(ans.userInfo.UserName, ans.msg, false);
+					break;
+					case "checkin":
+						console.log(ans);
+						if(ans.status != 0){
 							this.websockautor = false;
 							this.websock.close();
 							uni.showToast({
 								icon: 'none',
-								title: '请先登录哦！'
-							});											
-						break;						
-					}			
+								title: ans.msg
+							});								
+						}
+					break;
+					case "sessionid":
+						var userinfo;
+						try {
+							userinfo = uni.getStorageSync('userinfo');
+							if(userinfo){
+								var checkin ={
+									t:'checkin',
+									sessionid:userinfo.SessionID,
+									userinfo:userinfo
+								}
+								this.websocketsend(JSON.stringify(checkin))
+								return;
+							}
+						} catch (e) {
+							console.log(e);
+						}					
+	
+						this.websockautor = false;
+						this.websock.close();
+						uni.showToast({
+							icon: 'none',
+							title: '请先登录哦！'
+						});											
+					break;						
+				}			
 			},
 			websocketclose(e){ //关闭 
 				this.websockopened = false;
@@ -199,8 +200,6 @@
 					},
 					msg:message.content,
 				}
-				//this.addMessage(this.userInfo.UserName, message.content, false);
-				//this.toRobot(message.content);
 				this.websocketsend(JSON.stringify(data));
 			},
 			addMessage: function (user, content, hasSub, subcontent) {

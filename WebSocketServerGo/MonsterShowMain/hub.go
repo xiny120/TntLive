@@ -7,7 +7,6 @@ package main
 import (
 	"encoding/json"
 	_ "fmt"
-	"log"
 	//"log"
 )
 
@@ -36,6 +35,18 @@ func newHub() *Hub {
 	}
 }
 
+type ui struct {
+	UserName  string ``
+	UserUuid  string ``
+	AvatarUrl string `json:"avatarUrl"`
+}
+
+type welmsg struct {
+	T        string `json:"t"`
+	Msg      string `json:"msg"`
+	UserInfo ui     `json:"userInfo"`
+}
+
 func (h *Hub) run() {
 	for {
 		select {
@@ -48,13 +59,20 @@ func (h *Hub) run() {
 				T:         "sessionid",
 				Sessionid: client.SessionID,
 			}
-			//msg := fmt.Sprint("{\"t\":\"sessionid\",\"sessionid\":\"%s\"}", client.SessionId)
 			msg, _ := json.Marshal(data)
-			log.Println("websocket comming ", string(msg[:]))
-			//xlog.Println("连接到来 ", data, "\t*\t", string(msg), "\t*\t", err)
 			client.send <- msg
+			welmsg0 := welmsg{
+				T:   "toall",
+				Msg: "银河系第三区交通委提醒您：航道千万条，安全第一条；放飞不规范，亲人两行泪。",
+			}
+			welmsg0.UserInfo.UserName = "系统小喇叭"
+
+			msg, _ = json.Marshal(welmsg0)
+			//log.Println(welmsg0)
+			client.send <- msg
+
 		case client := <-h.unregister:
-			log.Println("websocket gone ")
+			//log.Println("websocket gone ")
 			if _, ok := h.clients[client]; ok {
 				delete(h.clients, client)
 				close(client.send)

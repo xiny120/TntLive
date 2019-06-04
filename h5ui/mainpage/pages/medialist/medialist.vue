@@ -2,7 +2,7 @@
 	<view class="index">
 		<uni-list>
 			<block v-for="(item, index) in lists" :key="index">
-				<uni-list-item :title="item.RoomName" :note="item.CreateDate" show-extra-icon="true"  @click="goDetail(item)" ></uni-list-item>
+				<uni-list-item :title="item.stitle" :note="item.createdate" show-extra-icon="true"  @click="goDetail(item)" ></uni-list-item>
 			</block>
 		</uni-list>		
 		<text class="loadMore">{{loadMoreText}}</text>
@@ -33,45 +33,11 @@
 			}
 		},
 		onLoad(e) {
-			this.getroomid();
-			this.id = e.id;
+			this.id = e.roomid;
+			console.log("shitshitshitshitshit"+e.roomid);
 			setTimeout(() => { //防止app里由于渲染导致转场动画卡顿
 				this.getData();
 			}, 150)			
-
-			uni.getProvider({
-				service: "share",
-				success: (e) => {
-					let data = [];
-					for (let i = 0; i < e.provider.length; i++) {
-						switch (e.provider[i]) {
-							case 'weixin':
-								data.push({
-									name: '分享到微信好友',
-									id: 'weixin'
-								})
-								data.push({
-									name: '分享到微信朋友圈',
-									id: 'weixin',
-									type: 'WXSenceTimeline'
-								})
-								break;
-							case 'qq':
-								data.push({
-									name: '分享到QQ',
-									id: 'qq'
-								})
-								break;
-							default:
-								break;
-						}
-					}
-					this.providerList = data;
-				},
-				fail: (e) => {
-					console.log("获取登录通道失败", e);
-				}
-			});
 		},
 		onPullDownRefresh() {
 			console.log("下拉刷新");
@@ -85,20 +51,19 @@
 			}
 			this.getData();
 		},
-		computed: mapState(['userInfo','roomid','hasLogin']),
+		computed: mapState(['userInfo','hasLogin']),
 		methods: {
-			...mapMutations(['getroomid','setroomid']),
 			getNew(e) {
 				if(this.refreshing) return;
 				this.refreshing = true;
 				let now0 = new Date();
 				let cd = now0.getFullYear() + "-" + (now0.getMonth()+1) + "-" + now0.getDate();
 				if(this.lists.length > 0){
-					cd = this.lists[0].CreateDate
+					cd = this.lists[0].createdate
 				}
 				const data = {
 					action:"medialistnew",
-					roomid:this.roomid,
+					roomid:this.id,
 					orderby:"CreateDate desc",
 					CreateDate:cd
 				}
@@ -144,13 +109,11 @@
 				now0.setTime(now0.getTime() + 60*60*24*1000);
 				let cd = now0.getFullYear() + "-" + (now0.getMonth()+1) + "-" + now0.getDate();
 				if(this.lists.length > 0){
-					cd = this.lists[this.lists.length-1].CreateDate
+					cd = this.lists[this.lists.length-1].createdate
 				}				
 				const data = {
 					action:"medialist",
-					roomid:this.roomid,
-					orderby:"CreateDate desc",
-					pageid:this.fetchPageNum,
+					roomid:this.id,
 					CreateDate:cd
 				}
 				let that = this;

@@ -6,14 +6,11 @@ Vue.use(Vuex)
 const store = new Vuex.Store({
     state: {
 		signupStatus:-1,
-        /**
-         * 是否需要强制登录
-         */
         forcedLogin: false,
         hasLogin: -1,
         userName: "",
 		userInfo:{},
-		roomid:"",
+		roomid:0,
     },
     mutations: {
 		getroomid(state){
@@ -23,7 +20,6 @@ const store = new Vuex.Store({
 					state.roomid = value;
 				}
 			} catch (e) {
-				// error
 			}				
 		},
 		setroomid(state,roomid_){
@@ -31,21 +27,15 @@ const store = new Vuex.Store({
 			uni.setStorage({key: 'roomid', data: roomid_});	
 		},
         login(state, ui) {
-            //state.userName = userName || '新用户';
 			state.userInfo = ui;
-			//console.log(JSON.stringify(ui));
             state.hasLogin = 1;
 			uni.setStorage({key: 'userinfo', data: ui});			
         },
         logout(state,surl) {
-
 			const data = {
 				action:"authout",
-				//account: e.detail.value.nameValue,
-				//password: cj.MD5(e.detail.value.passwordValue).toString().substring(8,24),
 			}
 			uni.request({
-				//url: this.$serverUrl + '/api/1.00/auth', //仅为示例，并非真实接口地址。
 				url: surl + '/api/1.00/private', //仅为示例，并非真实接口地址。
 				method: 'POST',
 				data:data,
@@ -55,8 +45,6 @@ const store = new Vuex.Store({
 					'mster-token':state.userInfo.SessionId,
 				}, 
 				success: (res) => {
-						
-					
 				},
 
 			});		

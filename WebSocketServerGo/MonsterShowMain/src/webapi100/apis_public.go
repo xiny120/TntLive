@@ -168,24 +168,29 @@ func fAuth(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
 	res := make(map[string]interface{})
 	account := toolset.MapGetString("account", v, "")   //(*v)["account"].(string)
 	password := toolset.MapGetString("password", v, "") //(*v)["password"].(string)
-	tt, _ := sign.In(account, password)
-	sign.SessionsSet(tt.SessionID, tt)
-	wbuf, werr := json.Marshal(tt)
-	if werr == nil {
-		tfile := "./tokens/" + tt.SessionID
-		f, err3 := os.Create(tfile) //创建文件
-		log.Println("f_auth", tfile, err3)
-		if err3 == nil {
-			defer f.Close()
-			_, err3 := f.Write(wbuf) //写入文件(字节数组)
-			if err3 != nil {
-				os.Remove(tfile)
+	res["t"] = "sign in"
+	res["status"] = 1
+	res["msg"] = "用户名或密码错误"
+
+	tt, ok := sign.In(account, password)
+	if ok {
+		sign.SessionsSet(tt.SessionID, tt)
+		wbuf, werr := json.Marshal(tt)
+		if werr == nil {
+			tfile := "./tokens/" + tt.SessionID
+			f, err3 := os.Create(tfile) //创建文件
+			log.Println("f_auth", tfile, err3)
+			if err3 == nil {
+				defer f.Close()
+				_, err3 := f.Write(wbuf) //写入文件(字节数组)
+				if err3 != nil {
+					os.Remove(tfile)
+				}
 			}
 		}
+		res["status"] = 0
+		res["userinfo"] = tt
 	}
-	res["t"] = "sign in"
-	res["status"] = 0
-	res["userinfo"] = tt
 	rmsg, err := json.Marshal(res)
 	if err == nil {
 		w.Write(rmsg)
@@ -234,120 +239,48 @@ func fRoomlist(w http.ResponseWriter, r *http.Request, v *map[string]interface{}
 
 }
 
-type mediaitem struct {
-	ID           string //`json:"id"`
-	RoomName     string //`json:"roomname"`
-	CreateDate   string //`json:"createdate"`
-	PublisherID  string //`json:"PublisherId"`
-	FileName     string //`json:"filename"`
-	NickName     string //`json:"title"`
-	FilePath     string //`json:"filepath"`
-	FileSize     int64  //`json:"follow"`
-	Followed     int64  //`json:"onlines"`
-	Readed       int64  //`json:"intro"`
-	Encryptioned int32  //`json:"encryptioned"`
-}
-
 func fMedialist(w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
-	roomid := toolset.MapGetString("roomid", v, "{96518478-BE8D-4EEE-9FEC-69D472CED4DC}")
-	pageid := toolset.MapGetInt("pageid", v, 0)
+	roomid := toolset.MapGetString("roomid", v, "9999")
+	//pageid := toolset.MapGetInt("pageid", v, 0)
 	CreateDate := toolset.MapGetString("CreateDate", v, "3030-12-31")
-	pagesize := 20
+	//pagesize := 20
 	res := make(map[string]interface{})
 	res["t"] = "medialist"
 	res["status"] = 0
 	res["msg"] = ""
-	mis := []mediaitem{}
-	db, err0 := cfg.OpenDb()
-	if err0 != nil {
-		log.Println("ServeSrs sql open error")
-	} else {
-		defer db.Close()
-		/*
-				sqlstr := `
-					select top ` + pagesize + ` *
-					from (select a.[Id], a.[CreateDate],a.[PublisherId],a.[NickName],a.[FileSize],a.[Followed],
-					a.[Readed],a.[FilePath], b.[STitle],row_number() over(order by a.` + orderby + ` ) as rownumber,
-					a.[Encryptioned],a.[FileName]
-					from [hds12204021_db].[dbo].[Web2019_historylist] a, [hds12204021_db].[dbo].[Web2019_roomlist] b
-					where a.roomid = '` + roomid + `' and a.Deleted = 0 and a.roomid=b.id and a.[CreateDate] < CONVERT(datetime,'` + CreateDate + `')) temp_row
-					where rownumber>((?-1)*?)
-			sqlstr := `
-				select top ` + pagesize + `
-				a.[Id], a.[CreateDate],a.[PublisherId],a.[NickName],a.[FileSize],a.[Followed],
-				a.[Readed],a.[FilePath], b.[STitle],a.[CreateDate],a.[Encryptioned],a.[FileName]
-				from [hds12204021_db].[dbo].[Web2019_historylist] a, [hds12204021_db].[dbo].[Web2019_roomlist] b
-				where a.roomid = '` + roomid + `' and a.Deleted = 0 and a.roomid=b.id and a.[CreateDate] < CONVERT(datetime,'` + CreateDate + `')
-				order by a.` + orderby + `
-				`
-		*/
-		sqlstr := `
-			select top 20
-			a.[Id], a.[CreateDate],a.[PublisherId],a.[NickName],a.[FileSize],a.[Followed],
-			a.[Readed],a.[FilePath], b.[STitle],a.[CreateDate],a.[Encryptioned],a.[FileName]
-			from [hds12204021_db].[dbo].[Web2019_historylist] a, [hds12204021_db].[dbo].[Web2019_roomlist] b
-			where a.roomid = ? and a.Deleted = 0 and a.roomid=b.id and a.[CreateDate] < CONVERT(datetime,'` + CreateDate + `')
-			order by a.CreateDate desc
-		`
-		log.Println(sqlstr)
-		stmt1, err0 := db.Prepare(sqlstr)
+	mis := [](map[string]interface{}){}
+
+	res["msg"] = func() string {
+		db, err0 := cfg.OpenDb()
 		if err0 != nil {
-			log.Println("ServeSrs sql db.Prepare error" + err0.Error())
-		} else {
-			defer stmt1.Close()
-			rows, err := stmt1.Query(roomid) //, CreateDate) //, "  ")
-			if err != nil {
-				log.Println("ServeSrs sql stmt.Query error", err.Error(), pageid, pagesize, roomid)
-			} else {
-				culs, _ := rows.Columns()
-				count := len(culs)
-				vals := make([]interface{}, count)
-				for rows.Next() {
-					ri := mediaitem{}
-					rows.Scan(&vals[0], &vals[1], &vals[2], &vals[3], &vals[4], &vals[5], &vals[6], &vals[7], &vals[8], &vals[9], &vals[10], &vals[11])
-					if vals[0] != nil {
-						ri.ID = vals[0].(string)
-					}
-					if vals[1] != nil {
-						ri.CreateDate = (vals[1].(time.Time)).Format(("2006-01-02 15:04:05.000"))
-					}
-					if vals[2] != nil {
-						ri.PublisherID = vals[2].(string)
-					}
-					if vals[3] != nil {
-						ri.NickName = vals[3].(string)
-					}
-					if vals[4] != nil {
-						ri.FileSize = vals[4].(int64)
-					}
-					if vals[5] != nil {
-						ri.Followed = vals[5].(int64)
-					}
-					if vals[6] != nil {
-						ri.Readed = (vals[6].(int64))
-					}
-					if vals[7] != nil {
-						ri.FilePath = (vals[7].(string))
-					}
-					if vals[8] != nil {
-						ri.RoomName = (vals[8].(string))
-					}
-					if vals[10] != nil {
-						ri.Encryptioned = int32(vals[10].(int64))
-					}
-					if vals[11] != nil {
-						ri.FileName = (vals[11].(string))
-					}
-					mis = append(mis, ri)
-				}
-			}
+			return "ServeSrs sql open error"
 		}
-	}
+		defer db.Close()
+		strsql := `
+			select  b.stitle, a.id, 
+			a.createdate,a.publisherid,a.nickname,a.filesize,a.followed,
+			a.readed,a.filepath,a.filename
+			from hislist a, roomlist b
+			where a.roomid = ? and a.deleted = 0 and a.roomid=b.roomid and a.createdate < ?
+			order by a.createdate desc limit 20
+		`
+		//log.Println(strsql)
+		stmt1, err0 := db.Prepare(strsql)
+		if err0 != nil {
+			return "ServeSrs sql db.Prepare error" + err0.Error()
+		}
+		defer stmt1.Close()
+		rows, err := stmt1.Query(roomid, CreateDate) //, CreateDate) //, "  ")
+		if err != nil {
+			return "ServeSrs sql stmt.Query error" + err.Error()
+		}
+		mis, err = toolset.Rows2Map(rows)
+		return "ok"
+	}()
 
 	res["medialist"] = mis
-	res["msg"] = ""
+	//log.Println(res)
 	rmsg, err := json.Marshal(res)
-	//log.Println(rmsg)
 	if err == nil {
 		w.Write(rmsg)
 	}
@@ -364,7 +297,7 @@ func fMedialistnew(w http.ResponseWriter, r *http.Request, v *map[string]interfa
 	res["t"] = "medialist"
 	res["status"] = 0
 	res["msg"] = ""
-	mis := []mediaitem{}
+	mis := [](map[string]interface{}){}
 	log.Println("medialistnew CreateDate", CreateDate)
 	db, err0 := cfg.OpenDb() //sql.Open("adodb", cfg.Cfg["mssql"])
 	if err0 != nil {
@@ -379,65 +312,34 @@ func fMedialistnew(w http.ResponseWriter, r *http.Request, v *map[string]interfa
 			where a.roomid = ? and a.Deleted = 0 and a.roomid=b.id and a.[CreateDate] > CONVERT(datetime,'` + CreateDate + `')
 			order by a.CreateDate desc
 		`
-		log.Println(sqlstr)
+		sqlstr = `
+			select  b.stitle, a.id, 
+			a.createdate,a.publisherid,a.nickname,a.filesize,a.followed,
+			a.readed,a.filepath,a.filename
+			from hislist a, roomlist b
+			where a.roomid = ? and a.deleted = 0 and a.roomid=b.roomid and a.createdate > ?
+			order by a.createdate desc
+		`
+		log.Println(roomid, CreateDate)
 		stmt1, err0 := db.Prepare(sqlstr)
 		if err0 != nil {
 			log.Println("ServeSrs sql db.Prepare error" + err0.Error())
 		} else {
 			defer stmt1.Close()
-			rows, err := stmt1.Query(roomid) //, CreateDate)
+			rows, err := stmt1.Query(roomid, CreateDate) //, CreateDate)
 			if err != nil {
 				log.Println("ServeSrs sql stmt.Query error", err.Error(), pageid, pagesize, roomid)
 			} else {
-				culs, _ := rows.Columns()
-				count := len(culs)
-				vals := make([]interface{}, count)
-				for rows.Next() {
-					ri := mediaitem{}
-					rows.Scan(&vals[0], &vals[1], &vals[2], &vals[3], &vals[4], &vals[5], &vals[6], &vals[7], &vals[8], &vals[9], &vals[10], &vals[11])
-					if vals[0] != nil {
-						ri.ID = vals[0].(string)
-					}
-					if vals[1] != nil {
-						ri.CreateDate = (vals[1].(time.Time)).Format(("2006-01-02 15:04:05.000"))
-					}
-					if vals[2] != nil {
-						ri.PublisherID = vals[2].(string)
-					}
-					if vals[3] != nil {
-						ri.NickName = vals[3].(string)
-					}
-					if vals[4] != nil {
-						ri.FileSize = vals[4].(int64)
-					}
-					if vals[5] != nil {
-						ri.Followed = vals[5].(int64)
-					}
-					if vals[6] != nil {
-						ri.Readed = (vals[6].(int64))
-					}
-					if vals[7] != nil {
-						ri.FilePath = (vals[7].(string))
-					}
-					if vals[8] != nil {
-						ri.RoomName = (vals[8].(string))
-					}
-					if vals[10] != nil {
-						ri.Encryptioned = int32(vals[10].(int64))
-					}
-					if vals[11] != nil {
-						ri.FileName = (vals[11].(string))
-					}
-					mis = append(mis, ri)
-				}
+				mis, err = toolset.Rows2Map(rows)
+				log.Println(mis)
 			}
 		}
 	}
 
 	res["medialist"] = mis
 	res["msg"] = ""
+
 	rmsg, err := json.Marshal(res)
-	//log.Println(rmsg)
 	if err == nil {
 		w.Write(rmsg)
 	}

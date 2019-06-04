@@ -78,66 +78,32 @@ type pushroomitem struct {
 }
 
 func fPushroomlist(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
-	//log.Println("f_pushroomlist", *v)
-	userguid := ui.UserGUID
+	userid := ui.UserID
 	res := make(map[string]interface{})
 	res["t"] = "roomlist"
 	res["status"] = 0
 	res["msg"] = ""
-	ris := []pushroomitem{}
-
+	ris := [](map[string]interface{}){}
 	db, err0 := cfg.OpenDb() //sql.Open("adodb", cfg.Cfg["mssql"])
 	if err0 != nil {
 		log.Println("ServeSrs sql open error")
 	} else {
 		defer db.Close()
 		stmt1, err0 := db.Prepare(`
-			SELECT  r.Id, r.Title, r.Intro, r.Icon,r.PushUri,r.VHost,r.VApp,r.VStream
-			FROM [hds12204021_db].[dbo].[Web2019_publisher] p,[hds12204021_db].[dbo].[Dv_User] u,[hds12204021_db].[dbo].[Web2019_roomlist] r
-			where p.UserUuid = u.userguid and p.RoomUuid = r.Id and p.UserUuid = ? and r.bDeleted = 0
+			SELECT  r.roomid, r.title,r.stitle, r.intro, r.icon,r.vhost,r.vport,r.vapp,r.vstream
+			FROM publisher p,roomlist r
+			where p.roomid = r.roomid and p.userid = ? and r.deleted = 0
 						`)
 		if err0 != nil {
-			log.Println("ServeSrs sql db.Prepare error")
+			log.Println("ServeSrs sql db.Prepare error", err0)
 		} else {
 			defer stmt1.Close()
-			rows, err := stmt1.Query(userguid)
+			rows, err := stmt1.Query(userid)
 			//log.Println(rows)
 			if err != nil {
 				log.Println("ServeSrs sql stmt.Query error", err.Error())
 			} else {
-				culs, _ := rows.Columns()
-				count := len(culs)
-				vals := make([]interface{}, count)
-				for rows.Next() {
-					ri := pushroomitem{}
-					rows.Scan(&vals[0], &vals[1], &vals[2], &vals[3], &vals[4], &vals[5], &vals[6], &vals[7]) //, &vals[8], &vals[9], &vals[10])
-					if vals[0] != nil {
-						ri.ID = vals[0].(string)
-					}
-					if vals[1] != nil {
-						ri.Title = vals[1].(string)
-					}
-					if vals[2] != nil {
-						ri.Intro = vals[2].(string)
-					}
-
-					if vals[3] != nil {
-						ri.Icon = vals[3].(string)
-					}
-					if vals[4] != nil {
-						ri.PushURI = vals[4].(string)
-					}
-					if vals[5] != nil {
-						ri.VHost = vals[5].(string)
-					}
-					if vals[6] != nil {
-						ri.VApp = (vals[6].(string))
-					}
-					if vals[7] != nil {
-						ri.VStream = (vals[7].(string))
-					}
-					ris = append(ris, ri)
-				}
+				ris, err = toolset.Rows2Map(rows)
 			}
 		}
 	}
@@ -163,7 +129,7 @@ type caniplay struct {
 
 func fCaniplay(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
 	log.Println("f_caniplay", *v)
-	id := ""
+	id := "0"
 	res := make(map[string]interface{})
 	res["t"] = "caniplay"
 	res["status"] = 1
@@ -177,15 +143,15 @@ func fCaniplay(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v *map
 		} else {
 			defer db.Close()
 			stmt1, err0 := db.Prepare(`
-				SELECT [RoomId]
-				      ,[CreateDate]
-				      ,[FilePath]
-				      ,[FileName]
-				      ,[NickName]
-				      ,[Encryptioned]
-				      ,[EncKey]
-				  FROM [hds12204021_db].[dbo].[Web2019_historylist]
-				  where id = ?
+				SELECT roomid,
+				    createdate,
+				    filepath,
+				    filename,
+				    nickname,
+				    encrypted,
+				    enckey
+				FROM hislist
+				where id = ?
 						`)
 			if err0 != nil {
 				log.Println("ServeSrs sql db.Prepare error")
@@ -195,71 +161,43 @@ func fCaniplay(ui *sign.UserInfo, w http.ResponseWriter, r *http.Request, v *map
 				if err != nil {
 					log.Println("ServeSrs sql stmt.Query error", err.Error())
 				} else {
-					culs, _ := rows.Columns()
-					count := len(culs)
-					vals := make([]interface{}, count)
-					for rows.Next() {
-						cip := caniplay{}
-						rows.Scan(&vals[0], &vals[1], &vals[2], &vals[3], &vals[4], &vals[5], &vals[6]) //, &vals[7]) //, &vals[8], &vals[9], &vals[10])
-						if vals[0] != nil {
-							cip.RoomID = vals[0].(string)
-						}
-						if vals[1] != nil {
-							cip.CreateDate = (vals[1].(time.Time)).Format(("2006-01-02 15:04:05"))
-						}
-						if vals[2] != nil {
-							cip.FilePath = vals[2].(string)
-						}
-						if vals[3] != nil {
-							cip.FileName = vals[3].(string)
-						}
-						if vals[4] != nil {
-							cip.NickName = vals[4].(string)
-						}
-						if vals[5] != nil {
-							cip.Encryptioned = int32(vals[5].(int64))
-						}
-						if vals[6] != nil {
-							cip.EncKey = int32((vals[6].(int64)))
-						}
-						log.Println("RoomId:", cip.RoomID)
-						if cip.RoomID == "{2B7E7BFC-2730-49FE-BA43-A3E1043FCC13}" {
-							stmt02, err02 := db.Prepare(`SELECT[StartTime] ,[StopTime]
+					cip, err01 := toolset.Rows2Map(rows)
+
+					if err01 == nil && toolset.MapGetInt("roomid", &cip[0], 0) == 999 {
+						stmt02, err02 := db.Prepare(`SELECT[StartTime] ,[StopTime]
 							FROM [hds12204021_db].[dbo].[dv_vcd_charge_2014]
 							where UserId=?`)
-							if err02 != nil {
+						if err02 != nil {
+
+						} else {
+							defer stmt02.Close()
+							row03, err03 := stmt02.Query(ui.UserID)
+							if err03 != nil {
 
 							} else {
-								defer stmt02.Close()
-								row03, err03 := stmt02.Query(ui.UserID)
-								if err03 != nil {
-
-								} else {
-									culs03, _ := rows.Columns()
-									count03 := len(culs03)
-									vals03 := make([]interface{}, count03)
-									for row03.Next() {
-										row03.Scan(&vals03[0], &vals03[1])
-										log.Println("Start:", vals03[0], " Stop:", vals03[1])
-										now03 := time.Now()
-										if vals03[0].(time.Time).Before(now03) && vals03[1].(time.Time).After(now03) {
-											res["data"] = cip
-											res["status"] = 0
-											res["msg"] = "yes, you can!"
-										}
-										break
+								culs03, _ := rows.Columns()
+								count03 := len(culs03)
+								vals03 := make([]interface{}, count03)
+								for row03.Next() {
+									row03.Scan(&vals03[0], &vals03[1])
+									log.Println("Start:", vals03[0], " Stop:", vals03[1])
+									now03 := time.Now()
+									if vals03[0].(time.Time).Before(now03) && vals03[1].(time.Time).After(now03) {
+										res["data"] = cip
+										res["status"] = 0
+										res["msg"] = "yes, you can!"
 									}
+									break
 								}
 							}
-							break
-						} else {
-							res["data"] = cip
-							res["status"] = 0
-							res["msg"] = "yes, you can!"
 						}
 
-						break
+					} else {
+						res["data"] = cip
+						res["status"] = 0
+						res["msg"] = "yes, you can!"
 					}
+
 				}
 			}
 		}

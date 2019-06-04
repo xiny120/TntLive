@@ -25,6 +25,7 @@ var jweixin = require('jweixin-module');
 //获取微信公众号的配置
 var jweixin_url = Vue.prototype.$serverUrl + "/api/1.00/public"
 var link = location.href;
+/*
 uni.request({
 	url: jweixin_url,
 	method: 'POST',
@@ -134,3 +135,4 @@ uni.request({
 		console.log('request fail', err);
 	}
 });	
+*/

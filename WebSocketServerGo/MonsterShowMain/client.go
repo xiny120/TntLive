@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"toolset"
 
 	//"database/sql"
 	"encoding/json"
@@ -89,23 +90,10 @@ func (c *Client) readPump() {
 		//if mt == 1 {
 		m := make(map[string]interface{})
 		r := make(map[string]interface{})
+
 		json.Unmarshal(message, &m)
-
+		//log.Println(m)
 		switch m["t"] {
-		case "sign up": // 注册
-			account := m["account"].(string)
-			password := m["password"].(string)
-			email := m["email"].(string)
-			cellphone := m["cellphone"].(string)
-			r["t"] = "sign up"
-			r["status"] = 1
-			r["info"] = (account + password + email + cellphone)
-
-			rmsg, err := json.Marshal(r)
-			if err == nil {
-				c.send <- rmsg
-			}
-
 		case "sign in": // 登录
 			account := m["account"].(string)
 			password := m["password"].(string)
@@ -124,13 +112,10 @@ func (c *Client) readPump() {
 		case "checkin": //免密登录
 			r["t"] = "checkin"
 			r["status"] = 1
-			r["msg"] = "用户密钥过期，请重新登录！"
-			//un := ""
-			if f, ok := sign.SessionsGet(m["sessionid"].(string)); ok {
+			r["msg"] = "密钥过期，请重新登录！"
+			if f, ok := sign.SessionsGet(toolset.MapGetString("sessionid", &m, "")); ok {
 				v1 := m["userinfo"].(map[string]interface{})
 				v2 := v1["Token"].(string)
-				//un = f.UserName
-
 				if f.Token == v2 {
 					r["status"] = 0
 					r["msg"] = "免密登录成功！"
@@ -139,12 +124,10 @@ func (c *Client) readPump() {
 			rmsg, err := json.Marshal(r)
 			if err == nil {
 				c.send <- rmsg
-
 			}
 			if r["status"] != 0 {
-				c.hub.unregister <- c //c.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				c.hub.unregister <- c
 			}
-			//log.Println("用户：", un, m["sessionid"], "checkin 免密登录", r["status"], r["msg"])
 		case "toall":
 			c.hub.broadcast <- message
 
@@ -182,12 +165,13 @@ func (c *Client) writePump() {
 			w.Write(message)
 			//log.Println("writePump", string(message))
 
-			n := len(c.send)
-			for i := 0; i < n; i++ {
-				w.Write(newline)
-				w.Write(<-c.send)
-			}
-
+			/*
+				n := len(c.send)
+				for i := 0; i < n; i++ {
+					w.Write(newline)
+					w.Write(<-c.send)
+				}
+			*/
 			if err := w.Close(); err != nil {
 				log.Println("用户：", c.SessionID, "NextWriter close 失败..", err)
 				return
