@@ -1,0 +1,234 @@
+{{template "header" .}}
+<body>
+	{{template "nav" .}}
+	
+	<div id="lrcontainer">
+
+    <div id="lrwrapper">
+      <div id="lrsidebar" style="margin-right:6px;" >
+        <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+          <a class="nav-link active" id="v-pills-home-tab" data-toggle="pill" href="#v-pills-home" role="tab" aria-controls="v-pills-home" aria-selected="true">
+            账户概况
+          </a>
+          <a class="nav-link" style="display:none;" id="v-pills-article-tab" data-toggle="pill" href="#v-pills-article" role="tab" aria-controls="v-pills-article" aria-selected="false">
+            文章管理
+          </a>
+          <a class="nav-link" id="v-pills-profile-tab" data-toggle="pill" href="#v-pills-profile" role="tab" aria-controls="v-pills-profile" aria-selected="false">
+            收益
+          </a>
+          <a class="nav-link" id="v-pills-messages-tab" data-toggle="pill" href="#v-pills-messages" role="tab" aria-controls="v-pills-messages" aria-selected="false">
+            钱包
+          </a>
+          <a class="nav-link" id="v-pills-settings-tab" data-toggle="pill" href="#v-pills-settings" role="tab" aria-controls="v-pills-settings" aria-selected="false">
+            账户中心
+          </a>
+        </div>
+      </div>
+      <div id="lrmain">
+        <div class="tab-content" id="v-pills-tabContent">
+          <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
+            账户概况
+          </div>        
+          <div class="tab-pane fade" id="v-pills-article" role="tabpanel" aria-labelledby="v-pills-article-tab">
+            {{template "Article" .}}
+          </div>
+          <div class="tab-pane fade" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+            收益
+          </div>
+          <div class="tab-pane fade" id="v-pills-messages" role="tabpanel" aria-labelledby="v-pills-messages-tab">
+            钱包
+          </div>
+          <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab">
+            账户中心
+          </div>
+       
+        </div>
+      </div>
+      <div style="clear:both;">
+      </div>
+    </div>
+	</div>
+  
+ <!-- 
+  
+		<table class="table table-borderless" style="height:500px;">
+			<tbody>
+		    	<tr>
+					<td width="180" >
+						<table class="table table-hover" style="background-color:gray;">
+						  <tbody>
+						    <tr>
+						      <td onclick="showpanel(2)">修改密码</td>
+						    </tr>
+						    <tr>
+						      <td onclick="showpanel(0)">用户信息</td>
+						    </tr>
+						    <tr>
+						      <td onclick="showpanel(1)">头像</td>
+						    </tr>							
+						    <tr>
+						      <td onclick="showpanel(3)">绑定手机</td>
+						    </tr>
+						    <tr>
+						      <td onclick="showpanel(4)">钱包</td>
+						    </tr>
+
+						  </tbody>
+						</table>
+					</td>
+					<td >
+	<div id="panel0" style="position:absolute;width:100%;">
+		<div>
+			<h2>用户信息</h2>
+			<hr>
+		</div>
+		<div style="">
+			<table>
+				<tbody>
+					<tr>
+						<td>用户名：</td>
+						<td><span id="un"></span></td>
+						
+					</tr>
+					<tr>
+						<td>姓名：</td>
+						<td><span id="un"></span></td>
+						
+					</tr>
+					<tr>
+						<td>出生日期：</td>
+						<td><span id="un"></span></td>
+						
+					</tr>
+					<tr>
+						<td>联系方式：</td>
+						<td><span id="un"></span></td>
+						
+					</tr>
+					
+				<tbody>
+			</table>
+				
+		</div>
+	
+	</div>
+	<div id="panel1" style="position:absolute;width:100%;display:none;">
+		<div>
+			<h2>头像</h2>
+		</div>
+		<div>
+			<img width=200 height=200 />
+			<br>
+			<input type="button" value="更换头像" />
+		</div>
+	
+	</div>
+	<div id="panel2" style="position:absolute;width:100%;display:none;">
+		<div>
+			<h2>修改密码</h2>
+		</div>
+		<div>
+			<form class="needs-validation" novalidate method="post" action="/Identity/Account/Register" onsubmit="return form_submit()">
+
+			<table>
+				<tbody>
+					<tr>
+						<td>原密码：</td><td>
+						  <input type="password" class="form-control" id="pwd0" placeholder="点此键入原密码" required>
+							<div class="invalid-feedback">
+					          原密码不能为空。
+					        </div>	 
+						
+						</td>
+					</tr>
+					<tr>
+						<td>新密码：</td><td>
+					  <input type="password" class="form-control" id="pwd1" placeholder="点此键入新密码" required>
+						<div class="invalid-feedback">
+				          密码不能为空。
+				        </div>	
+						
+						
+						</td>
+					</tr>
+					<tr>
+						<td>确认新密码：</td><td>
+					  <input type="password" class="form-control" id="pwd2" placeholder="点此再次键入新 密码" required>
+						<div class="invalid-feedback">
+				          确认密码输入不一致！
+				        </div>	
+						
+						
+						
+						</td>
+					</tr>
+					<tr>
+						<td></td><td><button type="submit" class="btn btn-primary">修改密码</button></td>
+					</tr>
+				</tbody>
+			</table>
+			</form>
+		</div>
+	
+	</div>
+	<div id="panel3" style="position:absolute;width:100%;display:none;">
+		<div>
+			<h2>绑定手机</h2>
+		</div>
+		<div>
+			<table>
+				<tbody>
+					<tr>
+						<td>手机号码：</td><td><input></td><td></td>
+					</tr>
+					<tr>
+						<td>验证码：</td><td><input></td><td><input type=button value="获取验证码"></td>
+					</tr>
+					<tr>
+						<td></td><td><input type=button value="确认绑定"></td><td></td>
+					</tr>
+ 				</tbody>
+			</table>
+		</div>
+	
+	</div>
+	<div id="panel4" style="position:absolute;width:100%;display:none;">
+		<div>
+			<h2>钱包</h2>
+		</div>
+	div3
+	
+	</div>
+					
+					
+					</td>
+				</tr>
+			</tbody>
+		</table>
+    							-->
+
+ 
+    {{template "footer" .}}
+	
+	<script>
+
+		
+		(function() {
+		  'use strict';
+		  window.addEventListener('load', function() {
+        
+        //window.localStorage.setItem("ui",JSON.stringify(json.data.ui))
+        var uijson = window.localStorage.getItem('ui');
+        var ui = JSON.parse(uijson);
+        if(ui.Writer == 1){
+          $("#v-pills-article-tab").show();
+        }        
+        
+        
+
+		  }, false);
+		})();		
+			
+	</script>
+</body>
+</html>

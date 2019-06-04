@@ -1,0 +1,39 @@
+{{define "nav"}}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+	<a class="navbar-brand" href="/">{{.SiteName}}</a>
+	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+	</button>
+
+	<div class="collapse navbar-collapse" id="navbarSupportedContent">
+		<ul class="navbar-nav mr-auto">
+			<li class="nav-item"><a class="nav-link" href="/">首页</a></li>
+			<li class="nav-item"><a class="nav-link" href="/List/Jpmt/">街拍美腿</a></li>
+			<li class="nav-item"><a class="nav-link" href="/List/Jpgq/">高清街拍</a></li>
+			<li class="nav-item"><a class="nav-link" href="/List/Szyh/">丝足诱惑</a></li>
+			<li class="nav-item"><a class="nav-link" href="/List/Swgq/">丝袜高清</a></li>
+			<li class="nav-item"><a class="nav-link" href="/List/Gtmn/">高挑美女</a></li>
+	  </ul>
+    
+    
+		<!--
+	    <form class="form-inline my-2 my-lg-0">
+	      <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+	      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">查找</button>
+	    </form>
+		-->
+		<ul class="nav navbar-nav navbar-right" id="nav_ul_guest">
+			<li class="nav-item"><a class="nav-link" href="/Account/Register">新用户注册</a></li>
+			<li class="nav-item"><a class="nav-link" href="/Account/Login">登录</a></li>
+		</ul>
+		<ul class="nav navbar-nav navbar-right" id="nav_ul_member" style="display: none;">
+			<li class="nav-item"><a class="nav-link" href="/Account" id="nav_ul_member_name">.</a></li>
+			<li class="nav-item"><a class="nav-link" href="/Account">用户中心</a></li>
+			<li class="nav-item"><a class="nav-link" href="/Account/Login?cmd=out">退出</a></li>
+		</ul>		
+		
+	</div>
+</nav>
+
+	
+{{end}}

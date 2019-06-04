@@ -1,0 +1,49 @@
+{{template "header" .}}
+<body>
+	{{template "nav" .}}
+
+	<input type="hidden" id="listtype" value="{{.Data}}" />
+	
+
+    <div style="margin-top:8px;margin-bottom:3px;" >
+		<table style="width:100%;">
+			<tr>
+				<td><span class="f16">最热爱豆 HOT HOT HOT</span></td>
+				<td valign="bottom" align="right"><span style="margin-right:28px;">more...</span></td>
+			</tr>
+		</table>
+	</div>
+			
+	<div id="hotidol" class="card-columns card-columns">
+
+		<div id="hotidolitem" class="card p-1">
+		  <img class="card-img-top" src="Image/Vip/81313015481.jpg" alt="Card image cap">
+		<!--
+		  <div class="card-body">
+		    <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+		  </div>-->
+		</div>
+
+
+	</div>
+
+    <div style="margin-top:8px;margin-bottom:3px;" >
+		<table style="width:100%;">
+			<tr>
+				<td><span class="f16">最新美腿 NEW NEW NEW</span></td>
+				<td valign="bottom" align="right"><span style="margin-right:28px;">more...</span></td>
+			</tr>
+		</table>
+	</div>
+	
+	<div id="newidol" class="card-columns card-columns">
+
+	</div>	
+	
+ 
+    {{template "footer" .}}
+	
+	<script src="/Js/List.js"></script>
+	<script src="/Js/index_hotidol.js?20180101"></script>
+</body>
+</html>

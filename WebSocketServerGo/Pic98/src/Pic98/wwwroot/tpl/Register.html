@@ -1,0 +1,180 @@
+{{template "header" .}}
+<body>
+	{{template "nav" .}}
+
+    <div class="container body-content margin_top30">
+		<div class="row">
+		    <div class="col-md-6">
+				<form class="needs-validation" novalidate method="post" action="/Identity/Account/Register" onsubmit="return form_submit()">
+					<h4>注册新用户，成为本站会员。</h4>
+					<hr />
+					<div class="form-group">
+					  <label for="exampleInputEmail1">您要注册的用户名：</label>
+					  <input type="text" class="form-control" id="name" onchange="name_onchange()" aria-describedby="emailHelp" placeholder="" required>
+				        <div class="invalid-feedback">
+				          用户名为空或者已被占用！请选择其他用户名。
+				        </div>					
+					  <small id="emailHelp" class="form-text text-muted">用户名为字母(a-z,A-Z)开头包含数字(0-9)和_的组合.</small>
+					</div>
+					<div class="form-group">
+					  <label for="pwd1">密码：</label>
+					  <input type="password" class="form-control" id="pwd1" placeholder="输入密码" required>
+						<div class="invalid-feedback">
+				          密码不能为空。
+				        </div>	
+					</div>
+					<div class="form-group">
+					  <label for="pwd2">确认密码：</label>
+					  <input type="password" class="form-control" id="pwd2" placeholder="再输入一次密码" oninput="pwd2_oninput()" required>
+						<div class="invalid-feedback">
+				          确认密码输入不一致！
+				        </div>	
+					
+					</div>					
+					<div class="form-group form-check" style="display:none;">
+					  <input type="checkbox" class="form-check-input" id="exampleCheck1">
+					  <label class="form-check-label" for="exampleCheck1">Check me out</label>
+					</div>
+					<button type="submit" class="btn btn-primary">确认注册</button>
+				</form>			
+			</div>
+		</div>
+    </div>
+ 
+    {{template "footer" .}}
+	<script src="/static/js/md5.js"></script>
+	<script>
+		var nameok = false;
+		function name_onchange(){
+			var jqxhr = $.ajax({
+			type: "POST", 
+			url: "/Account/Register/Cmd",
+			data:{cmd:"QueryId",name: $("#name").val()},
+			}
+			).done(function(data,status,xhr) {
+				nameok = false;
+				json = JSON.parse(data);
+				if(json.status != 0){
+					alert(json.msg);
+				}
+			  if(json.data.CheckId == 0){
+					nameok = true;
+					$("#name").get(0).setCustomValidity("");
+				}else{
+					$("#name").get(0).setCustomValidity("此用户名已经被占用，请选用其他用户名。");
+				}
+			  })
+			  .fail(function() {
+				nameok = false;
+			    alert( "error" );
+			  })
+			  .always(function() {
+			    //alert( "complete" );
+			  });
+			 
+			// Perform other work here ...
+			 
+			// Set another completion function for the request above
+			jqxhr.always(function() {
+			  //alert( "second complete" );
+			});			
+						
+		}
+	
+		function pwd2_oninput(){
+			if($("#pwd1").val() != $("#pwd2").val()){ 
+				$("#pwd2").get(0).setCustomValidity("密码不一致");
+				
+			}
+			else{
+				$("#pwd2").get(0).setCustomValidity("");
+			}
+			$(".needs-validation").addClass('was-validated');
+			return false;
+			
+		}
+		function form_submit(){
+			if($("#pwd1").val() != $("#pwd2").val()){ 
+				$("#pwd2").get(0).setCustomValidity("密码不一致");
+				return false;
+			}
+			else{
+				$("#pwd2").get(0).setCustomValidity("");
+			}
+	
+			if(nameok){
+				nameok = false;	
+				var jqxhr = $.ajax({
+				type: "POST", 
+				url: "/Account/Register/Cmd",
+				data:{cmd:"Register",name: $("#name").val(),pwd: hex_md5($("#pwd1").val())},
+				}
+				).done(function(data,status,xhr) {
+					json = JSON.parse(data);
+					if(json.status != 0){
+						alert(json.msg);
+					}
+					if(json.data.register == ""){
+						nameok = false;
+						alert("注册失败，请检查注册信息！");
+					}else{
+						window.localStorage.setItem("ui",JSON.stringify(json.data.ui))
+						window.location = "/";
+					}
+				  })
+				  .fail(function() {
+				    alert( "error" );
+				  });
+				return false;
+			}
+		
+			return false;
+		}
+		function go01(){
+			$("label#mobile").text("手机号："+$("input#inputEmail3").val()+ " 请获取并输入密码！" );
+			$("div#r_div_01").hide();
+			$("div#r_div_02").show();
+		}
+		
+		function go02(){
+			// Assign handlers immediately after making the request,
+			// and remember the jqXHR object for this request
+			var jqxhr = $.ajax( "example.php" )
+			  .done(function() {
+			    alert( "success" );
+			  })
+			  .fail(function() {
+			    alert( "error" );
+			  })
+			  .always(function() {
+			    alert( "complete" );
+			  });
+			 
+			// Perform other work here ...
+			 
+			// Set another completion function for the request above
+			jqxhr.always(function() {
+			  alert( "second complete" );
+			});			
+			
+		}
+		
+(function() {
+  'use strict';
+  window.addEventListener('load', function() {
+    var forms = document.getElementsByClassName('needs-validation');
+	    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();		
+		
+	</script>
+</body>
+</html>

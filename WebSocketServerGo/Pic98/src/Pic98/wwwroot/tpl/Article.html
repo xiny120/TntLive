@@ -1,0 +1,211 @@
+{{define "Article"}}
+
+<div style="margin-bottom:8px;">
+<ul class="nav nav-pills">
+  <li class="nav-item">
+    <button type="button" data-backdrop="false" class="btn" data-toggle="modal" data-target="#exampleModal">发表文章</button>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="#">Link</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+  </li>
+</ul>
+</div>
+<div class="list-group">
+  <a href="#" class="list-group-item list-group-item-action">
+    <div class="d-flex w-100 justify-content-between">
+      <h5 class="mb-1">List group item heading</h5>
+      <small>3 days ago</small>
+    </div>
+    <p class="mb-1">Donec id elit non mi porta gravida at eget metus. Maecenas sed diam eget risus varius blandit.</p>
+    <small>Donec id elit non mi porta.</small>
+  </a>
+  <a href="#" class="list-group-item list-group-item-action">
+    <div class="d-flex w-100 justify-content-between">
+      <h5 class="mb-1">List group item heading</h5>
+      <small class="text-muted">3 days ago</small>
+    </div>
+    <p class="mb-1">Donec id elit non mi porta gravida at eget metus. Maecenas sed diam eget risus varius blandit.</p>
+    <small class="text-muted">Donec id elit non mi porta.</small>
+  </a>
+  <a href="#" class="list-group-item list-group-item-action">
+    <div class="d-flex w-100 justify-content-between">
+      <h5 class="mb-1">List group item heading</h5>
+      <small class="text-muted">3 days ago</small>
+    </div>
+    <p class="mb-1">Donec id elit non mi porta gravida at eget metus. Maecenas sed diam eget risus varius blandit.</p>
+    <small class="text-muted">Donec id elit non mi porta.</small>
+  </a>
+</div>
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-xl modal-dialog" role="document" style="max-width:100%;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">发表文章</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+
+    <script type="text/javascript" charset="utf-8" src="/static/3rd/UMeditor/utf8-php/ueditor.config.js?id=1002"></script>
+    <script type="text/javascript" charset="utf-8" src="/static/3rd/UMeditor/utf8-php/ueditor.all.min.js"> </script>
+    <!--建议手动加在语言，避免在ie下有时因为加载语言失败导致编辑器加载失败-->
+    <!--这里加载的语言文件会覆盖你在配置项目里添加的语言类型，比如你在配置项目里配置的是英文，这里加载的中文，那最后就是中文-->
+    <script type="text/javascript" charset="utf-8" src="/static/3rd/UMeditor/utf8-php/lang/zh-cn/zh-cn.js"></script>
+
+<div>
+<form name='form66' action="Post/" method="post">
+  <div class="form-group">
+    <input name="title" class="form-control" type="text" placeholder="请输入标题." required>
+    <div class="invalid-feedback">
+      要输入标题哦！
+    </div>    
+  </div>
+  <div class="form-group">
+    <label for="exampleFormControlInput1">标签(增加标签可以增加文章推荐率)</label>
+    <div id="hotlabel">
+      <button style="margin:6px;" type="button" class="btn-label btn">Danger</button>
+    </div>
+    <input type="hidden" id="hotlabeltext" name="hotlabeltext">
+  </div>
+  <div class="form-group">
+    <label for="exampleFormControlInput1">模特</label>
+    <div  class="form-row align-items-center">
+      <div class="col-auto my-1">
+        <select class="custom-select mr-sm-2" id="idol-type" name="idol-type">
+          <option value="0" selected>私人模特</option>
+          <option value="1">本站签约模特</option>
+        </select>      
+      </div>
+      <div class="col-auto my-1" style="display:none;" id="container-idol-name">
+        <select class="custom-select mr-sm-2" id="idol-name" name="idol-name">
+          <option selected>tiya</option>
+          <option value="1">amilia</option>
+          <option value="2">jillrily</option>
+          <option value="3">小桃花</option>
+        </select>    
+      </div>
+    </div>
+  </div>  
+
+  <div class="form-group">
+    <script id="editor123" type="text/plain" style="height:350px;">
+    </script>
+    
+    <script type="text/javascript">
+      window.UEDITOR_HOME_URL = "/static/3rd/UMeditor/utf8-php/"
+      var ue = UE.getEditor('editor123');
+      
+      ue.addListener('afterExecCommand',function(t, e, arg){
+      afterUploadImage(e);
+      });
+      //e为事件类型
+      
+      function afterUploadImage() {
+      if(arguments[0]=="inserthtml" || arguments[0]=="insertimage"){
+      ue.execCommand( 'insertparagraph' );
+      }
+      }      
+      
+      $(document).ready(function() {
+        
+
+        
+        
+        $(document).on("change", "#idol-type",function () { 
+          //alert("idol-type");
+          if($(this).val() == 0){
+            $("#container-idol-name").hide();
+          }
+          else{
+            $("#container-idol-name").show();
+          }
+        });    
+              
+        $(document).on("click", ".btn-label",function () { 
+          if($(this).hasClass("btn-primary")){
+            $(this).removeClass("btn-primary");
+            val0 = $("#hotlabeltext").val();
+            $("#hotlabeltext").val(val0.replace($(this).data("aguid") + ",",""));
+          }else{
+            $(this).addClass("btn-primary");
+            val0 = $("#hotlabeltext").val();
+            $("#hotlabeltext").val(val0 + $(this).data("aguid") + ",");            
+          }
+          //alert($("#hotlabeltext").val());
+         });
+        
+      	hotidolitem = $("#hotlabel").children(0).clone();
+      	     
+        
+        getparam();
+        getparamIdol();
+        $("form[name='form66']").on('submit', function() {
+    		    $(this).ajaxSubmit({
+              type: 'post', // 提交方式 get/post
+    			    success: function(data) { // data 保存提交后返回的数据，一般为 json 数据
+                alert("发表成功!");				     
+    	        }
+    		    });          
+          return false;
+        });
+
+      });
+      
+      var param_url = "/Account/Post/Param";
+      function getparam(){
+      	$.post(param_url, 
+      	function (data,status) {
+      		if(data != null){
+            $("#hotlabel").empty();   
+      			listappend($("#hotlabel"),data);
+      		}
+      	},'json');
+      }      
+      
+      function listappend(container,data){
+      	$(data).each(function(idx,item){
+      		var hotidol0 = $(hotidolitem).clone();
+          $(hotidol0).text(item.Label);
+          $(hotidol0).data("aguid", item.Aguid);  
+      		$(container).append($(hotidol0));
+      	});	
+      }
+      
+      var param_idol_url = "/Account/Post/Param/Idol/";
+      function getparamIdol(){
+      	$.post(param_idol_url, 
+      	function (data,status) {
+      		if(data != null){
+            $("#idol-name").empty();
+            $(data).each(function(idx,item){
+              $("#idol-name").append("<option value='"+item.Userguid+"'>"+item.Nick_name+"</option>");
+            });
+      		}
+      	},'json');
+      }       
+      
+      
+    </script>
+    
+  </div>
+  <button id="tijiao" type="submit" class="btn btn-primary">发表文章</button> <button style="float:right;" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+</form>
+</div>
+
+
+
+      </div>
+    </div>
+  </div>
+</div>
+	
+{{end}}

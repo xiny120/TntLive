@@ -1,0 +1,36 @@
+{{template "header" .}}
+<body>
+	{{template "nav" .}}
+  <h1 style="display:none;">{{.Title}}</h1>
+  <div>
+    <div>
+    <h3>{{.Title}}</h3>
+    </div>
+    {{with .Data}}
+    <div class="topic_any" style="text-align:center;margin:16px;">
+      {{.Any}}
+    </div>
+    <div class="topic_container">
+     {{.Topic}}
+    </div>
+    {{end}}
+  </div>	
+ 
+  {{template "footer" .}}
+  <script>
+  var vallast = null;
+  var topic_any = $(".topic_any").clone();
+  $.each($(".topic_container img"), function(i,val){  
+    console.log($(val).attr("src"));
+    if(i == 4){
+      $(topic_any).insertAfter($(val))
+    }
+      vallast = val;
+  });
+  
+  if(vallast != null) 
+    $(topic_any).clone().insertAfter($(vallast))
+  </script>
+	
+</body>
+</html>

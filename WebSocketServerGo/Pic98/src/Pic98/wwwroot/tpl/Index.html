@@ -1,0 +1,103 @@
+{{template "header" .}}
+<body>
+	{{template "nav" .}}
+  <div class="body-content">
+    <div id="carouselExampleIndicators" class="carousel slide carousel-fade" data-ride="carousel">
+      <ol class="carousel-indicators">
+        <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+        <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+        <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+      </ol>
+      <div class="carousel-inner demo demo7">
+        <div class="carousel-item active">
+          <img class="d-block w-100" src="/Image/Banner/banner001.jpg" alt="First slide">
+            <div class="carousel-caption" role="option">
+                <p>
+                    全网最新街拍合集！天天更新！
+                    <a class="btn btn-default text_red" href="/Account/Login">
+                        会员限时免费试看
+                    </a>
+                </p>
+            </div>	
+        </div>
+        <div class="carousel-item">
+          <img class="d-block w-100" src="/Image/Banner/Banner002.jpg" alt="Second slide">
+          <div class="carousel-caption" role="option">
+              <p>
+                  街拍高挑美女每日更新！有惊喜！
+                  <a class="btn btn-default text_red"  href="/Account/Register">
+                      <span>注册新用户</span>
+                  </a>
+              </p>
+          </div>	
+        </div>
+        <div class="carousel-item">
+          <img class="d-block w-100" src="/Image/Banner/banner003.jpg" alt="Third slide">
+            <div class="carousel-caption" role="option">
+                <p>
+                    丝袜，丝足，清凉高跟，美翻天！
+                    <a class="btn btn-default text_red" href="/Account/Register">
+                        加入会员
+                    </a>
+                </p>
+            </div>
+        </div>
+      </div>
+      <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="sr-only">Previous</span>
+      </a>
+      <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="sr-only">Next</span>
+      </a>
+    </div>	
+
+
+    <div style="margin-top:8px;margin-bottom:3px;display:none;" >
+      <table style="width:100%;">
+        <tr>
+          <td><span class="f16">最热爱豆 HOT HOT HOT</span></td>
+          <td valign="bottom" align="right"><span style="margin-right:28px;">more...</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <div id="hotidol" >
+      <div class="card-columns">
+        <div  class="card p-1 box-cc">
+          <a href="#" class="card_a">
+              <img class="card-img-top" src="Image/Vip/81313015481.jpg" alt="Card image cap">
+          </a>
+        </div>
+      </div>
+    </div>
+
+
+    <div style="margin-top:8px;margin-bottom:3px;" >
+      <table style="width:100%;">
+        <tr>
+          <td><span class="f16">最新美腿 NEW NEW NEW</span></td>
+          <td valign="bottom" align="right"><span style="margin-right:28px;">more...</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <div id="newidol" >
+      <div class="card-columns">
+        {{range .Data}}
+        <div class="card p-1 box-cc">
+          <a href="/topic/{{.Vaguid}}.html" class="card_a" alt="{{.Vtitle}}">
+            <img class="card-img-top" src="/thumbnail{{.Vpicurl}}" alt="Card image cap">
+          </a>
+        </div>
+        {{end}}        
+      </div>
+    </div>	
+  </div>
+
+
+    {{template "footer" .}}
+	<script src="/static/js/index_hotidol.js?2018010908"></script>
+</body>
+</html>
