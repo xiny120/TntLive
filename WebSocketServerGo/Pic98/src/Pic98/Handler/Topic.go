@@ -1,8 +1,8 @@
-package Handler
+package handler
 
 import (
-	"Pic98/Cfg"
-	"Pic98/Member"
+	"Pic98/cfg"
+	"Pic98/member"
 	"database/sql"
 	"html/template"
 	"log"
@@ -45,7 +45,7 @@ func Topic(w http.ResponseWriter, r *http.Request) {
 			}
 
 			data0.Any = Any
-			db, err := sql.Open("mysql", Cfg.Cfg["tidb"])
+			db, err := sql.Open("mysql", cfg.Cfg["tidb"])
 			if err != nil {
 				log.Println(err)
 			} else {
@@ -66,7 +66,7 @@ func Topic(w http.ResponseWriter, r *http.Request) {
 						rows.Scan(&createtime, &like, &userguid, &idolguid, &title, &content, &tags)
 					}
 
-					_, err0 := Member.LoadUserinfo(r)
+					_, err0 := member.LoadUserinfo(r)
 					if err0 != nil {
 						content = strings.Replace(content, "/Image/Vip/", "/thumbnail/Image/Vip/", -1)
 					}

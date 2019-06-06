@@ -1,4 +1,4 @@
-package Handler
+package handler
 
 type HttpResult struct {
 	Status int

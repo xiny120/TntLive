@@ -1,8 +1,8 @@
-package Handler
+package handler
 
 import (
-	"Pic98/Cfg"
-	"Pic98/Member"
+	"Pic98/cfg"
+	"Pic98/member"
 	"database/sql"
 	"fmt"
 	_ "image"
@@ -84,7 +84,7 @@ func Image_Vip(w http.ResponseWriter, r *http.Request) {
 	param := strings.Split(split0[0], "/")
 	if len(param) >= 3 {
 
-		ui, err0 := Member.LoadUserinfo(r)
+		ui, err0 := member.LoadUserinfo(r)
 		filePath := "wwwroot/thumbnail/Image/Vip"
 		if err0 == nil {
 			if ui.Userguid != "" {
@@ -141,7 +141,7 @@ func Image_Update(w http.ResponseWriter, r *http.Request) {
 		}
 		bounds := m1.Bounds()
 
-		db, err := sql.Open("mysql", Cfg.Cfg["tidb"])
+		db, err := sql.Open("mysql", cfg.Cfg["tidb"])
 		if err != nil {
 			//log.Fatal(err)
 		}

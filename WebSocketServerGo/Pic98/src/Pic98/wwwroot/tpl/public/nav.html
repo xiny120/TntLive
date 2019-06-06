@@ -7,12 +7,10 @@
 
 	<div class="collapse navbar-collapse" id="navbarSupportedContent">
 		<ul class="navbar-nav mr-auto">
-			<li class="nav-item"><a class="nav-link" href="/">首页</a></li>
-			<li class="nav-item"><a class="nav-link" href="/List/Jpmt/">街拍美腿</a></li>
-			<li class="nav-item"><a class="nav-link" href="/List/Jpgq/">高清街拍</a></li>
-			<li class="nav-item"><a class="nav-link" href="/List/Szyh/">丝足诱惑</a></li>
-			<li class="nav-item"><a class="nav-link" href="/List/Swgq/">丝袜高清</a></li>
-			<li class="nav-item"><a class="nav-link" href="/List/Gtmn/">高挑美女</a></li>
+			<li class="nav-item"><a class="nav-link {{if eq "/" $.NavActive}} active {{end}}" href="/">首页</a></li>
+			{{range .Navs}}
+			<li class="nav-item"><a class="nav-link {{if eq .URL $.NavActive}} active {{end}}" href="/List/{{.URL}}.html">{{.Title}}</a></li>
+			{{end}}
 	  </ul>
     
     

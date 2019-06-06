@@ -14,7 +14,7 @@ $(document).ready(function(){
 	
 	ui = JSON.parse(window.localStorage.getItem("ui"));
 	if(ui != null && ui != undefined){
-		online_key = ui.Online_key;
+		online_key = ui.OnlineKey;
 	}
 	
 	hotidol = $("#hotidol").children(0).clone();

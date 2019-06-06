@@ -34,11 +34,21 @@ CMediaEncApp::CMediaEncApp()
 
 CMediaEncApp theApp;
 
+void double1(int* x) {
+	*x += *x;
+	x = nullptr;
+}
 
 // CMediaEncApp 初始化
 
 BOOL CMediaEncApp::InitInstance()
 {
+
+	int a = 3;
+	double1(&a);
+
+	printf("%d",a);
+
 	// 如果一个运行在 Windows XP 上的应用程序清单指定要
 	// 使用 ComCtl32.dll 版本 6 或更高版本来启用可视化方式，
 	//则需要 InitCommonControlsEx()。  否则，将无法创建窗口。

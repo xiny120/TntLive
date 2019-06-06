@@ -162,6 +162,7 @@
             border-left: 200px solid white;
             position: relative;
             vertical-align: bottom;
+            width: 100%;
         }
         
         #lrsidebar {
@@ -173,6 +174,7 @@
         
         #lrmain {
             float: left;
+            width:100%;
         }    
 
         #lrmain,

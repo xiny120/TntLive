@@ -42,13 +42,11 @@
 	<script>
 	
 	function form_submit(){
-		
 		var jqxhr = $.ajax({
-		type: "POST", 
-		url: "/Account/Register/Cmd",
-		data:{cmd:"Login",name: $("#name").val(),pwd: hex_md5($("#pwd1").val())},
-		}
-		).done(function(data,status,xhr) {
+			type: "POST", 
+			url: "/Account/Register/Cmd",
+			data:{cmd:"Login",name: $("#name").val(),pwd: hex_md5($("#pwd1").val())},
+		}).done(function(data,status,xhr) {
 			json = JSON.parse(data);
 			if(json.status != 0){
 				alert(json.msg);
@@ -59,10 +57,10 @@
 				window.localStorage.setItem("ui",JSON.stringify(json.data.ui))
 				window.location = "/";
 			}
-		  })
-		  .fail(function() {
+		}).fail(function() {
 		    alert( "error" );
-		  });
+			}
+		);
 		return false;
 	}
 		
@@ -70,10 +68,6 @@
 	  'use strict';
 	  window.addEventListener('load', function() {
 	    var forms = document.getElementsByClassName('needs-validation');
-		
-	
-	
-		
 	    var validation = Array.prototype.filter.call(forms, function(form) {
 	      form.addEventListener('submit', function(event) {
 	        if (form.checkValidity() === false) {

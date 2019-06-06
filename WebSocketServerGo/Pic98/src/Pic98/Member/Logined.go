@@ -1,43 +1,47 @@
-package Member
+package member
 
 import (
-	"Pic98/Cfg"
+	"Pic98/cfg"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 
+	// mysql
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/satori/go.uuid"
 )
 
+// Userinfo ok
 type Userinfo struct {
-	Online_key        string
-	Userguid          string
-	Un                string
-	Idol              int
-	Writer            int
-	Distributor_level int
-	Distributor_ref0  int
-	Distributor_ref1  int
+	OnlineKey        string
+	Userguid         string
+	Un               string
+	UserID           int
+	Idol             int
+	Writer           int
+	DistributorLevel int
+	DistributorRef0  int
+	DistributorRef1  int
 }
 
 var (
 
-	//sessions := map[string]userinfo{}
+	//Sessions := map[string]userinfo{}
 	Sessions = make(map[string]Userinfo)
 )
 
-// NewV1 returns UUID based on current timestamp and MAC address.
+// Login NewV1 returns UUID based on current timestamp and MAC address.
 func Login(un string, pwd string) (Userinfo, error) {
-	ui := Userinfo{Online_key: "", Userguid: "", Un: "", Idol: 0, Writer: 0}
-	db, err := sql.Open("mysql", Cfg.Cfg["tidb"])
+	ui := Userinfo{OnlineKey: "", Userguid: "", Un: "", Idol: 0, Writer: 0, UserID: 0}
+	db, err := sql.Open("mysql", cfg.Cfg["tidb"])
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 	//strsql := fmt.Sprintf("SELECT userguid FROM useridentify where userid='%s'", name)
-	stmt, err0 := db.Prepare(`SELECT a.userguid,b.idol,b.writer FROM Pic98.useridentify a, Pic98.userinfo b 
+	stmt, err0 := db.Prepare(`SELECT a.userguid,b.idol,b.writer,b.userid FROM Pic98.useridentify a, Pic98.userinfo b 
 	where a.userid=? and a.userguid = b.userguid and b.password = ?`)
 	if err0 != nil {
 		log.Println(err0)
@@ -50,19 +54,20 @@ func Login(un string, pwd string) (Userinfo, error) {
 	if err == nil {
 		defer rows.Close()
 		if rows.Next() {
-			rows.Scan(&ui.Userguid, &ui.Idol, &ui.Writer)
+			rows.Scan(&ui.Userguid, &ui.Idol, &ui.Writer, &ui.UserID)
 			ok, _ := uuid.NewV4()
-			ui.Online_key = ok.String()
+			ui.OnlineKey = ok.String()
 			ui.Un = un
-			Sessions[ui.Online_key] = ui
+			Sessions[ui.OnlineKey] = ui
 			SaveUserinfo(ui)
 		}
 	}
 	return ui, nil
 }
 
+// SaveUserinfo ok
 func SaveUserinfo(ui Userinfo) {
-	db, err := sql.Open("mysql", Cfg.Cfg["tidb"])
+	db, err := sql.Open("mysql", cfg.Cfg["tidb"])
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -77,7 +82,7 @@ func SaveUserinfo(ui Userinfo) {
 	stmt0, _ := db.Prepare(`insert into sessions (aguid,online_key,un,uidata) values(?,?,?,?)`)
 	defer stmt0.Close()
 	ok, _ := uuid.NewV4()
-	ret, err0 := stmt0.Exec(ok.String(), ui.Online_key, ui.Un, string(ui0))
+	ret, err0 := stmt0.Exec(ok.String(), ui.OnlineKey, ui.Un, string(ui0))
 	log.Println(ret)
 	if err0 != nil {
 		log.Println(err0)
@@ -85,20 +90,21 @@ func SaveUserinfo(ui Userinfo) {
 
 }
 
+// LoadUserinfo ok
 func LoadUserinfo(r *http.Request) (Userinfo, error) {
-	ui := Userinfo{Online_key: "", Userguid: "", Un: "", Idol: 0, Writer: 0}
-
+	ui := Userinfo{OnlineKey: "", Userguid: "", Un: "", Idol: 0, Writer: 0}
+	ret := errors.New("no")
 	cookie, err0 := r.Cookie("token")
 	if err0 == nil {
-		online_key := cookie.Value
-		db, err := sql.Open("mysql", Cfg.Cfg["tidb"])
+		onlineKey := cookie.Value
+		db, err := sql.Open("mysql", cfg.Cfg["tidb"])
 		if err != nil {
 			log.Println(err)
 		} else {
 			defer db.Close()
 			stmt, _ := db.Prepare(`select uidata from sessions where online_key =?`)
 			defer stmt.Close()
-			rows, err := stmt.Query(online_key)
+			rows, err := stmt.Query(onlineKey)
 			if err != nil {
 				log.Println(rows)
 			} else {
@@ -107,16 +113,17 @@ func LoadUserinfo(r *http.Request) (Userinfo, error) {
 					var uidata string
 					rows.Scan(&uidata)
 					err := json.Unmarshal([]byte(uidata), &ui)
-
 					//解析失败会报错，如json字符串格式不对，缺"号，缺}等。
 					if err != nil {
 						log.Println(err)
+					} else {
+						ret = nil
 					}
 				}
 
 			}
 		}
 	}
-	return ui, nil
+	return ui, ret
 
 }

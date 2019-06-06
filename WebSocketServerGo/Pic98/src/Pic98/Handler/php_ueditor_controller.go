@@ -1,4 +1,4 @@
-package Handler
+package handler
 
 import (
 	_ "encoding/base64"

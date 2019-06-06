@@ -2,12 +2,15 @@
 package main
 
 import (
-	"Pic98/Cfg"
-	"Pic98/Handler"
+	"Pic98/cfg"
+	"Pic98/handler"
+	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
 	_ "net/http/pprof"
+	"os"
+	"path/filepath"
 	_ "runtime"
 	_ "strconv"
 	"time"
@@ -26,56 +29,66 @@ func main() {
 		http.ListenAndServe(":6060", nil)
 	}()
 
+	dir, err0 := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err0 != nil {
+		log.Fatal(err0)
+	}
+	fmt.Println(dir)
+
 	rand.Seed(time.Now().Unix())
-	Cfg.Cfg["tidb"] = "pic98:vck123456@tcp(106.14.145.51:4000)/Pic98"
+	cfg.Cfg["tidb"] = "pic98:vck123456@tcp(106.14.145.51:4000)/Pic98"
 
 	rh := http.RedirectHandler("http://www.baidu.com", 307)
 	HttpMux.Handle("/baidu", rh)
-	regidx := http.HandlerFunc(Handler.Index)
+	regidx := http.HandlerFunc(handler.Index)
 	HttpMux.Handle("/", regidx)
-	reghotidol := http.HandlerFunc(Handler.Index_Hotidol)
+	reghotidol := http.HandlerFunc(handler.Index_Hotidol)
 	HttpMux.Handle("/Index/Hotidol", reghotidol)
-	regnewidol := http.HandlerFunc(Handler.Index_Newidol)
+	regnewidol := http.HandlerFunc(handler.Index_Newidol)
 	HttpMux.Handle("/Index/Newidol", regnewidol)
-	regList := http.HandlerFunc(Handler.List)
+	regList := http.HandlerFunc(handler.List)
 	HttpMux.Handle("/List/", regList)
-	regDetail := http.HandlerFunc(Handler.Detail)
+	regDetail := http.HandlerFunc(handler.Detail)
 	HttpMux.Handle("/Detail/", regDetail)
-	rega := http.HandlerFunc(Handler.Account)
+	rega := http.HandlerFunc(handler.Account)
 	HttpMux.Handle("/Account/", rega)
-	regh := http.HandlerFunc(Handler.Account_Register)
+	regcmd := http.HandlerFunc(handler.AccountCmd)
+	HttpMux.Handle("/Account/Cmd", regcmd)
+	regh := http.HandlerFunc(handler.Account_Register)
 	HttpMux.Handle("/Account/Register/", regh)
-	regid := http.HandlerFunc(Handler.Account_Register_Cmd)
+	regid := http.HandlerFunc(handler.Account_Register_Cmd)
 	HttpMux.Handle("/Account/Register/Cmd", regid)
-	regLogin := http.HandlerFunc(Handler.Account_Login)
+	regLogin := http.HandlerFunc(handler.Account_Login)
 	HttpMux.Handle("/Account/Login/", regLogin)
-	regPost := http.HandlerFunc(Handler.Account_Post)
+	regPost := http.HandlerFunc(handler.Account_Post)
 	HttpMux.Handle("/Account/Post/", regPost)
-	regPostParam := http.HandlerFunc(Handler.Account_Post_Param)
+	//regOriginal := http.HandlerFunc(Handler.AccountOriginal)
+	//HttpMux.Handle("/Account/Original/", regOriginal)
+	regPostParam := http.HandlerFunc(handler.Account_Post_Param)
 	HttpMux.Handle("/Account/Post/Param", regPostParam)
-	regPostParamIdol := http.HandlerFunc(Handler.Account_Post_Param_Idol)
+	regPostParamIdol := http.HandlerFunc(handler.Account_Post_Param_Idol)
 	HttpMux.Handle("/Account/Post/Param/Idol/", regPostParamIdol)
-	regi := http.HandlerFunc(Handler.Image)
+	regi := http.HandlerFunc(handler.Image)
 	HttpMux.Handle("/Image/", regi)
-	regiv := http.HandlerFunc(Handler.Image_Vip)
+	regiv := http.HandlerFunc(handler.Image_Vip)
 	HttpMux.Handle("/Image/Vip/", regiv)
-	regif := http.HandlerFunc(Handler.Image_Free)
+	regif := http.HandlerFunc(handler.Image_Free)
 	HttpMux.Handle("/Image/free/", regif)
-	regibanner := http.HandlerFunc(Handler.Image_Banner)
+	regibanner := http.HandlerFunc(handler.Image_Banner)
 	HttpMux.Handle("/Image/Banner/", regibanner)
-	regiu := http.HandlerFunc(Handler.Image_Update)
+	regiu := http.HandlerFunc(handler.Image_Update)
 	HttpMux.Handle("/Image/Update", regiu)
 
-	makeThumbnail := http.HandlerFunc(Handler.MakeThumbnail)
+	makeThumbnail := http.HandlerFunc(handler.MakeThumbnail)
 	HttpMux.Handle("/MakeThumbnail/", makeThumbnail)
 
-	thumbnail := http.HandlerFunc(Handler.Thumbnail)
+	thumbnail := http.HandlerFunc(handler.Thumbnail)
 	HttpMux.Handle("/thumbnail/", thumbnail)
 
-	php_ueditor_controller := http.HandlerFunc(Handler.Php_ueditor_controller)
+	php_ueditor_controller := http.HandlerFunc(handler.Php_ueditor_controller)
 	HttpMux.Handle("/php_ueditor_controller/", php_ueditor_controller)
 
-	topicHandler := http.HandlerFunc(Handler.Topic)
+	topicHandler := http.HandlerFunc(handler.Topic)
 	HttpMux.Handle("/topic/", topicHandler)
 
 	log.Println("请用浏览器打开 http://127.0.0.1:3160 ...")
