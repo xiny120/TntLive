@@ -10,6 +10,12 @@ var (
 	dataSourceName = cfg.Cfg["tidb"]
 )
 
+// Init ok
+func Init() {
+	driverName = "mysql"
+	dataSourceName = cfg.Cfg["tidb"]
+}
+
 // Select ok
 func Select(prepareStr string, args ...interface{}) (*sql.Rows, error) {
 	db, err := sql.Open(driverName, dataSourceName)

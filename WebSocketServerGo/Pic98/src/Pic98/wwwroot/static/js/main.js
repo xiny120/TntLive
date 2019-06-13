@@ -10,7 +10,7 @@ var Pic98 = {
 			this.ui = JSON.parse(ui0)
 		}
 	},
-	islogin(){
+	islogin:function(){
 		if (typeof(this.ui)=="undefined" || !this.ui){
 			return false;
 		}		
@@ -19,7 +19,7 @@ var Pic98 = {
 		}
 		return true;
 	},
-	isvalid(o){
+	isvalid:function(o){
 		if (typeof(o)=="undefined" || o == null || o ==""){
 			return false;
 		}

@@ -2,13 +2,10 @@ package handler
 
 import (
 	"Pic98/cfg"
-	"Pic98/dbo"
 	"Pic98/member"
 	"html/template"
-	"io"
 	"log"
 	"net/http"
-	"time"
 
 	"database/sql"
 	"encoding/json"
@@ -27,17 +24,9 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-var (
-	actionsPrivate = map[string](func(*member.Userinfo, http.ResponseWriter, *http.Request, *map[string]interface{})){
-		"Original": fOriginal,
-	}
-)
-
 // Account ok
 func Account(w http.ResponseWriter, r *http.Request) {
-	r.ParseMultipartForm(32 << 20)
 	param := strings.Split(r.URL.Path, "/")
-	log.Println(param)
 	if len(param) < 3 || strings.EqualFold(param[2], "index.html") || len(param[2]) <= 0 {
 		t, err := template.ParseFiles(
 			"wwwroot/tpl/Account/Account.html",
@@ -54,78 +43,9 @@ func Account(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 
 		}
-	} else {
-		var v1 map[string]interface{}
-		if f, ok := actionsPrivate[param[2]]; ok {
-			if ui, err1 := member.LoadUserinfo(r); err1 == nil {
-				f(&ui, w, r, &v1)
-			}
-		} else {
-			http.Error(w, "NotFound", http.StatusNotFound)
-		}
+		return
 	}
-}
-
-func fOriginal(ui *member.Userinfo, w http.ResponseWriter, r *http.Request, v *map[string]interface{}) {
-	res := make(map[string]interface{})
-	res["t"] = "Original"
-	res["status"] = 1
-	res["msg"] = ""
-	idname := r.MultipartForm.Value["id-name"]
-	idcode := r.MultipartForm.Value["id-code"]
-	fs := make(map[string]string, 3)
-
-	if r.MultipartForm != nil {
-		for key, value := range r.MultipartForm.File {
-			files := value
-			len := len(files)
-			for i := 0; i < len; i++ {
-				file, err := files[i].Open()
-				defer file.Close()
-				if err != nil {
-					res["msg"] = err.Error()
-				} else {
-					path := "wwwroot/static/upload/original/" + time.Now().Format("2006-01")
-					os.Mkdir(path, os.ModePerm)
-					idfile := path + "/" + ui.Userguid + "_" + files[i].Filename
-					cur, err := os.Create(idfile)
-					defer cur.Close()
-					if err != nil {
-						res["msg"] = err.Error()
-					} else {
-						io.Copy(cur, file)
-						fs[key] = idfile
-					}
-				}
-			}
-		}
-	}
-	if len(fs) >= 3 {
-		res["msg"] = "不能重复提交申请！"
-		if rows, err := dbo.Select("select userid from original where userid=? and status = 0", ui.UserID); err == nil {
-			if !rows.Next() {
-				mjson, _ := json.Marshal(fs)
-				mString := string(mjson)
-				now := time.Now()
-				str := `
-		INSERT INTO original
-		(userid,idname,idcode,photo,createdate,status,passid,passdate)
-		VALUES (?,?,?,?,?,0,0,?)
-		`
-				if _, err := dbo.Insert(str, ui.UserID, idname[0], idcode[0], mString, now, now); err == nil {
-					res["status"] = 0
-				} else {
-					res["msg"] = err.Error()
-				}
-			}
-		}
-
-	}
-
-	rmsg, err := json.Marshal(res)
-	if err == nil {
-		w.Write(rmsg)
-	}
+	http.Error(w, "NotFound", http.StatusNotFound)
 }
 
 // Account_Setup ok
@@ -257,8 +177,8 @@ func Account_Register_Cmd(w http.ResponseWriter, r *http.Request) {
 						cookie := http.Cookie{Name: "token", Value: ret, Path: "/", MaxAge: 86400 * 10}
 						http.SetCookie(w, &cookie)
 						//log.Println(ui)
-						uidata_, _ := json.Marshal(ui)
-						uidata = string(uidata_)
+						uidatat, _ := json.Marshal(ui)
+						uidata = string(uidatat)
 					}
 					result = fmt.Sprintf("{\"status\":0,\"msg\":\"Account/Register/Id调用成功！\",\"data\":{\"register\":\"%s\",\"ui\":%s}}", ret, uidata)
 
@@ -512,7 +432,7 @@ func append2topic(tagguid string, userguid string, Idol_name string, title strin
 		defer db.Close()
 		if title != "" {
 
-			stmt, _ := db.Prepare("INSERT INTO Pic98.topic (aguid,coverimg,userguid,idolguid,title,intro,content,tags) VALUES(?,?,?,?,?,?,?,?)")
+			stmt, _ := db.Prepare("INSERT INTO topic_review (aguid,coverimg,userguid,idolguid,title,intro,content,tags) VALUES(?,?,?,?,?,?,?,?)")
 			//log.Println(stmt)
 			defer stmt.Close()
 			_, erri := stmt.Exec(aguid_topic, coverimg, userguid, Idol_name, title, intro, content, tagguid)
@@ -580,7 +500,7 @@ func Account_Post_Param(w http.ResponseWriter, r *http.Request) {
 		//log.Fatal(err)
 	}
 	defer db.Close()
-	stmt, _ := db.Prepare(`SELECT aguid,label FROM Pic98.tags`)
+	stmt, _ := db.Prepare(`SELECT aguid,label FROM tags`)
 	//log.Println(stmt)
 	defer stmt.Close()
 	rows, err := stmt.Query()
@@ -613,7 +533,7 @@ func Account_Post_Param_Idol(w http.ResponseWriter, r *http.Request) {
 		//log.Fatal(err)
 	}
 	defer db.Close()
-	stmt, _ := db.Prepare(`SELECT userguid,nick_name FROM Pic98.userinfo where idol > 0`)
+	stmt, _ := db.Prepare(`SELECT userguid,nick_name FROM userinfo where idol > 0`)
 	//log.Println(stmt)
 	defer stmt.Close()
 	rows, err := stmt.Query()

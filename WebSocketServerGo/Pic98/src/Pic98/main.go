@@ -2,7 +2,10 @@
 package main
 
 import (
+	"Pic98/admin"
+	"Pic98/api"
 	"Pic98/cfg"
+	"Pic98/dbo"
 	"Pic98/handler"
 	"fmt"
 	"log"
@@ -37,6 +40,7 @@ func main() {
 
 	rand.Seed(time.Now().Unix())
 	cfg.Cfg["tidb"] = "pic98:vck123456@tcp(106.14.145.51:4000)/Pic98"
+	dbo.Init()
 
 	rh := http.RedirectHandler("http://www.baidu.com", 307)
 	HttpMux.Handle("/baidu", rh)
@@ -90,9 +94,17 @@ func main() {
 
 	topicHandler := http.HandlerFunc(handler.Topic)
 	HttpMux.Handle("/topic/", topicHandler)
-
+	formActionHandler := http.HandlerFunc(handler.FormAction)
+	HttpMux.Handle("/FormAction/", formActionHandler)
 	log.Println("请用浏览器打开 http://127.0.0.1:3160 ...")
 	HttpMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("wwwroot/static"))))
+
+	//sr := r.PathPrefix("/admin")
+	adminh := http.HandlerFunc(admin.ServeAdmin)
+	HttpMux.Handle("/admin/", adminh)
+
+	apiPrivate := http.HandlerFunc(api.Private)
+	HttpMux.Handle("/api/private/", apiPrivate)
 
 	err := http.ListenAndServe(":3160", HttpMux)
 	log.Println(err)

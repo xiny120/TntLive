@@ -18,9 +18,11 @@ type Userinfo struct {
 	OnlineKey        string
 	Userguid         string
 	Un               string
+	Avatar           string
 	UserID           int
 	Idol             int
 	Writer           int
+	IsAdmin          int
 	DistributorLevel int
 	DistributorRef0  int
 	DistributorRef1  int
@@ -41,7 +43,7 @@ func Login(un string, pwd string) (Userinfo, error) {
 	}
 	defer db.Close()
 	//strsql := fmt.Sprintf("SELECT userguid FROM useridentify where userid='%s'", name)
-	stmt, err0 := db.Prepare(`SELECT a.userguid,b.idol,b.writer,b.userid FROM Pic98.useridentify a, Pic98.userinfo b 
+	stmt, err0 := db.Prepare(`SELECT a.userguid,b.idol,b.writer,b.userid,b.isadmin,b.avatar FROM Pic98.useridentify a, Pic98.userinfo b 
 	where a.userid=? and a.userguid = b.userguid and b.password = ?`)
 	if err0 != nil {
 		log.Println(err0)
@@ -54,7 +56,7 @@ func Login(un string, pwd string) (Userinfo, error) {
 	if err == nil {
 		defer rows.Close()
 		if rows.Next() {
-			rows.Scan(&ui.Userguid, &ui.Idol, &ui.Writer, &ui.UserID)
+			rows.Scan(&ui.Userguid, &ui.Idol, &ui.Writer, &ui.UserID, &ui.IsAdmin, &ui.Avatar)
 			ok, _ := uuid.NewV4()
 			ui.OnlineKey = ok.String()
 			ui.Un = un

@@ -23,17 +23,17 @@
     }
     .show{
         visibility:visible;
-        display: block;
+        display: inline;
     }
 
 </style>
 <div>
     <div class="alright">
         <span class="mg8" id="username">test</span>
+        <span class="mg8 f8 bg fclr hide" id="useradmin">超级管理员</span>
         <span class="mg8 f8 bg fclr hide" id="usergroup">高级用户</span>
         <span class="mg8 f8 bg fclr hide" id="Writer">原创作者</span>
-        <!--<button class="mg8" id="bnWriter">申请原创作者</button>-->
-        <button type="button" class="btn btn-primary mg8"  id="bnWriter" data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo">申请原创作者</button>
+        <button type="button" class="btn btn-primary mg8"  id="bnWriter" data-toggle="modal" data-target="#originalModal" data-whatever="@mdo">申请原创作者</button>
     </div>
     <div>
         <div>最近操作：</div>
@@ -42,11 +42,11 @@
         <div>2019年3月5日13时15分35秒注册成为本站用户</div>
     </div>
 
-    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="originalModal" tabindex="-1" role="dialog" aria-labelledby="originalModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">申请原创作者</h5>
+                <h5 class="modal-title" id="originalModalLabel">申请原创作者</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
                 </button>
@@ -57,7 +57,7 @@
                         <samp>根据相关法律，申请原创作者请您提供如下实名认证信息：</samp>
                     </div>
                     <br>
-                    <form id="Original" enctype="multipart/form-data" method="POST" class="needs-validation" novalidate action="/Account/Original/">                                 
+                    <form id="Original" enctype="multipart/form-data" method="POST" class="needs-validation" novalidate action="/FormAction/Original/">                                 
                     <div class="form-group">
                         <label for="id-name" class="col-form-label">身份证姓名:</label>
                         <input type="text" name="id-name" class="form-control" id="id-name" required>
@@ -110,13 +110,17 @@
 </div>
 <script>
     $(document).ready(function(){
+        $("#username").html(Pic98.ui.Un);
         if(Pic98.ui.Writer == 1){
             $("#Writer").removeClass("hide").addClass("show");
             $("#bnWriter").removeClass("show").addClass("hide");
-		}
+        }
+        if(Pic98.ui.IsAdmin == 1){
+            $("#useradmin").removeClass("hide").addClass("show");
+		}        
     });
 
-    $('#exampleModal').on('show.bs.modal', function (event) {
+    $('#originalModal').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget) // Button that triggered the modal
         var recipient = button.data('whatever') // Extract info from data-* attributes
         // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).

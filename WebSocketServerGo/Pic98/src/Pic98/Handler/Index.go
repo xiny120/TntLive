@@ -82,7 +82,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 				} else {
 					defer db.Close()
-					stmt, _ := db.Prepare(`SELECT aguid,coverimg,likesum,title FROM Pic98.topic order by createtime desc limit ?,?`)
+					stmt, _ := db.Prepare(`SELECT aguid,coverimg,likesum,title FROM topic order by createtime desc limit ?,?`)
 					defer stmt.Close()
 					rows, err := stmt.Query(0, 20)
 					if err == nil {
