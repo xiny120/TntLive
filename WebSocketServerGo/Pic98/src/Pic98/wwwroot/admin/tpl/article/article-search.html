@@ -117,7 +117,7 @@
     var pageSize = 0;
     var tr = $(".table-article-search tbody").children(0).clone(); 
     var pagerul = $("ul.table-article-search-pager");
-    var pagerli = $(pagerul.children("li.p0")[0]).clone(); //$($("li.p0")[0]).clone();
+    var pagerli = $(pagerul.children("li.p0")[0]).clone(); 
      
     $(pagerul.children("li.p0")).hide();
     $(pagerul.children("li.p0")).on("click",function(){
@@ -139,7 +139,7 @@
       }
       getlist();
     })
-    //$("li.p0")
+    
     $(".table-article-search tbody").html("");
     $(".table-article-search-checkall").on("change",function(e){
       $(".table-article-search-checkall0").each(function(){this.checked = e.target.checked;});
@@ -196,12 +196,12 @@
     }
 
     function originalCancel(arr){
-      var newidolurl = "/api/private/";
+      //var newidolurl = "/api/admin/";
       $.ajax({
         type: "POST",      //data 传送数据类型。post 传递
         dataType: 'json',  // 返回数据的数据类型json
         contentType: "application/json; charset=utf-8",
-        url: newidolurl,  // yii 控制器/方法
+        url: APIURL,  // yii 控制器/方法
         cache: false,      
         data: JSON.stringify({action:'article-search-originalCancel',data:arr}),  //传送的数据
         error:function(res){
@@ -218,7 +218,7 @@
 
     function getlist(){
       $(".table-article-search tbody").html("");
-      var newidolurl = "/api/private/";
+      var newidolurl = "/api/admin/";
       var idname = $("#table-article-search-idname").val();
       var idcode = $("#table-article-search-idcode").val();
       var userid = $("#table-article-search-userid").val();
@@ -227,7 +227,7 @@
         type: "POST",      //data 传送数据类型。post 传递
         dataType: 'json',  // 返回数据的数据类型json
         contentType: "application/json; charset=utf-8",
-        url: newidolurl,  // yii 控制器/方法
+        url: APIURL,  // yii 控制器/方法
         cache: false,      
         data: JSON.stringify({action:'article-search-list',idname:idname,idcode:idcode,userid:userid,nick_name:nick_name,pageidx:curPageIdx}),  //传送的数据
         error:function(res){
@@ -255,7 +255,7 @@
             alert(data.msg);
           }
         }
-      })        
+      });      
     }
 
     function preparepager(){

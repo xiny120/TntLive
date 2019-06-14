@@ -156,12 +156,12 @@
     }
 
     function originalCancel(arr){
-      var newidolurl = "/api/private/";
+      var newidolurl = "/api/admin/";
       $.ajax({
         type: "POST",      //data 传送数据类型。post 传递
         dataType: 'json',  // 返回数据的数据类型json
         contentType: "application/json; charset=utf-8",
-        url: newidolurl,  // yii 控制器/方法
+        url: APIURL,  // yii 控制器/方法
         cache: false,      
         data: JSON.stringify({action:'original-search-originalCancel',data:arr}),  //传送的数据
         error:function(res){
@@ -178,7 +178,7 @@
 
     function getlist(){
       $(".table-orginal-search tbody").html("");
-      var newidolurl = "/api/private/";
+      var newidolurl = "/api/admin/";
       var idname = $("#table-orginal-search-idname").val();
       var idcode = $("#table-orginal-search-idcode").val();
       var userid = $("#table-orginal-search-userid").val();
@@ -187,7 +187,7 @@
         type: "POST",      //data 传送数据类型。post 传递
         dataType: 'json',  // 返回数据的数据类型json
         contentType: "application/json; charset=utf-8",
-        url: newidolurl,  // yii 控制器/方法
+        url: APIURL,  // yii 控制器/方法
         cache: false,      
         data: JSON.stringify({action:'original-search-list',idname:idname,idcode:idcode,userid:userid,nick_name:nick_name,pageidx:curPageIdx}),  //传送的数据
         error:function(res){

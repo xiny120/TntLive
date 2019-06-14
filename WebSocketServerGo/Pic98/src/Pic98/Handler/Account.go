@@ -32,6 +32,7 @@ func Account(w http.ResponseWriter, r *http.Request) {
 			"wwwroot/tpl/Account/Account.html",
 			"wwwroot/tpl/Account/Article.html",
 			"wwwroot/tpl/Account/Userinfo.html",
+			"wwwroot/tpl/Account/Promotion.html",
 			"wwwroot/tpl/public/header.html",
 			"wwwroot/tpl/public/nav.html",
 			"wwwroot/tpl/public/footer.html")

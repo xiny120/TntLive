@@ -3,10 +3,13 @@ package api
 import (
 	"Pic98/dbo"
 	"Pic98/member"
-	"Pic98/toolset"
+
+	//"Pic98/toolset"
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/xiny120/gotoolset"
 )
 
 var (
@@ -29,8 +32,8 @@ func fArticleReviewSearchPass(ui *member.Userinfo, w http.ResponseWriter, r *htt
 	res["msg"] = "未知错误"
 
 	func() {
-		aguid := toolset.MapGetString("aguid", v, "") //(*v)["data"].([]interface{})
-		status := toolset.MapGetInt("status", v, -1)
+		aguid := ddmtoolset.MapGetString("aguid", v, "") //(*v)["data"].([]interface{})
+		status := ddmtoolset.MapGetInt("status", v, -1)
 		if status == -1 {
 			res["msg"] = "status 解析错误"
 			return
@@ -65,7 +68,7 @@ func fArticleReviewSearchList(ui *member.Userinfo, w http.ResponseWriter, r *htt
 			res["msg"] = err.Error()
 			return
 		}
-		data, err := toolset.Rows2Map(rows)
+		data, err := ddmtoolset.Rows2Map(rows)
 		if err != nil {
 			res["msg"] = err.Error()
 			return
@@ -89,7 +92,10 @@ func fArticleSearchList(ui *member.Userinfo, w http.ResponseWriter, r *http.Requ
 	res["msg"] = "未知错误"
 
 	func() {
-		pageidx := toolset.MapGetInt("pageidx", v, 1) - 1 //int((*v)["pageidx"].(float64)) - 1
+		atable := map[int]string{0: "topic", 1: "topic_review", 2: "topic_reject"}
+
+		pageidx := ddmtoolset.MapGetInt("pageidx", v, 1) - 1
+		articleType := ddmtoolset.MapGetInt("articleType", v, 0)
 		pageSize := 50
 		startIdx := pageidx * pageSize
 		if startIdx < 0 {
@@ -97,27 +103,27 @@ func fArticleSearchList(ui *member.Userinfo, w http.ResponseWriter, r *http.Requ
 		}
 		rows, err := dbo.Select(`
 		SELECT a.aguid, a.coverimg, a.createtime, a.likesum, a.userguid, a.title, a.intro, a.tags,
-		b.nick_name  FROM topic a, userinfo b where a.userguid = b.userguid
+		b.nick_name  FROM `+atable[articleType]+` a, userinfo b where a.userguid = b.userguid and a.userguid=?
 		order by createtime desc
 		limit ?,?
-		`, startIdx, pageSize)
+		`, ui.Userguid, startIdx, pageSize)
 		if err != nil {
 			res["msg"] = err.Error()
 			return
 		}
-		data, err := toolset.Rows2Map(rows)
+		data, err := ddmtoolset.Rows2Map(rows)
 		if err != nil {
 			res["msg"] = err.Error()
 			return
 		}
 		res["data"] = data
 
-		rows, err = dbo.Select(`SELECT count(*) as count FROM topic`)
+		rows, err = dbo.Select(`SELECT count(*) as count FROM `+atable[articleType]+` where userguid=?`, ui.Userguid)
 		if err != nil {
 			res["msg"] = err.Error()
 			return
 		}
-		data0, err := toolset.Rows2Map(rows)
+		data0, err := ddmtoolset.Rows2Map(rows)
 		if err != nil {
 			res["msg"] = err.Error()
 			return
@@ -197,13 +203,13 @@ func fOriginalSearchList(ui *member.Userinfo, w http.ResponseWriter, r *http.Req
 				res["msg"] = err.Error()
 				return
 			}
-			data0, err := toolset.Rows2Map(rows)
+			data0, err := ddmtoolset.Rows2Map(rows)
 			if err != nil {
 				res["msg"] = err.Error()
 				return
 			}
 
-			data, _ = toolset.RowMap2RowMap(&data, &data0)
+			data, _ = ddmtoolset.RowMap2RowMap(&data, &data0)
 
 		}
 
@@ -226,13 +232,13 @@ func fOriginalSearchList(ui *member.Userinfo, w http.ResponseWriter, r *http.Req
 				res["msg"] = err.Error()
 				return
 			}
-			data0, err := toolset.Rows2Map(rows)
+			data0, err := ddmtoolset.Rows2Map(rows)
 			if err != nil {
 				res["msg"] = err.Error()
 				return
 			}
 
-			data, _ = toolset.RowMap2RowMap(&data, &data0)
+			data, _ = ddmtoolset.RowMap2RowMap(&data, &data0)
 
 		}
 		if idname != "" {
@@ -254,13 +260,13 @@ func fOriginalSearchList(ui *member.Userinfo, w http.ResponseWriter, r *http.Req
 				res["msg"] = err.Error()
 				return
 			}
-			data0, err := toolset.Rows2Map(rows)
+			data0, err := ddmtoolset.Rows2Map(rows)
 			if err != nil {
 				res["msg"] = err.Error()
 				return
 			}
 
-			data, _ = toolset.RowMap2RowMap(&data, &data0)
+			data, _ = ddmtoolset.RowMap2RowMap(&data, &data0)
 
 		}
 
@@ -283,13 +289,13 @@ func fOriginalSearchList(ui *member.Userinfo, w http.ResponseWriter, r *http.Req
 				res["msg"] = err.Error()
 				return
 			}
-			data0, err := toolset.Rows2Map(rows)
+			data0, err := ddmtoolset.Rows2Map(rows)
 			if err != nil {
 				res["msg"] = err.Error()
 				return
 			}
 
-			data, _ = toolset.RowMap2RowMap(&data, &data0)
+			data, _ = ddmtoolset.RowMap2RowMap(&data, &data0)
 		}
 
 		if userid != "" {
@@ -311,13 +317,13 @@ func fOriginalSearchList(ui *member.Userinfo, w http.ResponseWriter, r *http.Req
 				res["msg"] = err.Error()
 				return
 			}
-			data0, err := toolset.Rows2Map(rows)
+			data0, err := ddmtoolset.Rows2Map(rows)
 			if err != nil {
 				res["msg"] = err.Error()
 				return
 			}
 
-			data, _ = toolset.RowMap2RowMap(&data, &data0)
+			data, _ = ddmtoolset.RowMap2RowMap(&data, &data0)
 		}
 
 		rows, err := dbo.Select(`SELECT count(*) as count FROM original where status = 1`)
@@ -325,7 +331,7 @@ func fOriginalSearchList(ui *member.Userinfo, w http.ResponseWriter, r *http.Req
 			res["msg"] = err.Error()
 			return
 		}
-		data0, err := toolset.Rows2Map(rows)
+		data0, err := ddmtoolset.Rows2Map(rows)
 		if err != nil {
 			res["msg"] = err.Error()
 			return
@@ -397,7 +403,7 @@ func fOriginalReviewList(ui *member.Userinfo, w http.ResponseWriter, r *http.Req
 			res["msg"] = err.Error()
 			return
 		}
-		data, err := toolset.Rows2Map(rows)
+		data, err := ddmtoolset.Rows2Map(rows)
 		if err != nil {
 			res["msg"] = err.Error()
 			return
@@ -435,20 +441,17 @@ func Private(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			w.Write(rmsg)
 		}
-	} else {
-		v1 := v.(map[string]interface{})
-		action := v1["action"].(string)
-		if ui, err1 := member.LoadUserinfo(r); err1 == nil {
-			if f, ok := actionsPrivateAPI[action]; ok {
-				f(&ui, w, r, &v1)
-				return
-			}
-			log.Println("action not found:", action)
-		} else {
-			http.Error(w, "StatusUnauthorized", http.StatusUnauthorized)
+		return
+	}
+	v1 := v.(map[string]interface{})
+	if ui, err1 := member.LoadUserinfo(r); err1 == nil {
+		action := ddmtoolset.MapGetString("action", &v1, "")
+		if f, ok := actionsPrivateAPI[action]; ok {
+			f(&ui, w, r, &v1)
 			return
 		}
-		http.Error(w, "NotFound", http.StatusNotFound)
+		log.Println("action not found:", action)
+		return
 	}
-
+	http.Error(w, "StatusUnauthorized", http.StatusUnauthorized)
 }

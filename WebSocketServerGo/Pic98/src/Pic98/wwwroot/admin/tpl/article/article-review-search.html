@@ -99,12 +99,12 @@
     observer.observe(targetNode, config);
 
     function articlePass(aguid,status){
-      var newidolurl = "/api/private/";
+      var newidolurl = "/api/admin/";
       $.ajax({
         type: "POST",      //data 传送数据类型。post 传递
         dataType: 'json',  // 返回数据的数据类型json
         contentType: "application/json; charset=utf-8",
-        url: newidolurl,  // yii 控制器/方法
+        url: APIURL,  // yii 控制器/方法
         cache: false,      
         data: JSON.stringify({action:'article-review-search-articlepass',aguid:aguid,status:status}),  //传送的数据
         error:function(res){
@@ -121,7 +121,7 @@
 
     function getlist(){
       
-      var newidolurl = "/api/private/";
+      var newidolurl = "/api/admin/";
       var idname = $("#table-article-review-search-idname").val();
       var idcode = $("#table-article-review-search-idcode").val();
       var userid = $("#table-article-review-search-userid").val();
@@ -130,7 +130,7 @@
         type: "POST",      //data 传送数据类型。post 传递
         dataType: 'json',  // 返回数据的数据类型json
         contentType: "application/json; charset=utf-8",
-        url: newidolurl,  // yii 控制器/方法
+        url: APIURL,  // yii 控制器/方法
         cache: false,      
         data: JSON.stringify({action:'article-review-search-list',idname:idname,idcode:idcode,userid:userid,nick_name:nick_name}),  //传送的数据
         error:function(res){

@@ -1,0 +1,130 @@
+{{define "Promotion"}}
+<style>
+    .mg8{
+        margin: 4px;
+        padding: 8px;
+    }
+    .f8{
+        font-size: 8px;
+    }
+    .bg{
+        background-color:goldenrod;
+        border-radius:5px;
+    }
+    .fclr{
+        color:rgb(219, 19, 19);
+    }
+    .alright{
+        text-align:right;
+    }
+    .hide{
+        visibility: hidden;
+        display:none;
+    }
+    .show{
+        visibility:visible;
+        display: inline;
+    }
+
+</style>
+<div>
+    <div>
+        <div>最近操作：</div>
+        <div>2019年3月6日12时25分36秒完成首次充值！去爱心仪的小姐姐吧！</div>
+        <div>2019年3月5日13时20分45秒已经浏览了135张小姐姐的美腿图片</div>
+        <div>2019年3月5日13时15分35秒注册成为本站用户</div>
+    </div>
+</div>
+<script>
+    $(document).ready(function(){
+        $("#username").html(Pic98.ui.Un);
+        if(Pic98.ui.Writer == 1){
+            $("#Writer").removeClass("hide").addClass("show");
+            $("#bnWriter").removeClass("show").addClass("hide");
+        }
+        if(Pic98.ui.IsAdmin == 1){
+            $("#useradmin").removeClass("hide").addClass("show");
+		}        
+    });
+
+    $('#originalModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget) // Button that triggered the modal
+        var recipient = button.data('whatever') // Extract info from data-* attributes
+        // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+        // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+        var modal = $(this)
+        modal.find('.modal-title').text(Pic98.ui.Un + ' 申请原创作者')
+        //modal.find('.modal-body input').val(recipient)
+        //$("#recipient-name").val(Pic98.ui.Un)
+    })
+
+    function changepic(obj) {
+        var o = $(obj)
+        var newsrc=getObjectURL(obj.files[0]);
+        var img = o.next().next();
+        $(img)[0].src=newsrc;
+    }
+    //建立一個可存取到該file的url
+    function getObjectURL(file) {
+        var url = null ;
+        // 下面函数执行的效果是一样的，只是需要针对不同的浏览器执行不同的 js 函数而已
+        if (window.createObjectURL!=undefined) { // basic
+            url = window.createObjectURL(file) ;
+        } else if (window.URL!=undefined) { // mozilla(firefox)
+            url = window.URL.createObjectURL(file) ;
+        } else if (window.webkitURL!=undefined) { // webkit or chrome
+            url = window.webkitURL.createObjectURL(file) ;
+        }
+        return url ;
+    }
+
+    $("form[name='form66']").on('submit', function() {
+        $(this).ajaxSubmit({
+        type: 'post', // 提交方式 get/post
+            success: function(data) { // data 保存提交后返回的数据，一般为 json 数据
+        alert("发表成功!");				     
+        }
+        });          
+        return false;
+    });    
+
+    (function() {
+  'use strict';
+  window.addEventListener('load', function() {
+      
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    var forms = document.getElementsByClassName('needs-validation');
+    // Loop over them and prevent submission
+    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+          
+        if (form.checkValidity() === false) {
+  
+        }else{
+            
+            $(this).ajaxSubmit({
+                type: 'POST', // 提交方式 get/post
+                dataType : 'json',
+                //clearForm: true,  //成功提交后，清除所有表单元素的值 
+                //resetForm: true,  //成功提交后，重置所有表单元素的值
+                success: function (data) {
+                    alert(data.msg);
+                },
+                error:function(data){
+                    alert("fail");
+                },
+            });
+
+
+        }
+        event.preventDefault();
+        event.stopPropagation();   
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();
+
+</script>
+
+{{end}}

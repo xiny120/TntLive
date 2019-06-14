@@ -3,7 +3,6 @@ package admin
 import (
 	"Pic98/member"
 	"html/template"
-	"log"
 	"net/http"
 	//"strings"
 )
@@ -34,34 +33,32 @@ var (
 // ServeAdmin ok
 func ServeAdmin(w http.ResponseWriter, r *http.Request) {
 	ui, err := member.LoadUserinfo(r)
-	if err != nil {
+	if err != nil || ui.IsAdmin != 1 {
 		http.Error(w, "StatusUnauthorized", http.StatusUnauthorized)
-	} else {
-		if r.URL.Path == "/admin/" {
-			t, err0 := template.ParseFiles(
-				"wwwroot/admin/tpl/index.html",
-				"wwwroot/admin/tpl/home.html",
-				"wwwroot/admin/tpl/article/article-original-review.html",
-				"wwwroot/admin/tpl/article/article-original-search.html",
-				"wwwroot/admin/tpl/article/article-search.html",
-				"wwwroot/admin/tpl/article/article-review-search.html",
-				"wwwroot/admin/tpl/memberrequest.html",
-				"wwwroot/admin/tpl/memberquery.html",
-				"wwwroot/admin/tpl/memberadmin.html")
-			log.Println(err0)
-			//log.Println(r.URL.Path, t.Name())
+		return
+	}
+	if r.URL.Path == "/admin/" {
+		if t, err0 := template.ParseFiles(
+			"wwwroot/admin/tpl/index.html",
+			"wwwroot/admin/tpl/home.html",
+			"wwwroot/admin/tpl/article/article-original-review.html",
+			"wwwroot/admin/tpl/article/article-original-search.html",
+			"wwwroot/admin/tpl/article/article-search.html",
+			"wwwroot/admin/tpl/article/article-review-search.html",
+			"wwwroot/admin/tpl/memberrequest.html",
+			"wwwroot/admin/tpl/memberquery.html",
+			"wwwroot/admin/tpl/memberadmin.html"); err0 == nil {
 			data := AdminPageDate
 			data.Title = "用户中心"
 			data.UserName = ui.Un
 			data.UserAvatar = ui.Avatar
-
 			err := t.Execute(w, data)
 			if err != nil {
-
 			}
-
-		} else {
-			http.ServeFile(w, r, "wwwroot"+r.URL.Path)
+			return
 		}
+		http.Error(w, "template.ParseFiles error", http.StatusInternalServerError)
+		return
 	}
+	http.ServeFile(w, r, "wwwroot"+r.URL.Path)
 }

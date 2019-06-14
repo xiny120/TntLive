@@ -1,31 +1,27 @@
 package main
 
-type structabc struct {
-	name string
-	val  string
-}
-
-func structabcf(a structabc) {
-	a.name = "abc"
-	a.val = "def"
-}
-
-func structabcf1(a *structabc) {
-	a.name = "abc1"
-	a.val = "def1"
-}
-
-func ch1(a [4]int) {
-	a[0] = 5
-}
+import (
+	"encoding/json"
+	"fmt"
+)
 
 func main() {
-	//a := structabc{"a", "b"}
-	//structabcf(a)
-	//structabcf1(&a)
-	var a = [4]int{1, 2, 3, 4}
-	//println(a)
-	ch1(a)
-	//println(a)
-
+	var v map[string]interface{}
+	jsonstr := `{"id":13,"name":"胖胖","weight":216.5,"dd":"123"}`
+	json.Unmarshal([]byte(jsonstr), &v)
+	for k, v1 := range v {
+		fmt.Print(k, " = ")
+		switch v1.(type) {
+		case int:
+			fmt.Println(v1, "is an int value.")
+		case string:
+			fmt.Println(v1, "is a string value.")
+		case int64:
+			fmt.Println(v1, "is an int64 value.")
+		case float64:
+			fmt.Println(v1, "is an float64 value.")
+		default:
+			fmt.Println(v1, "is an unknown type.")
+		}
+	}
 }

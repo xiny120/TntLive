@@ -21,7 +21,8 @@ import (
 	_ "github.com/nfnt/resize"
 )
 
-func Php_ueditor_controller(w http.ResponseWriter, r *http.Request) {
+// PhpUeditorController ok
+func PhpUeditorController(w http.ResponseWriter, r *http.Request) {
 
 	var result string
 	result = "{\"state\":\"SUCCESS\"}"

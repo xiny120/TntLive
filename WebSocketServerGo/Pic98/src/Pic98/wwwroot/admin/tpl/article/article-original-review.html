@@ -107,12 +107,12 @@
     }
 
     function allow(arr,status){
-      var newidolurl = "/api/private/";
+      var newidolurl = "/api/admin/";
       $.ajax({
         type: "POST",      //data 传送数据类型。post 传递
         dataType: 'json',  // 返回数据的数据类型json
         contentType: "application/json; charset=utf-8",
-        url: newidolurl,  // yii 控制器/方法
+        url: APIURL,  // yii 控制器/方法
         cache: false,      
         data: JSON.stringify({action:'original-review-allow',data:arr,status:status}),  //传送的数据
         error:function(res){
@@ -129,12 +129,12 @@
 
     function getlist(){
       $(".table-orginal tbody").html("");
-      var newidolurl = "/api/private/";
+      var newidolurl = "/api/admin/";
       $.ajax({
         type: "POST",      //data 传送数据类型。post 传递
         dataType: 'json',  // 返回数据的数据类型json
         contentType: "application/json; charset=utf-8",
-        url: newidolurl,  // yii 控制器/方法
+        url: APIURL,  // yii 控制器/方法
         cache: false,      
         data: JSON.stringify({action:'original-review-list'}),  //传送的数据
         error:function(res){

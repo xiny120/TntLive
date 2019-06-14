@@ -7,6 +7,7 @@ import (
 	"Pic98/cfg"
 	"Pic98/dbo"
 	"Pic98/handler"
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
@@ -19,9 +20,28 @@ import (
 	"time"
 )
 
-var HttpMux = http.NewServeMux()
-
 func main() {
+	var HTTPMux = http.NewServeMux()
+	var v map[string]interface{}
+	jsonstr := `{"id":13,"name":"胖胖","weight":216.5,"dd":"123"}`
+	json.Unmarshal([]byte(jsonstr), &v)
+	for k, v1 := range v {
+		fmt.Print(k, " = ")
+		switch v1.(type) {
+		case int:
+			fmt.Println(v1, "is an int value.")
+		case string:
+			fmt.Println(v1, "is a string value.")
+		case int64:
+			fmt.Println(v1, "is an int64 value.")
+		case float64:
+			fmt.Println(v1, "is an float64 value.")
+		default:
+			fmt.Println(v1, "is an unknown type.")
+		}
+	}
+
+	//log.Println(v["id"], v["name"], v["weight"])
 	go func() {
 		//mux := http.NewServeMux()
 		//mux.HandleFunc("/go", func(w http.ResponseWriter, r *http.Request) {
@@ -43,70 +63,72 @@ func main() {
 	dbo.Init()
 
 	rh := http.RedirectHandler("http://www.baidu.com", 307)
-	HttpMux.Handle("/baidu", rh)
+	HTTPMux.Handle("/baidu", rh)
 	regidx := http.HandlerFunc(handler.Index)
-	HttpMux.Handle("/", regidx)
+	HTTPMux.Handle("/", regidx)
 	reghotidol := http.HandlerFunc(handler.Index_Hotidol)
-	HttpMux.Handle("/Index/Hotidol", reghotidol)
+	HTTPMux.Handle("/Index/Hotidol", reghotidol)
 	regnewidol := http.HandlerFunc(handler.Index_Newidol)
-	HttpMux.Handle("/Index/Newidol", regnewidol)
+	HTTPMux.Handle("/Index/Newidol", regnewidol)
 	regList := http.HandlerFunc(handler.List)
-	HttpMux.Handle("/List/", regList)
+	HTTPMux.Handle("/List/", regList)
 	regDetail := http.HandlerFunc(handler.Detail)
-	HttpMux.Handle("/Detail/", regDetail)
+	HTTPMux.Handle("/Detail/", regDetail)
 	rega := http.HandlerFunc(handler.Account)
-	HttpMux.Handle("/Account/", rega)
+	HTTPMux.Handle("/Account/", rega)
 	regcmd := http.HandlerFunc(handler.AccountCmd)
-	HttpMux.Handle("/Account/Cmd", regcmd)
+	HTTPMux.Handle("/Account/Cmd", regcmd)
 	regh := http.HandlerFunc(handler.Account_Register)
-	HttpMux.Handle("/Account/Register/", regh)
+	HTTPMux.Handle("/Account/Register/", regh)
 	regid := http.HandlerFunc(handler.Account_Register_Cmd)
-	HttpMux.Handle("/Account/Register/Cmd", regid)
+	HTTPMux.Handle("/Account/Register/Cmd", regid)
 	regLogin := http.HandlerFunc(handler.Account_Login)
-	HttpMux.Handle("/Account/Login/", regLogin)
+	HTTPMux.Handle("/Account/Login/", regLogin)
 	regPost := http.HandlerFunc(handler.Account_Post)
-	HttpMux.Handle("/Account/Post/", regPost)
+	HTTPMux.Handle("/Account/Post/", regPost)
 	//regOriginal := http.HandlerFunc(Handler.AccountOriginal)
 	//HttpMux.Handle("/Account/Original/", regOriginal)
 	regPostParam := http.HandlerFunc(handler.Account_Post_Param)
-	HttpMux.Handle("/Account/Post/Param", regPostParam)
+	HTTPMux.Handle("/Account/Post/Param", regPostParam)
 	regPostParamIdol := http.HandlerFunc(handler.Account_Post_Param_Idol)
-	HttpMux.Handle("/Account/Post/Param/Idol/", regPostParamIdol)
+	HTTPMux.Handle("/Account/Post/Param/Idol/", regPostParamIdol)
 	regi := http.HandlerFunc(handler.Image)
-	HttpMux.Handle("/Image/", regi)
+	HTTPMux.Handle("/Image/", regi)
 	regiv := http.HandlerFunc(handler.Image_Vip)
-	HttpMux.Handle("/Image/Vip/", regiv)
+	HTTPMux.Handle("/Image/Vip/", regiv)
 	regif := http.HandlerFunc(handler.Image_Free)
-	HttpMux.Handle("/Image/free/", regif)
+	HTTPMux.Handle("/Image/free/", regif)
 	regibanner := http.HandlerFunc(handler.Image_Banner)
-	HttpMux.Handle("/Image/Banner/", regibanner)
+	HTTPMux.Handle("/Image/Banner/", regibanner)
 	regiu := http.HandlerFunc(handler.Image_Update)
-	HttpMux.Handle("/Image/Update", regiu)
+	HTTPMux.Handle("/Image/Update", regiu)
 
 	makeThumbnail := http.HandlerFunc(handler.MakeThumbnail)
-	HttpMux.Handle("/MakeThumbnail/", makeThumbnail)
+	HTTPMux.Handle("/MakeThumbnail/", makeThumbnail)
 
 	thumbnail := http.HandlerFunc(handler.Thumbnail)
-	HttpMux.Handle("/thumbnail/", thumbnail)
+	HTTPMux.Handle("/thumbnail/", thumbnail)
 
-	php_ueditor_controller := http.HandlerFunc(handler.Php_ueditor_controller)
-	HttpMux.Handle("/php_ueditor_controller/", php_ueditor_controller)
+	phpUeditorController := http.HandlerFunc(handler.PhpUeditorController)
+	HTTPMux.Handle("/php_ueditor_controller/", phpUeditorController)
 
 	topicHandler := http.HandlerFunc(handler.Topic)
-	HttpMux.Handle("/topic/", topicHandler)
+	HTTPMux.Handle("/topic/", topicHandler)
 	formActionHandler := http.HandlerFunc(handler.FormAction)
-	HttpMux.Handle("/FormAction/", formActionHandler)
+	HTTPMux.Handle("/FormAction/", formActionHandler)
 	log.Println("请用浏览器打开 http://127.0.0.1:3160 ...")
-	HttpMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("wwwroot/static"))))
+	HTTPMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("wwwroot/static"))))
 
 	//sr := r.PathPrefix("/admin")
 	adminh := http.HandlerFunc(admin.ServeAdmin)
-	HttpMux.Handle("/admin/", adminh)
+	HTTPMux.Handle("/admin/", adminh)
 
 	apiPrivate := http.HandlerFunc(api.Private)
-	HttpMux.Handle("/api/private/", apiPrivate)
+	HTTPMux.Handle("/api/private/", apiPrivate)
+	apiAdmin := http.HandlerFunc(api.Admin)
+	HTTPMux.Handle("/api/admin/", apiAdmin)
 
-	err := http.ListenAndServe(":3160", HttpMux)
+	err := http.ListenAndServe(":3160", HTTPMux)
 	log.Println(err)
 
 }
