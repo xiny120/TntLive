@@ -4,13 +4,14 @@
 package main
 
 import (
-	"admin"
+	"MonsterShowMain/admin"
 	"flag"
 	"log"
+
 	"net/http"
 
-	"srsauth"
-	"webapi100"
+	"MonsterShowMain/srsauth"
+	"MonsterShowMain/webapi100"
 
 	"github.com/gorilla/mux"
 )

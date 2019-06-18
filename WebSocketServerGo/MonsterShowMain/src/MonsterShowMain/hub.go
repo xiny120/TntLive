@@ -37,8 +37,8 @@ func newHub() *Hub {
 
 type ui struct {
 	UserName  string ``
-	UserUuid  string ``
-	AvatarUrl string `json:"avatarUrl"`
+	UserGUID  string ``
+	AvatarURL string `json:"avatarUrl"`
 }
 
 type welmsg struct {

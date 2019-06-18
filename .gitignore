@@ -33,3 +33,5 @@ WebSocketServerGo/MonsterShowMain/bin/
 WebSocketServerGo/MonsterShowMain/src/github.com/
 WebSocketServerGo/MonsterShowMain/src/golang.org/
 WebSocketServerGo/MonsterShowMain/pkg/
+WebSocketServerGo/MonsterShowMain/src/MonsterShowMain/__debug_bin
+WebSocketServerGo/MonsterShowMain/src/MonsterShowMain/tokens/
