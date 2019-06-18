@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="description" content="{{.Description}}">
+    <!-- Twitter meta-->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:site" content="@pratikborsadiya">
+    <meta property="twitter:creator" content="@pratikborsadiya">
+    <!-- Open Graph Meta-->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="MonsterShow Admin">
+    <meta property="og:title" content="MonsterShow Admin">
+    <meta property="og:url" content="http://pratikborsadiya.in/blog/vali-admin">
+    <meta property="og:image" content="http://pratikborsadiya.in/blog/vali-admin/hero-social.png">
+    <meta property="og:description" content="{{.Title}} - {{.SiteName}}">
+    <title>{{.Title}} - {{.SiteName}}</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Main CSS-->
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+    <!-- Font-icon css-->
+    <link rel="stylesheet" type="text/css" href="css/font-awesome.min.css">
+    <script src="js/jquery-3.2.1.min.js"></script>
+    <script>
+      APIURL = "/api/admin/";
+    </script>
+    <style>
+      .nav {
+        width: 100%;
+        display:inherit;
+      }
+    </style>
+  </head>
+  <body class="app sidebar-mini rtl">
+    <!-- Navbar-->
+    <header class="app-header"><a class="app-header__logo" href="index.html">Vali</a>
+      <!-- Sidebar toggle button--><a class="app-sidebar__toggle" href="#" data-toggle="sidebar" aria-label="Hide Sidebar"></a>
+      <!-- Navbar Right Menu-->
+      <ul class="app-nav">
+        <li class="app-search">
+          <input class="app-search__input" type="search" placeholder="Search">
+          <button class="app-search__button"><i class="fa fa-search"></i></button>
+        </li>
+        <!--Notification Menu-->
+        <li class="dropdown"><a class="app-nav__item" href="#" data-toggle="dropdown" aria-label="Show notifications"><i class="fa fa-bell-o fa-lg"></i></a>
+          <ul class="app-notification dropdown-menu dropdown-menu-right">
+            <li class="app-notification__title">{{.YourMessage}}</li>
+            <div class="app-notification__content">
+              {{range .YourMessageList}}
+              <li>
+                <a class="app-notification__item" href="javascript:;">
+                  <span class="app-notification__icon"><span class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x text-primary"></i><i class="fa fa-envelope fa-stack-1x fa-inverse"></i></span></span>
+                  <div>
+                    <p class="app-notification__message">{{.Title}}</p>
+                    <p class="app-notification__meta">{{.CreateDate}}</p>
+                  </div></a>
+              </li>
+              {{end}}
+              <!--
+              <li><a class="app-notification__item" href="javascript:;"><span class="app-notification__icon"><span class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x text-danger"></i><i class="fa fa-hdd-o fa-stack-1x fa-inverse"></i></span></span>
+                  <div>
+                    <p class="app-notification__message">Mail server not working</p>
+                    <p class="app-notification__meta">5 min ago</p>
+                  </div></a></li>
+              <li><a class="app-notification__item" href="javascript:;"><span class="app-notification__icon"><span class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x text-success"></i><i class="fa fa-money fa-stack-1x fa-inverse"></i></span></span>
+                  <div>
+                    <p class="app-notification__message">Transaction complete</p>
+                    <p class="app-notification__meta">2 days ago</p>
+                  </div></a></li>
+              <div class="app-notification__content">
+                <li><a class="app-notification__item" href="javascript:;"><span class="app-notification__icon"><span class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x text-primary"></i><i class="fa fa-envelope fa-stack-1x fa-inverse"></i></span></span>
+                    <div>
+                      <p class="app-notification__message">Lisa sent you a mail</p>
+                      <p class="app-notification__meta">2 min ago</p>
+                    </div></a></li>
+                <li><a class="app-notification__item" href="javascript:;"><span class="app-notification__icon"><span class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x text-danger"></i><i class="fa fa-hdd-o fa-stack-1x fa-inverse"></i></span></span>
+                    <div>
+                      <p class="app-notification__message">Mail server not working</p>
+                      <p class="app-notification__meta">5 min ago</p>
+                    </div></a></li>
+                <li><a class="app-notification__item" href="javascript:;"><span class="app-notification__icon"><span class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x text-success"></i><i class="fa fa-money fa-stack-1x fa-inverse"></i></span></span>
+                    <div>
+                      <p class="app-notification__message">Transaction complete</p>
+                      <p class="app-notification__meta">2 days ago</p>
+                    </div></a>
+                </li>-->
+              </div>
+            </div>
+            <li class="app-notification__footer"><a href="#">查看全部消息。</a></li>
+          </ul>
+        </li>
+        <!-- User Menu-->
+        <li class="dropdown"><a class="app-nav__item" href="#" data-toggle="dropdown" aria-label="Open Profile Menu"><i class="fa fa-user fa-lg"></i></a>
+          <ul class="dropdown-menu settings-menu dropdown-menu-right">
+            <li><a class="dropdown-item" href="#" onclick="dropdown_Info();"><i class="fa fa-cog fa-lg"></i> 基本信息</a></li>
+            <li><a class="dropdown-item" href="#" onclick="dropdown_Password_reset();"><i class="fa fa-user fa-lg"></i> 修改密码</a></li>
+            <li><a class="dropdown-item" href="#" onclick="dropdown_Logout();"><i class="fa fa-sign-out fa-lg"></i> 退出登录</a></li>
+          </ul>
+        </li>
+      </ul>
+    </header>
+    <!-- Sidebar menu-->
+    <div class="app-sidebar__overlay" data-toggle="sidebar"></div>
+    <aside class="app-sidebar">
+      <div class="app-sidebar__user">
+        <img class="app-sidebar__user-avatar" src="{{.UserAvatar}}" alt="User Image">
+        <div>
+          <p class="app-sidebar__user-name">{{.UserName}}</p>
+          <p class="app-sidebar__user-designation">{{.UserGroup}}</p>
+        </div>
+      </div>
+      <ul class="nav app-menu "   id="v-pills-tab" >
+        <li >
+          <a class="nav-link app-menu__item active " style="width: 100%;" id="v-pills-home-tab" data-toggle="pill" href="#v-pills-home" role="tab" aria-controls="v-pills-home" aria-selected="true" >
+            <i class="app-menu__icon fa fa-dashboard"></i>
+            <span class="app-menu__label">首页</span>
+          </a>
+        </li>
+        <li class="treeview">
+          <a class="app-menu__item" href="#" data-toggle="treeview">
+            <i class="app-menu__icon fa fa-laptop"></i>
+            <span class="app-menu__label">文章系统</span>
+            <i class="treeview-indicator fa fa-angle-right"></i>
+          </a>
+          <ul class="treeview-menu" style="width: 100%;">
+            <li>
+              <a class="treeview-item " id="v-article-review-bar" data-toggle="pill" href="#v-article-review" >
+                <i class="icon fa fa-circle-o"></i> 
+                <span class="app-menu__label">文章审核</span>
+              </a>
+            </li>
+            <li>
+              <a class="treeview-item" id="v-article-search-bar" data-toggle="pill" href="#v-article-search">
+                <i class="icon fa fa-circle-o"></i>
+                <span class="app-menu__label">文章查询</span>
+              </a>
+            </li>
+            <li>
+              <a class="treeview-item" id="v-article-original-review-bar" data-toggle="pill" href="#v-article-original-review">
+                <i class="icon fa fa-circle-o"></i>
+                <span class="app-menu__label">原创作者审核</span>
+              </a>
+            </li>
+            <li>
+              <a class="treeview-item" id="v-article-original-search-bar" data-toggle="pill" href="#v-article-original-search">
+                <i class="icon fa fa-circle-o"></i>
+                <span class="app-menu__label">原创作者查询</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="treeview">
+          <a class="app-menu__item" href="#" data-toggle="treeview">
+            <i class="app-menu__icon fa fa-laptop"></i>
+            <span class="app-menu__label">直播系统</span>
+            <i class="treeview-indicator fa fa-angle-right"></i>
+          </a>
+          <ul class="treeview-menu" style="width: 100%;">
+            <li>
+              <a class="treeview-item " id="v-pills-member-request-bar" data-toggle="pill" href="#v-pills-member-request">
+                <i class="icon fa fa-circle-o"></i> 
+                <span class="app-menu__label">直播间审核</span>
+              </a>
+            </li>
+            <li>
+              <a class="treeview-item" id="v-pills-member-query-bar" data-toggle="pill" href="#v-pills-member-query">
+                <i class="icon fa fa-circle-o"></i>
+                <span class="app-menu__label">直播间查询</span>
+              </a>
+            </li>
+            <li>
+              <a class="treeview-item" id="v-pills-member-admin-bar" data-toggle="pill" href="#v-pills-member-admin">
+                <i class="icon fa fa-circle-o"></i>
+                <span class="app-menu__label">直播讲师审核</span>
+              </a>
+            </li>
+            <li>
+              <a class="treeview-item" id="v-pills-member-techer-bar" data-toggle="pill" href="#v-pills-member-techer">
+                <i class="icon fa fa-circle-o"></i>
+                <span class="app-menu__label">直播讲师查询</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+
+        <li class="treeview">
+          <a class="app-menu__item" href="#" data-toggle="treeview">
+            <i class="app-menu__icon fa fa-laptop"></i>
+            <span class="app-menu__label">会员管理</span>
+            <i class="treeview-indicator fa fa-angle-right"></i>
+          </a>
+          <ul class="treeview-menu" style="width: 100%;">
+            <li>
+              <a class="nav-link treeview-item " id="v-pills-member-request-tab" data-toggle="pill" href="#v-pills-member-request" role="tab" aria-controls="v-pills-member-request" aria-selected="false" >
+                <i class="icon fa fa-circle-o"></i> 
+                <span class="app-menu__label">会员申请</span>
+              </a>
+            </li>
+            <li>
+              <a class="treeview-item" id="v-pills-member-query-tab" data-toggle="pill" href="#v-pills-member-query" role="tab" aria-controls="v-pills-member-query" aria-selected="false"  target="_blank" rel="noopener">
+                <i class="icon fa fa-circle-o"></i>
+                <span class="app-menu__label">会员查询</span>
+              </a>
+            </li>
+            <li>
+              <a class="treeview-item" id="v-pills-member-admin-tab" data-toggle="pill" href="#v-pills-member-admin" role="tab" aria-controls="v-pills-member-admin" aria-selected="false" >
+                <i class="icon fa fa-circle-o"></i>
+                <span class="app-menu__label">管理员设置</span>
+              </a>
+            </li>
+            <li>
+              <a class="treeview-item" id="v-pills-member-techer-tab" data-toggle="pill" href="#v-pills-member-techer" role="tab" aria-controls="v-pills-member-techer" aria-selected="false" >
+                <i class="icon fa fa-circle-o"></i>
+                <span class="app-menu__label">讲师设置</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <!--<li><a class="nav-link app-menu__item " id="v-pills-profile-tab" data-toggle="pill" href="#v-pills-profile" role="tab" aria-controls="v-pills-profile" aria-selected="false" href="charts.html"><i class="app-menu__icon fa fa-pie-chart"></i><span class="app-menu__label">Charts</span></a></li>-->
+        <li class="treeview"><a class="app-menu__item" href="#" data-toggle="treeview"><i class="app-menu__icon fa fa-edit"></i><span class="app-menu__label">房间设置</span><i class="treeview-indicator fa fa-angle-right"></i></a>
+          <ul class="treeview-menu">
+            <li><a class="treeview-item" id="v-pills-room-info-tab" data-toggle="pill" href="#v-pills-room-info" role="tab" aria-controls="v-pills-room-info" aria-selected="false" ><i class="icon fa fa-circle-o"></i> 基本设置</a></li>
+            <li><a class="treeview-item" id="v-pills-room-setup-tab" data-toggle="pill" href="#v-pills-room-setup" role="tab" aria-controls="v-pills-room-setup" aria-selected="false" ><i class="icon fa fa-circle-o"></i> 功能设置</a></li>
+            <li><a class="treeview-item" id="v-pills-room-fwords-tab" data-toggle="pill" href="#v-pills-room-fwords" role="tab" aria-controls="v-pills-room-fwords" aria-selected="false" ><i class="icon fa fa-circle-o"></i> 敏感词</a></li>
+            <!--<li><a class="treeview-item" href="form-notifications.html"><i class="icon fa fa-circle-o"></i> Form Notifications</a></li> -->
+          </ul>
+        </li>
+        <li class="treeview"><a class="app-menu__item" href="#" data-toggle="treeview"><i class="app-menu__icon fa fa-th-list"></i><span class="app-menu__label">账户管理</span><i class="treeview-indicator fa fa-angle-right"></i></a>
+          <ul class="treeview-menu">
+            <li><a class="treeview-item" id="v-pills-account-info-tab" data-toggle="pill" href="#v-pills-account-info" role="tab" aria-controls="v-pills-account-info" aria-selected="false" ><i class="icon fa fa-circle-o"></i> 基本信息</a></li>
+            <li><a class="treeview-item" id="v-pills-account-password-tab" data-toggle="pill" href="#v-pills-account-password" role="tab" aria-controls="v-pills-account-password" aria-selected="false" ><i class="icon fa fa-circle-o"></i> 修改密码</a></li>
+          </ul>
+        </li>
+        <li class="treeview"><a class="app-menu__item" href="#" data-toggle="treeview"><i class="app-menu__icon fa fa-file-text"></i><span class="app-menu__label">在线统计</span><i class="treeview-indicator fa fa-angle-right"></i></a>
+          <ul class="treeview-menu">
+            <li><a class="treeview-item" id="v-pills-online-status-tab" data-toggle="pill" href="#v-pills-online-status" role="tab" aria-controls="v-pills-online-status" aria-selected="false" ><i class="icon fa fa-circle-o"></i> 实时在线</a></li>
+            <li><a class="treeview-item" id="v-pills-online-detail-tab" data-toggle="pill" href="#v-pills-online-detail" role="tab" aria-controls="v-pills-online-detail" aria-selected="false" ><i class="icon fa fa-circle-o"></i> 详细信息</a></li>
+            <!--
+            <li><a class="treeview-item" href="page-lockscreen.html"><i class="icon fa fa-circle-o"></i> Lockscreen Page</a></li>
+            <li><a class="treeview-item" href="page-user.html"><i class="icon fa fa-circle-o"></i> User Page</a></li>
+            <li><a class="treeview-item" href="page-invoice.html"><i class="icon fa fa-circle-o"></i> Invoice Page</a></li>
+            <li><a class="treeview-item" href="page-calendar.html"><i class="icon fa fa-circle-o"></i> Calendar Page</a></li>
+            <li><a class="treeview-item" href="page-mailbox.html"><i class="icon fa fa-circle-o"></i> Mailbox</a></li>
+            <li><a class="treeview-item" href="page-error.html"><i class="icon fa fa-circle-o"></i> Error Page</a></li>
+            -->
+          </ul>
+        </li>
+      </ul>
+    </aside>
+    <main class="app-content">
+      <div class="tab-content" id="v-pills-tabContent">
+          <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
+            {{template "home" .}}      
+          </div>
+          <div class="tab-pane fade" id="v-pills-member-request" role="tabpanel" aria-labelledby="v-pills-member-request-tab">
+            {{template "memberrequest" .}}
+              Member request
+          </div>
+          <div class="tab-pane fade" id="v-pills-member-query" role="tabpanel" aria-labelledby="v-pills-member-query-tab">
+            {{template "memberquery" .}}
+            Member query
+          </div>   
+          <div class="tab-pane fade" id="v-pills-member-admin" role="tabpanel" aria-labelledby="v-pills-member-admin-tab">
+            {{template "memberadmin" .}}
+            Member Admin
+          </div>  
+          <div class="tab-pane fade" id="v-pills-member-techer" role="tabpanel" aria-labelledby="v-pills-member-techer-tab">
+            Member Techer
+          </div>    
+          <div class="tab-pane fade" id="v-pills-room-info" role="tabpanel" aria-labelledby="v-pills-room-info-tab">
+            Room Info
+          </div> 
+          <div class="tab-pane fade" id="v-pills-room-setup" role="tabpanel" aria-labelledby="v-pills-room-setup-tab">
+            Room Setup
+          </div> 
+          <div class="tab-pane fade" id="v-pills-room-fwords" role="tabpanel" aria-labelledby="v-pills-room-fwords-tab">
+            Room Fwords
+          </div> 
+          <div class="tab-pane fade" id="v-pills-account-info" role="tabpanel" aria-labelledby="v-pills-account-info-tab">
+            Account Info
+          </div> 
+          <div class="tab-pane fade" id="v-pills-account-password" role="tabpanel" aria-labelledby="v-pills-account-password-tab">
+            Account Password reset
+          </div> 
+          <div class="tab-pane fade" id="v-pills-online-status" role="tabpanel" aria-labelledby="v-pills-online-status-tab">
+            Online Status
+          </div> 
+          <div class="tab-pane fade" id="v-pills-online-detail" role="tabpanel" aria-labelledby="v-pills-online-detail-tab">
+            Online Details
+          </div> 
+          <div class="tab-pane fade" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+              收益
+          </div>     
+          <div class="tab-pane fade" id="v-article-review" role="tabpanel" aria-labelledby="v-article-review-bar">
+              {{template "article-review-search" .}} 
+          </div>   
+          <div class="tab-pane fade" id="v-article-search" role="tabpanel" aria-labelledby="v-article-search-bar">
+              {{template "article-search" .}} 
+          </div>
+          <div class="tab-pane fade" id="v-article-original-review" role="tabpanel" aria-labelledby="v-article-original-review-bar">
+            {{template "article-original-review" .}} 
+          </div>   
+          <div class="tab-pane fade" id="v-article-original-search" role="tabpanel" aria-labelledby="v-article-search-review-bar">
+            {{template "article-original-search" .}} 
+          </div>                                                 
+      </div>
+    </main>
+    <!-- Essential javascripts for application to work-->
+    
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/main.js"></script>
+    <!-- The javascript plugin to display page loading on top-->
+    <script src="js/plugins/pace.min.js"></script>
+    <!-- Page specific javascripts-->
+    <script type="text/javascript" src="js/plugins/chart.js"></script>
+    <script type="text/javascript">
+    function  dropdown_Info(){
+      $('#v-pills-account-info-tab').tab('show');
+    }
+
+    function  dropdown_Password_reset(){
+      $('#v-pills-account-password-tab').tab('show');
+    }    
+
+    function  dropdown_Logout(){
+      alert("logout!");
+    }       
+
+      $('#v-pills-tab a').on('click', function (e) {
+        e.preventDefault()
+        //$(this).tab('show')
+        $.each($('#v-pills-tab a'), function(i,val){      
+          if($(val).hasClass("active")){
+            //$(val).tab('hide')
+            $(val).removeClass("active")
+          }
+        });         
+      })
+
+
+    </script>
+  </body>
+</html>

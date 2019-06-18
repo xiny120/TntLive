@@ -1,0 +1,163 @@
+{{define "article-original-review"}}
+<main id="article-original-review">
+    <div class="app-title">
+      <div>
+        <h1><i class="fa fa-archive"></i> 原创作者审核</h1>
+        <p>审核原创作者申请</p>
+      </div>
+      <ul class="app-breadcrumb breadcrumb">
+        <li class="breadcrumb-item"><i class="fa fa-home fa-lg"></i></li>
+        <li class="breadcrumb-item">文章系统</li>
+        <li class="breadcrumb-item"><a href="#">原创作者审核</a></li>
+      </ul>
+    </div>
+
+    <div class="col-md-12">
+        <div class="tile">
+          <span class="tile-title">申请列表</span>
+          <span style="float:right;">
+          <button type="button" class="btn btn-secondary allow" >通过申请</button>
+          <button type="button" class="btn btn-danger reject" >拒绝申请</button>
+        </span>
+          <div class="table-responsive">
+            <table class="table table-orginal">
+              <thead>
+                <tr>
+                  <th>
+                    <input type="checkbox" class="checkall">
+                  </th>
+                  <th>#</th>
+                  <th>用户名</th>
+                  <th>姓名</th>
+                  <th>身份证号码</th>
+                  <th>手持身份证</th>
+                  <th>身份证正面</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><input type="checkbox" class="checkall0"><input type="hidden"></td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>Mark</td>
+                  <td>Otto</td>
+                  <td><img width="200px" src="/static/images/placeholder.jpg"></td>
+                  <td><img width="200px" src="/static/images/placeholder.jpg"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+</main>
+<script>
+  $(document).ready(function(){
+    var tr = $(".table-orginal tbody").children(0).clone(); 
+    $(".table-orginal tbody").html("");
+    $(".checkall").on("change",function(e){
+      $(".checkall0").each(function(){this.checked = e.target.checked;});
+    });
+    $(".btn.allow").on("click",function(){
+      arr = getreviewchecked();
+      if(arr.length < 1){
+        alert("未选中目标！");
+        return;
+      }
+      if(confirm("确定通过以上选中的申请吗？")){
+        allow(arr,1);
+        setTimeout(function(){ getlist()},100);  
+      }
+    });
+    $(".btn.reject").on("click",function(){
+      arr = getreviewchecked();
+      if(arr.length < 1){
+        alert("未选中目标！");
+        return;
+      }
+      if(confirm("确定拒绝以上选中的申请吗？")){
+        allow(arr,2);
+        setTimeout(function(){ getlist()},100);  
+      }
+    });        
+    var targetNode = document.getElementById('article-original-review').parentNode;
+    var config = { attributes: true };
+    var idTimeout = 0;
+    var callback = function(mutationsList) {
+      for(var mutation of mutationsList) {
+        if (mutation.type == 'attributes') {
+          clearTimeout(idTimeout)
+          if($(targetNode).hasClass("active")){
+            idTimeout = setTimeout(function(){ getlist()},100);  
+          }
+        }
+      }
+    };
+    var observer = new MutationObserver(callback);
+    observer.observe(targetNode, config);
+
+    function getreviewchecked(){
+      var arr = new Array()
+      $($(".table-orginal tbody")[0].children).each(function(){
+        if(this.children[0].children[0].checked){
+          arr.push($(this.children[0].children[1]).val());
+        }
+      });
+      return arr;
+    }
+
+    function allow(arr,status){
+      var newidolurl = "/api/admin/";
+      $.ajax({
+        type: "POST",      //data 传送数据类型。post 传递
+        dataType: 'json',  // 返回数据的数据类型json
+        contentType: "application/json; charset=utf-8",
+        url: APIURL,  // yii 控制器/方法
+        cache: false,      
+        data: JSON.stringify({action:'original-review-allow',data:arr,status:status}),  //传送的数据
+        error:function(res){
+          alert("数据传输错误");
+        },success: function (data) {
+          if(data.status == 0){
+            alert(data.msg);              
+          }else{
+            alert(data.msg);
+          }
+        }
+      })  
+    }
+
+    function getlist(){
+      $(".table-orginal tbody").html("");
+      var newidolurl = "/api/admin/";
+      $.ajax({
+        type: "POST",      //data 传送数据类型。post 传递
+        dataType: 'json',  // 返回数据的数据类型json
+        contentType: "application/json; charset=utf-8",
+        url: APIURL,  // yii 控制器/方法
+        cache: false,      
+        data: JSON.stringify({action:'original-review-list'}),  //传送的数据
+        error:function(res){
+          alert("数据传输错误");
+        },success: function (data) {
+          if(data.status == 0){
+            $.each(data.data, function(i,val){      
+              var tr0 = tr.clone();
+              $(tr0[0].children[0].children[1]).val(val.id);
+              tr0[0].children[1].innerText = i;
+              tr0[0].children[2].innerText = val.nick_name;
+              tr0[0].children[3].innerText = val.idname;
+              tr0[0].children[4].innerText = val.idcode;
+              $(".table-orginal tbody").append(tr0);
+              tr0.show();
+            });               
+          }else{
+            alert(data.msg);
+          }
+        }
+      })        
+    }
+  });
+
+</script>
+{{end}}

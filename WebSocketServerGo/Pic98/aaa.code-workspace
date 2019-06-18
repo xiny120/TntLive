@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "H:\\DEVTOOLS\\project\\git\\TntLive\\WebSocketServerGo\\Pic98"
+		}
+	],
+	"settings": {
+		"go.inferGopath": true,
+		"go.gocodeAutoBuild": true,
+	}
+}

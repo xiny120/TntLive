@@ -1,0 +1,48 @@
+{{template "header" .}}
+<body>
+	{{template "nav" .}}
+	<!--
+  <div style="margin-top:8px;margin-bottom:3px;" >
+		<table style="width:100%;">
+			<tr>
+				<td><span class="f16">最热爱豆 HOT HOT HOT</span></td>
+				<td valign="bottom" align="right"><span style="margin-right:28px;">more...</span></td>
+			</tr>
+		</table>
+	</div>
+			
+	<div id="hotidol" class="card-columns card-columns">
+
+		<div id="hotidolitem" class="card p-1">
+		  <img class="card-img-top" src="Image/Vip/81313015481.jpg" alt="Card image cap">
+		</div>
+	</div>
+-->
+    <div style="margin-top:8px;margin-bottom:3px;" >
+		<table style="width:100%;">
+			<tr>
+				<td><span class="f16">最新美腿 NEW NEW NEW</span></td>
+				<td valign="bottom" align="right"><span style="margin-right:28px;">more...</span></td>
+			</tr>
+		</table>
+	</div>
+	
+	<div id="newidol" >
+		<div class="card-columns">
+			{{range .Data}}
+			<div class="card p-1 box-cc">
+				<a href="/topic/{{.Vaguid}}.html" class="card_a" alt="{{.Vtitle}}">
+					<img class="card-img-top" src="/thumbnail{{.Vpicurl}}" alt="Card image cap">
+				</a>
+			</div>
+			{{end}}        
+		</div>
+	</div>	
+	
+ 
+    {{template "footer" .}}
+	
+	<script src="/Js/List.js"></script>
+	<script src="/Js/index_hotidol.js?20180101"></script>
+</body>
+</html>

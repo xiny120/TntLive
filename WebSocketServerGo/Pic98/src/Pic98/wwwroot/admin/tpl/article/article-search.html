@@ -1,0 +1,297 @@
+{{define "article-search"}}
+<main id="article-search">
+    <div class="app-title">
+      <div>
+        <h1><i class="fa fa-archive"></i> 原创文章查询</h1>
+        <p>原创文章查询管理</p>
+      </div>
+      <ul class="app-breadcrumb breadcrumb">
+        <li class="breadcrumb-item"><i class="fa fa-home fa-lg"></i></li>
+        <li class="breadcrumb-item">文章系统</li>
+        <li class="breadcrumb-item"><a href="#">原创文章查询</a></li>
+      </ul>
+    </div>
+
+    <div class="col-md-12">
+      <div class="tile">
+        <div style="margin-bottom: 12px;">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>用户名</th>
+                <th>标题</th>
+                <th>发表日期</th>
+                <th>审核人</th>
+              </tr>
+            </thead>          
+            <tbody>
+              <tr>
+                <td><input type="text" id="table-article-search-nick_name"></td>
+                <td><input type="text" id="table-article-search-idname"></td>
+                <td><input type="text" id="table-article-search-idcode"></td>
+                <td><input type="text" id="table-article-search-review"></td>
+              </tr>
+              <tr>
+                  <td><button type="button" class="btn btn-primary table-article-search-submit" >查询</button></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>              
+              <!--
+              <tr><td>用户名：</td><td><input type="text" id="table-article-search-nick_name"></td></tr>
+              <tr><td>标题：</td><td><input type="text" id="table-article-search-idname"></td></tr>
+              <tr><td>发表日期：</td><td><input type="text" id="table-article-search-idcode"></td></tr>
+              <tr><td><button type="button" class="btn btn-primary table-article-search-submit" >查询</button></td><td></td></tr>
+              -->
+            </tbody>
+
+          </table>
+        </div>
+  
+        <div>
+          <div style="float:right;">
+            <button type="button" class="btn btn-secondary table-article-search-cancel" >撤回</button>
+            <button type="button" class="btn btn-danger table-article-search-reject" >封杀</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-article-search">
+            <thead>
+              <tr>
+                <th>
+                  <input type="checkbox" class="table-article-search-checkall" >
+                </th>
+                <th>#</th>
+                <th>用户名</th>
+                <th>标题</th>
+                <th>发表日期</th>
+                <th>审核人</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="checkbox" class="table-article-search-checkall0"><input type="hidden"></td>
+                <td>1</td>
+                <td>1</td>
+                <td>Mark</td>
+                <td>Otto</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+          <div>
+            <nav aria-label="Page navigation">
+              <ul class="pagination  table-article-search-pager">
+                <li class="page-item pstart">
+                  <a class="page-link" href="#" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                  </a>
+                </li>
+                <li class="page-item p0"><a class="page-link" href="#">1</a></li>
+                <li class="page-item p0"><a class="page-link" href="#">2</a></li>
+                <li class="page-item p0"><a class="page-link" href="#">3</a></li>
+                <li class="page-item p0"><a class="page-link" href="#">4</a></li>
+                <li class="page-item p0"><a class="page-link" href="#">5</a></li>
+                <li class="page-item p0"><a class="page-link" href="#">6</a></li>
+                <li class="page-item p0"><a class="page-link" href="#">7</a></li>
+                <li class="page-item p0"><a class="page-link" href="#">8</a></li>
+                <li class="page-item p0"><a class="page-link" href="#">9</a></li>
+                <li class="page-item pend">
+                  <a class="page-link" href="#" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>          
+        </div>
+      </div>
+    </div>
+
+</main>
+<script>
+  $(document).ready(function(){
+
+    var curPageIdx = 1;
+    var totalIdx = 0;
+    var pageSize = 0;
+    var tr = $(".table-article-search tbody").children(0).clone(); 
+    var pagerul = $("ul.table-article-search-pager");
+    var pagerli = $(pagerul.children("li.p0")[0]).clone(); 
+     
+    $(pagerul.children("li.p0")).hide();
+    $(pagerul.children("li.p0")).on("click",function(){
+      curPageIdx = parseInt($(this)[0].children[0].innerText);
+      getlist();
+    })
+    $(pagerul.children("li.pstart")).on("click",function(){
+      curPageIdx = curPageIdx - 1;
+      if(curPageIdx < 1){
+        curPageIdx = 1
+      }
+      getlist();
+    })
+
+    $(pagerul.children("li.pend")).on("click",function(){
+      curPageIdx = curPageIdx + 1;
+      if(curPageIdx > totalIdx){
+        curPageIdx = totalIdx
+      }
+      getlist();
+    })
+    
+    $(".table-article-search tbody").html("");
+    $(".table-article-search-checkall").on("change",function(e){
+      $(".table-article-search-checkall0").each(function(){this.checked = e.target.checked;});
+    });
+    $(".btn.table-article-search-cancel").on("click",function(){
+      arr = getreviewchecked();
+      if(arr.length < 1){
+        alert("未选中目标！");
+        return;
+      }
+      if(confirm("确定取消以上选中的原创作者吗？")){
+        originalCancel(arr);
+        setTimeout(function(){ getlist()},100);  
+      }
+    });
+    $(".btn.table-article-search-reject").on("click",function(){
+      arr = getreviewchecked();
+      if(arr.length < 1){
+        alert("未选中目标！");
+        return;
+      }
+      if(confirm("确定封杀该作者吗？")){
+        //allow(arr,2);
+        setTimeout(function(){ getlist()},100);  
+      }
+    });
+    $(".btn.table-article-search-submit").on("click",function(){
+      setTimeout(function(){ getlist()},100);  
+    });   
+    var targetNode = document.getElementById('article-search').parentNode;
+    var config = { attributes: true };
+    var idTimeout = 0;
+    var callback = function(mutationsList) {
+      for(var mutation of mutationsList) {
+        if (mutation.type == 'attributes') {
+          clearTimeout(idTimeout)
+          if($(targetNode).hasClass("active")){
+            idTimeout = setTimeout(function(){ getlist()},100);  
+          }
+        }
+      }
+    };
+    var observer = new MutationObserver(callback);
+    observer.observe(targetNode, config);
+
+    function getreviewchecked(){
+      var arr = new Array()
+      $($(".table-article-search tbody")[0].children).each(function(){
+        if(this.children[0].children[0].checked){
+          arr.push($(this.children[0].children[1]).val());
+        }
+      });
+      return arr;
+    }
+
+    function originalCancel(arr){
+      //var newidolurl = "/api/admin/";
+      $.ajax({
+        type: "POST",      //data 传送数据类型。post 传递
+        dataType: 'json',  // 返回数据的数据类型json
+        contentType: "application/json; charset=utf-8",
+        url: APIURL,  // yii 控制器/方法
+        cache: false,      
+        data: JSON.stringify({action:'article-search-originalCancel',data:arr}),  //传送的数据
+        error:function(res){
+          alert("数据传输错误");
+        },success: function (data) {
+          if(data.status == 0){
+            alert(data.msg);              
+          }else{
+            alert(data.msg);
+          }
+        }
+      })  
+    }
+
+    function getlist(){
+      $(".table-article-search tbody").html("");
+      var newidolurl = "/api/admin/";
+      var idname = $("#table-article-search-idname").val();
+      var idcode = $("#table-article-search-idcode").val();
+      var userid = $("#table-article-search-userid").val();
+      var nick_name = $("#table-article-search-nick_name").val();  
+      $.ajax({
+        type: "POST",      //data 传送数据类型。post 传递
+        dataType: 'json',  // 返回数据的数据类型json
+        contentType: "application/json; charset=utf-8",
+        url: APIURL,  // yii 控制器/方法
+        cache: false,      
+        data: JSON.stringify({action:'article-search-list',idname:idname,idcode:idcode,userid:userid,nick_name:nick_name,pageidx:curPageIdx}),  //传送的数据
+        error:function(res){
+          alert("数据传输错误");
+        },success: function (data) {
+          if(data.status == 0){
+            totalIdx = data.total[0].count;
+            pageSize = data.pagesize;
+            var curidx = curPageIdx - 1;
+            if(curidx < 0){
+              curidx = 0;
+            }
+            preparepager();
+            $.each(data.data, function(i,val){      
+              var tr0 = tr.clone();
+              $(tr0[0].children[0].children[1]).val(val.aguid);
+              tr0[0].children[1].innerText = i+curidx*pageSize + 1;
+              tr0[0].children[2].innerText = val.nick_name;
+              tr0[0].children[3].innerText = val.title;
+              tr0[0].children[4].innerText = val.createtime;
+              $(".table-article-search tbody").append(tr0);
+              tr0.show();
+            });               
+          }else{
+            alert(data.msg);
+          }
+        }
+      });      
+    }
+
+    function preparepager(){
+      //$("li.p0").hide();
+      $(pagerul.children("li.p0")).hide();
+      totalIdx;
+      curPageIdx;
+      pageSize;
+      var pages = parseInt((totalIdx + pageSize) / pageSize);
+      var pageIdxArr = new Array();
+      var cpi = curPageIdx + 4;
+      for(i = 9; i >=0; i--){
+        pageIdxArr.push(cpi - i);
+      }
+
+      var pager = $("ul.table-article-search-pager")
+      for( i = 1; i < 9 + 1;i++){
+        if(pageIdxArr[i] > 0){
+          if(pageIdxArr[i] > pages){
+            break;
+          }          
+          $(pager.children("li")[i]).show();
+          var a = $(pager.children("li")[i]).children(0);
+          a[0].innerText = pageIdxArr[i];
+          $(pager.children("li")[i]).removeClass("active");
+          if(pageIdxArr[i] == curPageIdx){
+            $(pager.children("li")[i]).addClass("active");
+          }
+
+        }
+      }
+    
+
+
+    }
+  });
+
+</script>
+{{end}}

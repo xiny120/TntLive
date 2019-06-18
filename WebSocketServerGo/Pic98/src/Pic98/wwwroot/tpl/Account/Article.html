@@ -1,0 +1,420 @@
+{{define "Article"}}
+<div id="Account-Article">
+  <div style="margin-bottom:8px;">
+    <ul class="nav nav-pills" style="float:right;">
+      <li class="nav-item">
+        <button type="button" data-backdrop="false" class="btn" data-toggle="modal" data-target="#exampleModal">发表文章</button>
+      </li>
+      <!--
+      <li class="nav-item">
+        <a class="nav-link" href="#">Link</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+      </li>
+      -->
+    </ul>
+  </div>
+  <div style="clear:both;"></div>
+  <div class="list-group">
+    <nav>
+      <div class="nav nav-tabs" role="tablist">
+        <a class="nav-item nav-link active" data-toggle="tab" data-tab-order="0" href="#account-article-nav-home" role="tab" aria-controls="account-article-nav-home" aria-selected="true">已发表</a>
+        <a class="nav-item nav-link" data-toggle="tab" data-tab-order="1" href="#account-article-nav-profile" role="tab" aria-controls="account-article-nav-profile" aria-selected="false">待审核</a>
+        <a class="nav-item nav-link" data-toggle="tab" data-tab-order="2" href="#account-article-nav-contact" role="tab" aria-controls="account-article-nav-contact" aria-selected="false">未通过</a>
+      </div>
+    </nav>
+    <div class="tab-content" >
+      <div class="tab-pane fade show active" id="account-article-nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+        <div class="list-group list-group-flush account-article-containter-nav-home">
+          <a href="#" class="list-group-item list-group-item-action ">
+            <div class="d-flex w-100 justify-content-between">
+              <h5 class="mb-1 title">Title 1</h5>
+              <small class="createtime">2019-05-30 12:20:20</small>
+            </div>
+            <p class="mb-1 intro">Intro</p>
+            <small class="author">author</small>
+          </a>
+        </div>
+        <div style="margin-top: 8px">
+          <nav aria-label="Page navigation">
+            <ul class="pagination  table-article-search-pager">
+              <li class="page-item pstart">
+                <a class="page-link" href="#" aria-label="Previous">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+              <li class="page-item p0"><a class="page-link" href="#">1</a></li>
+              <li class="page-item p0"><a class="page-link" href="#">2</a></li>
+              <li class="page-item p0"><a class="page-link" href="#">3</a></li>
+              <li class="page-item p0"><a class="page-link" href="#">4</a></li>
+              <li class="page-item p0"><a class="page-link" href="#">5</a></li>
+              <li class="page-item p0"><a class="page-link" href="#">6</a></li>
+              <li class="page-item p0"><a class="page-link" href="#">7</a></li>
+              <li class="page-item p0"><a class="page-link" href="#">8</a></li>
+              <li class="page-item p0"><a class="page-link" href="#">9</a></li>
+              <li class="page-item pend">
+                <a class="page-link" href="#" aria-label="Next">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>         
+      </div>
+      <div class="tab-pane fade" id="account-article-nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+          <div class="list-group list-group-flush account-article-containter-nav-profile">
+              <a href="#" class="list-group-item list-group-item-action ">
+                  <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1 title">Title 1</h5>
+                    <small class="createtime">2019-05-30 12:20:20</small>
+                  </div>
+                  <p class="mb-1 intro">Intro</p>
+                  <small class="author">author</small>
+                </a>
+            </div>
+            <div style="margin-top: 8px">
+              <nav aria-label="Page navigation">
+                <ul class="pagination  table-article-search-pager">
+                  <li class="page-item pstart">
+                    <a class="page-link" href="#" aria-label="Previous">
+                      <span aria-hidden="true">&laquo;</span>
+                    </a>
+                  </li>
+                  <li class="page-item p0"><a class="page-link" href="#">1</a></li>
+                  <li class="page-item p0"><a class="page-link" href="#">2</a></li>
+                  <li class="page-item p0"><a class="page-link" href="#">3</a></li>
+                  <li class="page-item p0"><a class="page-link" href="#">4</a></li>
+                  <li class="page-item p0"><a class="page-link" href="#">5</a></li>
+                  <li class="page-item p0"><a class="page-link" href="#">6</a></li>
+                  <li class="page-item p0"><a class="page-link" href="#">7</a></li>
+                  <li class="page-item p0"><a class="page-link" href="#">8</a></li>
+                  <li class="page-item p0"><a class="page-link" href="#">9</a></li>
+                  <li class="page-item pend">
+                    <a class="page-link" href="#" aria-label="Next">
+                      <span aria-hidden="true">&raquo;</span>
+                    </a>
+                  </li>
+                </ul>
+              </nav>
+            </div>      
+      </div>
+      <div class="tab-pane fade" id="account-article-nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
+        <div class="list-group list-group-flush account-article-containter-nav-contact">
+            <a href="#" class="list-group-item list-group-item-action ">
+                <div class="d-flex w-100 justify-content-between">
+                  <h5 class="mb-1 title">Title 1</h5>
+                  <small class="createtime">2019-05-30 12:20:20</small>
+                </div>
+                <p class="mb-1 intro">Intro</p>
+                <small class="author">author</small>
+              </a>
+        </div>
+          <div style="margin-top: 8px">
+            <nav aria-label="Page navigation">
+              <ul class="pagination  table-article-search-pager">
+                <li class="page-item pstart">
+                  <a class="page-link" href="#" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                  </a>
+                </li>
+                <li class="page-item p0"><a class="page-link" href="#">1</a></li>
+                <li class="page-item p0"><a class="page-link" href="#">2</a></li>
+                <li class="page-item p0"><a class="page-link" href="#">3</a></li>
+                <li class="page-item p0"><a class="page-link" href="#">4</a></li>
+                <li class="page-item p0"><a class="page-link" href="#">5</a></li>
+                <li class="page-item p0"><a class="page-link" href="#">6</a></li>
+                <li class="page-item p0"><a class="page-link" href="#">7</a></li>
+                <li class="page-item p0"><a class="page-link" href="#">8</a></li>
+                <li class="page-item p0"><a class="page-link" href="#">9</a></li>
+                <li class="page-item pend">
+                  <a class="page-link" href="#" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>      
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal -->
+<script type="text/javascript" charset="utf-8" src="/static/3rd/UMeditor/utf8-php/ueditor.config.js?id=1002"></script>
+<script type="text/javascript" charset="utf-8" src="/static/3rd/UMeditor/utf8-php/ueditor.all.min.js"> </script>
+<!--建议手动加在语言，避免在ie下有时因为加载语言失败导致编辑器加载失败-->
+<!--这里加载的语言文件会覆盖你在配置项目里添加的语言类型，比如你在配置项目里配置的是英文，这里加载的中文，那最后就是中文-->
+<script type="text/javascript" charset="utf-8" src="/static/3rd/UMeditor/utf8-php/lang/zh-cn/zh-cn.js"></script>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-xl modal-dialog" role="document" style="max-width:100%;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">发表文章</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form name='form66' action="Post/" method="post">
+          <div class="form-group">
+            <input name="title" class="form-control" type="text" placeholder="请输入标题." required>
+            <div class="invalid-feedback">
+              要输入标题哦！
+            </div>    
+          </div>
+          <div class="form-group">
+            <label for="exampleFormControlInput1">标签(增加标签可以增加文章推荐率)</label>
+            <div id="hotlabel">
+              <button style="margin:6px;" type="button" class="btn-label btn">Danger</button>
+            </div>
+            <input type="hidden" id="hotlabeltext" name="hotlabeltext">
+          </div>
+          <div class="form-group">
+            <label for="exampleFormControlInput1">模特</label>
+            <div  class="form-row align-items-center">
+              <div class="col-auto my-1">
+                <select class="custom-select mr-sm-2" id="idol-type" name="idol-type">
+                  <option value="0" selected>私人模特</option>
+                  <option value="1">本站签约模特</option>
+                </select>      
+              </div>
+              <div class="col-auto my-1" style="display:none;" id="container-idol-name">
+                <select class="custom-select mr-sm-2" id="idol-name" name="idol-name">
+                  <option selected>tiya</option>
+                  <option value="1">amilia</option>
+                  <option value="2">jillrily</option>
+                  <option value="3">小桃花</option>
+                </select>    
+              </div>
+            </div>
+          </div>  
+          <div class="form-group">
+            <script id="editor123" type="text/plain" style="height:350px;"></script>
+          </div>
+          <button id="tijiao" type="submit" class="btn btn-primary">发表文章</button> <button style="float:right;" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  window.UEDITOR_HOME_URL = "/static/3rd/UMeditor/utf8-php/"
+  var ue = UE.getEditor('editor123');
+  
+  ue.addListener('afterExecCommand',function(t, e, arg){
+    afterUploadImage(e);
+  });
+  function afterUploadImage() {
+    if(arguments[0]=="inserthtml" || arguments[0]=="insertimage"){
+      ue.execCommand( 'insertparagraph' );
+    }
+  }      
+  
+  $(document).ready(function() {
+    var articleTabs ={ 
+      activeIdx:0,
+      tabs:[
+        {
+          tabIdx:0, curPageIdx: 1, totalIdx: 0,pageSize:0,
+          id:"account-article-nav-home",
+        },
+        {
+          tabIdx:1, curPageIdx: 1, totalIdx: 0,pageSize:0,
+          id:"account-article-nav-contact",
+        },
+        {
+          tabIdx:2, curPageIdx: 1, totalIdx: 0,pageSize:0,
+          id:"account-article-nav-profile",
+        },
+      ],
+      getActive:function(){
+        return this.tabs[this.activeIdx];
+      },
+      init:function(){
+        var that = this;
+        $.each(this.tabs,function(idx,val){
+          var that = val;
+          var tab0 = $("#"+val.id);
+          val.pager = $($(tab0)[0].children[1]).find("ul");
+          val.articleList = $($(tab0)[0].children[0]);
+          val.articleItem = $(val.articleList[0].children[0]).clone();
+          $(val.pager.children("li.p0")).hide();
+          $(val.pager.children("li.p0")).on("click",function(){
+            that.curPageIdx = parseInt($(this)[0].children[0].innerText);
+            getlist(that);
+          })
+          $(val.pager.children("li.pstart")).on("click",function(){
+            that.curPageIdx = that.curPageIdx - 1;
+            if(that.curPageIdx < 1){
+              that.curPageIdx = 1
+            }
+            getlist(that);
+          })
+
+          $(val.pager.children("li.pend")).on("click",function(){
+            that.curPageIdx = that.curPageIdx + 1;
+            if(that.curPageIdx > that.totalIdx){
+              that.curPageIdx = that.totalIdx
+            }
+            getlist(that);
+          })          
+
+        });
+        $($("#Account-Article").find('a[data-toggle="tab"]')).on('shown.bs.tab', function (e) {
+          that.activeIdx = $(this).data("tab-order");
+          setTimeout(function(){ getlist(articleTabs.getActive())},100);  
+        })
+      },
+      preparepager:function(){
+        var curTab = this.tabs[this.activeIdx];
+        $(curTab.pager.children("li.p0")).hide();
+        var pages = parseInt((curTab.totalIdx + curTab.pageSize) / curTab.pageSize);
+        var pageIdxArr = new Array();
+        var cpi = curTab.curPageIdx + 4;
+        for(i = 9; i >=0; i--){
+          pageIdxArr.push(cpi - i);
+        }
+        for( i = 1; i < 9 + 1;i++){
+          if(pageIdxArr[i] > 0){
+            if(pageIdxArr[i] > pages){
+              break;
+            }          
+            $(curTab.pager.children("li")[i]).show();
+            var a = $(curTab.pager.children("li")[i]).children(0);
+            a[0].innerText = pageIdxArr[i];
+            $(curTab.pager.children("li")[i]).removeClass("active");
+            if(pageIdxArr[i] == curTab.curPageIdx){
+              $(curTab.pager.children("li")[i]).addClass("active");
+            }
+          }
+        }
+      }      
+    }
+    articleTabs.init();
+
+    var targetNode = document.getElementById('Account-Article').parentNode;
+    var config = { attributes: true };
+    var idTimeout = 0;
+    var callback = function(mutationsList) {
+      for(var mutation of mutationsList) {
+        if (mutation.type == 'attributes') {
+          if($(targetNode).hasClass("active")){
+            clearTimeout(idTimeout)
+            if($(targetNode).hasClass("active")){
+              idTimeout = setTimeout(function(){ getlist(articleTabs.getActive())},100);  
+            }
+          }
+        }
+      }
+    };
+    var observer = new MutationObserver(callback);
+    observer.observe(targetNode, config);    
+
+    var param_idol_url = "/Account/Post/Param/Idol/";
+    var param_url = "/Account/Post/Param";
+    var hotidolitem = $("#hotlabel").children(0).clone();
+    $(document).on("change", "#idol-type",function () { 
+      if($(this).val() == 0){
+        $("#container-idol-name").hide();
+      }
+      else{
+        $("#container-idol-name").show();
+      }
+    });    
+          
+    $(document).on("click", ".btn-label",function () { 
+      if($(this).hasClass("btn-primary")){
+        $(this).removeClass("btn-primary");
+        var val0 = $("#hotlabeltext").val();
+        $("#hotlabeltext").val(val0.replace($(this).data("aguid") + ",",""));
+      }else{
+        $(this).addClass("btn-primary");
+        var val0 = $("#hotlabeltext").val();
+        $("#hotlabeltext").val(val0 + $(this).data("aguid") + ",");            
+      }
+    });
+    getparam();
+    getparamIdol();
+    $("form[name='form66']").on('submit', function() {
+        $(this).ajaxSubmit({
+          type: 'post', // 提交方式 get/post
+          success: function(data) { // data 保存提交后返回的数据，一般为 json 数据
+            alert("发表成功!");				     
+          }
+        });          
+      return false;
+    });
+    function getparam(){
+      $.post(param_url, 
+      function (data,status) {
+        if(data != null){
+          $("#hotlabel").empty();   
+          listappend($("#hotlabel"),data);
+        }
+      },'json');
+    }      
+    
+    function listappend(container,data){
+      $(data).each(function(idx,item){
+        var hotidol0 = $(hotidolitem).clone();
+        $(hotidol0).text(item.Label);
+        $(hotidol0).data("aguid", item.Aguid);  
+        $(container).append($(hotidol0));
+      });	
+    }
+    function getparamIdol(){
+      $.post(param_idol_url, 
+      function (data,status) {
+        if(data != null){
+          $("#idol-name").empty();
+          $(data).each(function(idx,item){
+            $("#idol-name").append("<option value='"+item.Userguid+"'>"+item.Nick_name+"</option>");
+          });
+        }
+      },'json');
+    }
+    function getlist(par){
+      console.log(par.tabIdx,par.id,par.totalIdx,par.curPageIdx,par.pageSize);
+      
+      $.ajax({
+        type: "POST",      //data 传送数据类型。post 传递
+        dataType: 'json',  // 返回数据的数据类型json
+        contentType: "application/json; charset=utf-8",
+        url: APIURL,  // yii 控制器/方法
+        cache: false,      
+        data: JSON.stringify({action:'article-search-list',articleType:articleTabs.getActive().tabIdx,pageidx: articleTabs.getActive().curPageIdx}),  //传送的数据
+        error:function(res){
+          alert("数据传输错误");
+        },success: function (data) {
+          if(data.status == 0){
+            articleTabs.getActive().totalIdx = data.total[0].count;
+            articleTabs.getActive().pageSize = data.pagesize;
+            var curidx = articleTabs.getActive().curPageIdx - 1;
+            if(curidx < 0){
+              curidx = 0;
+            }
+            articleTabs.preparepager();
+            $($(articleTabs.getActive().articleList)[0]).html("")
+            $.each(data.data, function(i,val){
+              var item = articleTabs.getActive().articleItem.clone();
+              $(item[0]).find(".title")[0].innerText = val.title;
+              $(item[0]).find(".createtime")[0].innerText = val.createtime;
+              $(item[0]).find(".intro")[0].innerText = val.intro;
+              $(item[0]).find(".author")[0].innerText = val.nick_name;
+              $(articleTabs.getActive().articleList).append(item);
+            });               
+          }else{
+            alert(data.msg);
+          }
+        }
+      })     
+    }
+
+
+
+  });
+</script>
+	
+{{end}}

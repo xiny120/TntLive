@@ -1,0 +1,155 @@
+{{define "article-review-search"}}
+<main id="article-review-search">
+    <div class="app-title">
+      <div>
+        <h1><i class="fa fa-archive"></i> 原创文章审核</h1>
+        <p>原创文章审核管理</p>
+      </div>
+      <ul class="app-breadcrumb breadcrumb">
+        <li class="breadcrumb-item"><i class="fa fa-home fa-lg"></i></li>
+        <li class="breadcrumb-item">文章系统</li>
+        <li class="breadcrumb-item"><a href="#">原创文章审核</a></li>
+      </ul>
+    </div>
+
+    <div class="col-md-12">
+      <div class="tile">
+        <div style="margin-bottom: 12px;">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>用户名</th>
+                <th>标题</th>
+                <th>发表日期</th>
+              </tr>
+            </thead>          
+            <tbody>
+              <tr>
+                <td><input type="text" id="table-article-review-search-nick_name"></td>
+                <td><input type="text" id="table-article-review-search-idname"></td>
+                <td><input type="text" id="table-article-review-search-idcode"></td>
+              </tr>
+              <tr>
+                  <td><button type="button" class="btn btn-primary table-article-review-search-submit" >查询</button></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>              
+              <!--
+              <tr><td>用户名：</td><td><input type="text" id="table-article-search-nick_name"></td></tr>
+              <tr><td>标题：</td><td><input type="text" id="table-article-search-idname"></td></tr>
+              <tr><td>发表日期：</td><td><input type="text" id="table-article-search-idcode"></td></tr>
+              <tr><td><button type="button" class="btn btn-primary table-article-search-submit" >查询</button></td><td></td></tr>
+              -->
+            </tbody>
+
+          </table>
+        </div>
+  
+        <div>
+          <div style="float:right;">
+            <button type="button" class="btn btn-secondary table-article-review-search-pass" >通过</button>
+            <button type="button" class="btn btn-danger table-article-review-search-reject" >决绝</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <div style="text-align: center;margin-bottom: 8px;">
+            <h3 id="table-article-review-title"></h3>
+            <input type="hidden" id="table-article-review-id">
+          </div>
+          <div id="table-article-review-content" style="text-align: center;">
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+</main>
+<script>
+  $(document).ready(function(){
+    $(".btn.table-article-review-search-pass").on("click",function(){
+      if(confirm("确定通过审核该文章吗？")){
+        articlePass($("#table-article-review-id").val(),0);
+        setTimeout(function(){ getlist()},100);  
+      }
+    });
+    $(".btn.table-article-review-search-reject").on("click",function(){
+      if(confirm("确定决绝通过审核该文章吗？")){
+        articlePass($("#table-article-review-id").val(),1);
+        setTimeout(function(){ getlist()},100);  
+      }
+    });
+    $(".btn.table-article-review-search-submit").on("click",function(){
+      setTimeout(function(){ getlist()},100);  
+    });   
+    var targetNode = document.getElementById('article-review-search').parentNode;
+    var config = { attributes: true };
+    var idTimeout = 0;
+    var callback = function(mutationsList) {
+      for(var mutation of mutationsList) {
+        if (mutation.type == 'attributes') {
+          clearTimeout(idTimeout)
+          if($(targetNode).hasClass("active")){
+            idTimeout = setTimeout(function(){ getlist()},100);  
+          }
+        }
+      }
+    };
+    var observer = new MutationObserver(callback);
+    observer.observe(targetNode, config);
+
+    function articlePass(aguid,status){
+      var newidolurl = "/api/admin/";
+      $.ajax({
+        type: "POST",      //data 传送数据类型。post 传递
+        dataType: 'json',  // 返回数据的数据类型json
+        contentType: "application/json; charset=utf-8",
+        url: APIURL,  // yii 控制器/方法
+        cache: false,      
+        data: JSON.stringify({action:'article-review-search-articlepass',aguid:aguid,status:status}),  //传送的数据
+        error:function(res){
+          alert("数据传输错误");
+        },success: function (data) {
+          if(data.status == 0){
+            alert(data.msg);              
+          }else{
+            alert(data.msg);
+          }
+        }
+      })  
+    }
+
+    function getlist(){
+      
+      var newidolurl = "/api/admin/";
+      var idname = $("#table-article-review-search-idname").val();
+      var idcode = $("#table-article-review-search-idcode").val();
+      var userid = $("#table-article-review-search-userid").val();
+      var nick_name = $("#table-article-review-search-nick_name").val();  
+      $.ajax({
+        type: "POST",      //data 传送数据类型。post 传递
+        dataType: 'json',  // 返回数据的数据类型json
+        contentType: "application/json; charset=utf-8",
+        url: APIURL,  // yii 控制器/方法
+        cache: false,      
+        data: JSON.stringify({action:'article-review-search-list',idname:idname,idcode:idcode,userid:userid,nick_name:nick_name}),  //传送的数据
+        error:function(res){
+          alert("数据传输错误");
+        },success: function (data) {
+          if(data.status == 0){
+            $.each(data.data, function(i,val){
+              $("#table-article-review-title")[0].innerText = val.title;
+              $("#table-article-review-content")[0].innerHTML = val.content;
+              $("#table-article-review-id").val(val.aguid);
+            });               
+          }else{
+            alert(data.msg);
+          }
+        }
+      })        
+    }
+
+  });
+
+</script>
+{{end}}

@@ -1,0 +1,86 @@
+{{template "header" .}}
+<body>
+	{{template "nav" .}}
+
+
+    <div class="container body-content margin_top30">
+		<div class="row">
+		    <div class="col-md-6">
+				<form class="needs-validation" novalidate method="post" action="/Identity/Account/Register" onsubmit="return form_submit()">
+					<h4>用户登陆</h4>
+					<hr />
+					<div class="form-group">
+					  <label for="exampleInputEmail1">您的用户名：</label>
+					  <input type="text" class="form-control" id="name" aria-describedby="emailHelp" placeholder="点此键入用户名" required>
+				        <div class="invalid-feedback">
+				          请填写一个您的用户名。
+				        </div>					
+					</div>
+					<div class="form-group">
+					  <label for="pwd1">密码：</label>
+					  <input type="password" class="form-control" id="pwd1" placeholder="点此键入密码" required>
+						<div class="invalid-feedback">
+				          密码不能为空。
+				        </div>	
+					</div>
+			
+					<div class="form-group form-check" style="display:none;">
+					  <input type="checkbox" class="form-check-input" id="exampleCheck1">
+					  <label class="form-check-label" for="exampleCheck1">Check me out</label>
+					</div>
+					<button type="submit" class="btn btn-primary">登录</button><a style="margin-left:30;" href="/Account/Register">注册新用户</a>
+				</form>			
+			</div>
+		</div>
+    </div>
+
+
+ 
+    {{template "footer" .}}
+
+	<script src="/static/js/md5.js"></script>
+	<script>
+	
+	function form_submit(){
+		var jqxhr = $.ajax({
+			type: "POST", 
+			url: "/Account/Register/Cmd",
+			data:{cmd:"Login",name: $("#name").val(),pwd: hex_md5($("#pwd1").val())},
+		}).done(function(data,status,xhr) {
+			json = JSON.parse(data);
+			if(json.status != 0){
+				alert(json.msg);
+			}
+			if(json.data.register == ""){
+				alert("登录失败！请检查用户名和密码！");
+			}else{
+				window.localStorage.setItem("ui",JSON.stringify(json.data.ui))
+				window.location = "/";
+			}
+		}).fail(function() {
+		    alert( "error" );
+			}
+		);
+		return false;
+	}
+		
+	(function() {
+	  'use strict';
+	  window.addEventListener('load', function() {
+	    var forms = document.getElementsByClassName('needs-validation');
+	    var validation = Array.prototype.filter.call(forms, function(form) {
+	      form.addEventListener('submit', function(event) {
+	        if (form.checkValidity() === false) {
+	          event.preventDefault();
+	          event.stopPropagation();
+	        }
+	        form.classList.add('was-validated');
+	      }, false);
+	    });
+	  }, false);
+	})();		
+			
+	</script>		
+	
+</body>
+</html>
