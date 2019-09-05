@@ -1,0 +1,41 @@
+{
+	"folders": [
+		{
+			"path": "./"
+		}
+	],
+
+	"settings": {
+	    "go.inferGopath": true,
+	    "go.buildOnSave": "workspace",
+	    "go.lintOnSave": "package",
+	    "go.vetOnSave": "package",
+	    "go.buildTags": "",
+	    "go.buildFlags": [],
+	    "go.lintFlags": [],
+	    "go.vetFlags": [],
+	    "go.coverOnSave": false,
+	    "go.useCodeSnippetsOnFunctionSuggest": false,
+	    "go.formatTool": "goreturns",
+	    "go.goroot": "C:/Go/",
+		"go.gopath": "C:/Go/gopath/go/",
+		"go.toolsGopath":"C:/Go/gopath/go/",
+	    "go.gocodeAutoBuild": true,
+	    "go.useLanguageServer": true,
+	    "go.alternateTools": {
+	      "go-langserver": "gopls", 
+	    },
+	    "go.languageServerExperimentalFeatures": {
+	      "format": true,
+	      "autoComplete": true
+	    },
+	    "[go]": {
+	        "editor.codeActionsOnSave": {
+	            "source.organizeImports": true
+	        },
+	    }
+
+
+
+	}	
+}

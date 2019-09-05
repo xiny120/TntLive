@@ -224,6 +224,7 @@ int AnyFlvSource::Read(char* type, uint32_t* timestamp, char** data, int* size,T
 
 				if (!(ph->btSignature[0] == 'F' && ph->btSignature[1] == 'L' && ph->btSignature[2] == 'V')) {
 					fclose(f);
+					WCLOG(LS_ERROR) << "first fread Signature error";
 					return 3;
 				}
 				

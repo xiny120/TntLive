@@ -75,8 +75,8 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>out\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(OutDir)obj\$(ProjectName)\</IntDir>
-    <IncludePath>..\..\common\cef_binary_3.3626.1895.g7001d56_windows32;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\common\cef_binary_3.3626.1895.g7001d56_windows32;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\common\cef_binary_3.3626.1895.g7001d56_windows32;G:\DEVTOOLS\project\git\common\cef_binary_3.3626.1895.g7001d56_windows32;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\common\cef_binary_3.3626.1895.g7001d56_windows32;G:\DEVTOOLS\project\git\common\cef_binary_3.3626.1895.g7001d56_windows32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
